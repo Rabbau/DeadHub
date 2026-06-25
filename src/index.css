@@ -903,3 +903,48 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
   .hero-grid > *:nth-child(2) { animation-delay: 0.05s; }
   .hero-grid > *:nth-child(3) { animation-delay: 0.1s; }
   .hero-grid > *:nth-child(4) { animation-delay: 0.15s; }
+
+
+  /* ── Build page — 12 предметов ────────────────────────────── */
+.build-card__items {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.build-item-card {
+  padding: 8px !important;
+  gap: 4px !important;
+}
+
+.build-item-img {
+  width: 36px !important;
+  height: 36px !important;
+  font-size: 1rem !important;
+}
+
+.build-item-name {
+  font-size: 0.65rem !important;
+  line-height: 1.2 !important;
+  word-break: break-word;
+}
+
+.build-item-cost {
+  font-size: 0.6rem !important;
+}
+
+/* Мобильная версия: 2 колонки вместо 4 */
+@media (max-width: 640px) {
+  .build-card__items {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+  .build-item-img {
+    width: 28px !important;
+    height: 28px !important;
+  }
+  .build-item-name {
+    font-size: 0.55rem !important;
+  }
+}

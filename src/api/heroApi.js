@@ -4,22 +4,53 @@ import { ASSETS_API_BASE, ANALYTICS_API_BASE } from './config.js';
 const IMG_BASE = 'https://assets.deadlock-api.com/images/heroes';
 
 function normalizeHero(heroData, statsData = []) {
-  // Логируем, что пришло
-  console.log(`Hero ${heroData.id} (${heroData.name}) stats:`, statsData);
+  // Статистика (как было)
+  let totalWins = 0;
+  let totalMatches = 0;
+  let totalPicks = 0;
 
-  const stats = Array.isArray(statsData) ? statsData[0] : statsData;
-  const winrate = stats?.win_rate ?? stats?.winrate ?? 0;
-  const pickrate = stats?.pick_rate ?? stats?.pickrate ?? 0;
-  const games = stats?.matches ?? stats?.total_games ?? 0;
-  const kda = stats?.kda ?? null;
+  if (Array.isArray(statsData) && statsData.length > 0) {
+    statsData.forEach((build) => {
+      const wins = build.wins ?? 0;
+      const losses = build.losses ?? 0;
+      const matches = build.matches ?? 0;
+      const picks = build.players ?? 0;
+      totalWins += wins;
+      totalMatches += matches;
+      totalPicks += picks;
+    });
+  }
 
-  const abilities = (heroData.abilities ?? []).map((a) => ({
-    name: a.name ?? '',
-    description: a.description ?? '',
-    cooldown: a.cooldown ?? null,
-    cast_range: a.cast_range ?? null,
-  }));
+  const winrate = totalMatches > 0 ? totalWins / totalMatches : 0;
+  const games = totalMatches > 0 ? totalMatches : heroData.matches ?? 0;
+  const pickrate = games > 0 ? totalPicks / games : 0;
 
+  // СПОСОБНОСТИ — в V2 API они лежат в поле `items` (тип ability)
+  let abilities = [];
+  if (heroData.items && Array.isArray(heroData.items)) {
+    // Фильтруем только способности (тип 'ability')
+    abilities = heroData.items
+      .filter(item => item.type === 'ability' || item.type === 'Ability')
+      .map((a) => ({
+        name: a.name ?? 'Unknown',
+        description: a.description ?? '',
+        cooldown: a.cooldown ?? null,
+        cast_range: a.cast_range ?? null,
+      }));
+  }
+
+  // Если abilities всё ещё пустые, пробуем взять из поля `abilities` (на всякий случай)
+  if (abilities.length === 0 && heroData.abilities) {
+    abilities = (Array.isArray(heroData.abilities) ? heroData.abilities : [])
+      .map((a) => ({
+        name: a.name ?? 'Unknown',
+        description: a.description ?? '',
+        cooldown: a.cooldown ?? null,
+        cast_range: a.cast_range ?? null,
+      }));
+  }
+
+  // Описание
   let description = null;
   if (heroData.description) {
     if (typeof heroData.description === 'string') {
@@ -43,7 +74,7 @@ function normalizeHero(heroData, statsData = []) {
     stats: {
       winrate: winrate > 1 ? winrate / 100 : winrate,
       pickrate: pickrate > 1 ? pickrate / 100 : pickrate,
-      kda,
+      kda: null,
       games_played: games,
     },
     abilities,

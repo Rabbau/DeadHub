@@ -4,7 +4,7 @@ import { formatWinrate, formatPickrate, winrateColor } from '../services/heroSer
 
 function HeroPage() {
   const { id } = useParams();
-  const { hero, items, loading, error } = useHeroDetail(id);
+  const { hero, loading, error } = useHeroDetail(id);
 
   if (loading) {
     return (
@@ -68,9 +68,10 @@ function HeroPage() {
             <p className="hero-detail__description">{hero.description}</p>
           )}
 
-          {hero.abilities?.length > 0 && (
-            <div className="section">
-              <h2 className="section__title">Способности</h2>
+          {/* Способности */}
+          <div className="section">
+            <h2 className="section__title">Способности</h2>
+            {hero.abilities && hero.abilities.length > 0 ? (
               <div className="abilities-list">
                 {hero.abilities.map((ability, idx) => (
                   <div className="ability-card" key={idx}>
@@ -88,27 +89,12 @@ function HeroPage() {
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-
-          {items.length > 0 && (
-            <div className="section">
-              <h2 className="section__title">Популярные предметы</h2>
-              <div className="items-grid">
-                {items.map((item) => (
-                  <div className="item-card" key={item.id}>
-                    {item.image_url ? (
-                      <img src={item.image_url} alt={item.name} className="item-card__img" />
-                    ) : (
-                      <div className="item-card__img-placeholder">🛡</div>
-                    )}
-                    <div className="item-card__name">{item.name}</div>
-                    {item.cost && <div className="item-card__cost">{item.cost} ₡</div>}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+            ) : (
+              <p style={{ color: 'var(--text-3)', fontSize: '0.9rem' }}>
+                Способности не найдены для этого героя.
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>
