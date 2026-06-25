@@ -4,7 +4,7 @@ import { ASSETS_API_BASE, ANALYTICS_API_BASE } from './config.js';
 const IMG_BASE = 'https://assets.deadlock-api.com/images/heroes';
 
 function normalizeHero(heroData, statsData = []) {
-  // Статистика (как было)
+  // Статистика
   let totalWins = 0;
   let totalMatches = 0;
   let totalPicks = 0;
@@ -25,12 +25,17 @@ function normalizeHero(heroData, statsData = []) {
   const games = totalMatches > 0 ? totalMatches : heroData.matches ?? 0;
   const pickrate = games > 0 ? totalPicks / games : 0;
 
-  // СПОСОБНОСТИ — в V2 API они лежат в поле `items` (тип ability)
+  // 🌟 СПОСОБНОСТИ — гибкий парсинг
   let abilities = [];
+
+  // 1️⃣ Пробуем heroData.items (массив)
   if (heroData.items && Array.isArray(heroData.items)) {
-    // Фильтруем только способности (тип 'ability')
     abilities = heroData.items
-      .filter(item => item.type === 'ability' || item.type === 'Ability')
+      .filter(item => {
+        const type = (item.type || '').toLowerCase();
+        const abilityType = item.ability_type;
+        return type === 'ability' || type === 'innate' || (abilityType && abilityType !== '');
+      })
       .map((a) => ({
         name: a.name ?? 'Unknown',
         description: a.description ?? '',
@@ -39,15 +44,32 @@ function normalizeHero(heroData, statsData = []) {
       }));
   }
 
-  // Если abilities всё ещё пустые, пробуем взять из поля `abilities` (на всякий случай)
-  if (abilities.length === 0 && heroData.abilities) {
-    abilities = (Array.isArray(heroData.abilities) ? heroData.abilities : [])
+  // 2️⃣ Если не нашли — пробуем heroData.abilities
+  if (abilities.length === 0 && heroData.abilities && Array.isArray(heroData.abilities)) {
+    abilities = heroData.abilities.map((a) => ({
+      name: a.name ?? 'Unknown',
+      description: a.description ?? '',
+      cooldown: a.cooldown ?? null,
+      cast_range: a.cast_range ?? null,
+    }));
+  }
+
+  // 3️⃣ Если всё ещё нет — пробуем любые элементы с ability_type
+  if (abilities.length === 0 && heroData.items && Array.isArray(heroData.items)) {
+    abilities = heroData.items
+      .filter(item => item.ability_type !== undefined && item.ability_type !== null)
       .map((a) => ({
         name: a.name ?? 'Unknown',
         description: a.description ?? '',
         cooldown: a.cooldown ?? null,
         cast_range: a.cast_range ?? null,
       }));
+  }
+
+  // 🔍 Лог для Kelvin (временный)
+  if (heroData.id === 2) {
+    console.log('✅ Kelvin raw items:', heroData.items);
+    console.log('✅ Kelvin parsed abilities:', abilities);
   }
 
   // Описание
