@@ -948,3 +948,47 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
     font-size: 0.55rem !important;
   }
 }
+
+
+
+.ability-card__icon-img {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+  object-fit: contain;
+  padding: 4px;
+}
+
+
+
+.ability-card__desc {
+  font-size: 0.82rem;
+  color: var(--text-2);
+  margin-top: 3px;
+  line-height: 1.5;
+}
+/* Стили для inline-элементов в описании (если нужно) */
+.ability-card__desc .highlight {
+  color: var(--neon);
+}
+.ability-card__desc .diminish {
+  color: var(--text-3);
+}
+.ability-card__desc .inline-attribute-label {
+  font-weight: 600;
+}
+.ability-card__desc svg {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: middle;
+  fill: currentColor;
+}
+.ability-card__desc img.inline-attribute {
+  width: 1.2em;
+  height: 1.2em;
+  vertical-align: middle;
+}

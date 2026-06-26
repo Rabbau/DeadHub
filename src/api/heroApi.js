@@ -2,8 +2,21 @@ import { httpGet } from './httpClient.js';
 import { ASSETS_API_BASE, ANALYTICS_API_BASE } from './config.js';
 
 const IMG_BASE = 'https://assets.deadlock-api.com/images/heroes';
+const ITEM_IMG_BASE = 'https://assets.deadlock-api.com/images/items';
 
-function normalizeHero(heroData, statsData = []) {
+// Функция для получения деталей способности по class_name
+async function fetchAbilityDetails(class_name) {
+  try {
+    const url = `${ASSETS_API_BASE}/v2/items/${class_name}`;
+    const data = await httpGet(url, { cacheKey: `ability_${class_name}` });
+    return data;
+  } catch (e) {
+    console.warn(`Failed to fetch ability details for ${class_name}:`, e);
+    return null;
+  }
+}
+
+function normalizeHero(heroData, statsData = [], abilitiesDetails = {}) {
   // Статистика
   let totalWins = 0;
   let totalMatches = 0;
@@ -25,51 +38,47 @@ function normalizeHero(heroData, statsData = []) {
   const games = totalMatches > 0 ? totalMatches : heroData.matches ?? 0;
   const pickrate = games > 0 ? totalPicks / games : 0;
 
-  // 🌟 СПОСОБНОСТИ — гибкий парсинг
+  // 🌟 СПОСОБНОСТИ — только основные (signature1-4)
   let abilities = [];
 
-  // 1️⃣ Пробуем heroData.items (массив)
-  if (heroData.items && Array.isArray(heroData.items)) {
-    abilities = heroData.items
-      .filter(item => {
-        const type = (item.type || '').toLowerCase();
-        const abilityType = item.ability_type;
-        return type === 'ability' || type === 'innate' || (abilityType && abilityType !== '');
-      })
-      .map((a) => ({
-        name: a.name ?? 'Unknown',
-        description: a.description ?? '',
-        cooldown: a.cooldown ?? null,
-        cast_range: a.cast_range ?? null,
-      }));
+  if (heroData.items && typeof heroData.items === 'object') {
+    const entries = Object.entries(heroData.items);
+    const abilityKeys = ['signature1', 'signature2', 'signature3', 'signature4'];
+    const filteredEntries = entries.filter(([key]) => abilityKeys.includes(key));
+
+    abilities = filteredEntries.map(([key, class_name]) => {
+      // Преобразуем строку в читаемое название
+      let displayName = class_name
+        .replace(/^citadel_ability_/, '')
+        .replace(/^ability_/, '')
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, l => l.toUpperCase());
+
+      // Берём детали из abilitiesDetails (если есть)
+      const details = abilitiesDetails[class_name] || {};
+      const image = details.image || details.shop_image || null;
+      const description = details.description?.desc || details.description || '';
+
+      return {
+        name: displayName || class_name,
+        description: description,
+        cooldown: details.cooldown ?? null,
+        cast_range: details.cast_range ?? null,
+        image_url: image ? (image.startsWith('http') ? image : `${ITEM_IMG_BASE}/${image}`) : null,
+        class_name: class_name,
+      };
+    });
   }
 
-  // 2️⃣ Если не нашли — пробуем heroData.abilities
+  // Если способностей нет, пробуем другие источники
   if (abilities.length === 0 && heroData.abilities && Array.isArray(heroData.abilities)) {
     abilities = heroData.abilities.map((a) => ({
       name: a.name ?? 'Unknown',
       description: a.description ?? '',
       cooldown: a.cooldown ?? null,
       cast_range: a.cast_range ?? null,
+      image_url: null,
     }));
-  }
-
-  // 3️⃣ Если всё ещё нет — пробуем любые элементы с ability_type
-  if (abilities.length === 0 && heroData.items && Array.isArray(heroData.items)) {
-    abilities = heroData.items
-      .filter(item => item.ability_type !== undefined && item.ability_type !== null)
-      .map((a) => ({
-        name: a.name ?? 'Unknown',
-        description: a.description ?? '',
-        cooldown: a.cooldown ?? null,
-        cast_range: a.cast_range ?? null,
-      }));
-  }
-
-  // 🔍 Лог для Kelvin (временный)
-  if (heroData.id === 2) {
-    console.log('✅ Kelvin raw items:', heroData.items);
-    console.log('✅ Kelvin parsed abilities:', abilities);
   }
 
   // Описание
@@ -124,7 +133,8 @@ export async function fetchHeroes() {
   });
 
   const results = await Promise.all(statsPromises);
-  return results.map(({ hero, stats }) => normalizeHero(hero, stats));
+  // На главной странице не нужно догружать иконки способностей (экономим запросы)
+  return results.map(({ hero, stats }) => normalizeHero(hero, stats, {}));
 }
 
 export async function fetchHeroDetail(id) {
@@ -139,5 +149,29 @@ export async function fetchHeroDetail(id) {
   const hero = heroResult.status === 'fulfilled' ? heroResult.value : { id: Number(id) };
   const stats = statsResult.status === 'fulfilled' ? statsResult.value : [];
 
-  return normalizeHero(hero, stats);
+  // 🔥 Догружаем детали способностей
+  let abilitiesDetails = {};
+  if (hero.items && typeof hero.items === 'object') {
+    const entries = Object.entries(hero.items);
+    const abilityKeys = ['signature1', 'signature2', 'signature3', 'signature4'];
+    const abilityClassNames = entries
+      .filter(([key]) => abilityKeys.includes(key))
+      .map(([key, value]) => value)
+      .filter(Boolean);
+
+    if (abilityClassNames.length > 0) {
+      const detailsPromises = abilityClassNames.map((className) =>
+        fetchAbilityDetails(className)
+      );
+      const detailsResults = await Promise.allSettled(detailsPromises);
+      detailsResults.forEach((result, index) => {
+        if (result.status === 'fulfilled' && result.value) {
+          const className = abilityClassNames[index];
+          abilitiesDetails[className] = result.value;
+        }
+      });
+    }
+  }
+
+  return normalizeHero(hero, stats, abilitiesDetails);
 }
