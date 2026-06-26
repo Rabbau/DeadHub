@@ -1,0 +1,12 @@
+{
+    "rewrites": [
+      {
+        "source": "/api/assets/(.*)",
+        "destination": "https://assets.deadlock-api.com/$1"
+      },
+      {
+        "source": "/api/analytics/(.*)",
+        "destination": "https://api.deadlock-api.com/$1"
+      }
+    ]
+  }
