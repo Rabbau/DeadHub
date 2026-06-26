@@ -1,37 +1,43 @@
 // api/[...path].js
+
 export default async function handler(req, res) {
+    // Разбираем URL
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    
     // Получаем путь после /api/
-    const { path } = req.query;
-    let joinedPath = Array.isArray(path) ? path.join('/') : path || '';
+    // req.query.path — это массив из-за динамического роутинга [...path]
+    let pathSegments = req.query.path || [];
+    if (!Array.isArray(pathSegments)) pathSegments = [pathSegments];
+    const joinedPath = pathSegments.join('/');
   
-    // Определяем базовый URL в зависимости от префикса
+    // Определяем целевой хост
     let targetBase;
     if (joinedPath.startsWith('assets/')) {
       targetBase = 'https://assets.deadlock-api.com';
-      joinedPath = joinedPath.slice(7); // убираем 'assets/'
     } else if (joinedPath.startsWith('analytics/')) {
       targetBase = 'https://api.deadlock-api.com';
-      joinedPath = joinedPath.slice(10); // убираем 'analytics/'
     } else {
-      res.status(404).json({ error: 'Not found' });
+      res.status(404).json({ error: 'Unknown API route' });
       return;
     }
   
-    // Собираем целевой URL
-    const targetUrl = `${targetBase}/${joinedPath}`;
-    const url = new URL(targetUrl);
+    // Убираем префикс (assets/ или analytics/)
+    const cleanPath = joinedPath.replace(/^(assets|analytics)\//, '');
+    
+    // Строим целевой URL
+    const targetUrl = new URL(cleanPath, targetBase);
   
-    // Переносим query-параметры (кроме 'path')
-    Object.keys(req.query).forEach(key => {
+    // Копируем все query-параметры (кроме path)
+    url.searchParams.forEach((value, key) => {
       if (key !== 'path') {
-        url.searchParams.append(key, req.query[key]);
+        targetUrl.searchParams.append(key, value);
       }
     });
   
     try {
-      const response = await fetch(url.toString());
+      const response = await fetch(targetUrl.toString());
       const data = await response.json();
-      res.status(200).json(data);
+      res.status(response.status).json(data);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

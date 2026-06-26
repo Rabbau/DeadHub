@@ -1,12 +1,13 @@
 {
-  "headers": [
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET,OPTIONS" },
-        { "key": "Access-Control-Allow-Headers", "value": "Content-Type" }
-      ]
-    }
-  ]
-}
+    "version": 2,
+    "routes": [
+      {
+        "src": "/api/assets/(.*)",
+        "dest": "https://assets.deadlock-api.com/$1"
+      },
+      {
+        "src": "/api/analytics/(.*)",
+        "dest": "https://api.deadlock-api.com/$1"
+      }
+    ]
+  }
