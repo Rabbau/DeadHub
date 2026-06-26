@@ -1,87 +1,73 @@
 /**
- * Vercel Serverless Function — CORS proxy для Deadlock API.
+ * Vercel Serverless Function (CommonJS) — CORS proxy для Deadlock API.
  *
- * Маппинг путей:
- *   /api/assets/v2/heroes     → https://assets.deadlock-api.com/v2/heroes
- *   /api/analytics/v1/...     → https://api.deadlock-api.com/v1/...
+ * ВАЖНО: файл должен быть CommonJS (module.exports), НЕ ESM (export default),
+ * потому что Vercel Serverless Functions не поддерживают ES modules в .js файлах
+ * даже если package.json содержит "type": "module".
  *
- * Почему нужен прокси:
- *   assets.deadlock-api.com не отдаёт CORS-заголовки для браузера,
- *   поэтому все запросы идут через эту функцию на Vercel.
+ * Маппинг:
+ *   GET /api/assets/v2/heroes         → https://assets.deadlock-api.com/v2/heroes
+ *   GET /api/analytics/v1/analytics/… → https://api.deadlock-api.com/v1/analytics/…
  *
- * При переходе на Python-бэкенд этот файл удаляется полностью —
- * фронт будет ходить напрямую на FastAPI.
+ * При переходе на Python-бэкенд: удалить этот файл целиком,
+ * поставить VITE_API_MODE=backend и VITE_BACKEND_URL в Vercel Environment Variables.
  */
 
-export default async function handler(req, res) {
-  // CORS — разрешаем все origin для публичного API
+const UPSTREAM = {
+  assets:    'https://assets.deadlock-api.com',
+  analytics: 'https://api.deadlock-api.com',
+}
+
+module.exports = async function handler(req, res) {
+  // CORS
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  if (req.method === 'OPTIONS') { res.status(200).end(); return }
 
-  if (req.method === 'OPTIONS') {
-    res.status(200).end()
+  // path сегменты: /api/assets/v2/heroes → ['assets','v2','heroes']
+  let segments = req.query.path || []
+  if (!Array.isArray(segments)) segments = [segments]
+
+  const prefix = segments[0]
+  const rest   = segments.slice(1).join('/')
+
+  const targetBase = UPSTREAM[prefix]
+  if (!targetBase) {
+    res.status(404).json({ error: `Unknown prefix "${prefix}"`, received: segments })
     return
   }
 
-  // req.query.path — массив сегментов после /api/
-  // Например: /api/assets/v2/heroes → ['assets', 'v2', 'heroes']
-  let pathSegments = req.query.path || []
-  if (!Array.isArray(pathSegments)) pathSegments = [pathSegments]
-
-  if (pathSegments.length === 0) {
-    res.status(400).json({ error: 'No path provided' })
-    return
+  // Собираем query string (без служебного параметра "path")
+  const qs = new URLSearchParams()
+  for (const [k, v] of Object.entries(req.query)) {
+    if (k !== 'path') qs.append(k, v)
   }
-
-  const prefix = pathSegments[0] // 'assets' | 'analytics'
-  const restSegments = pathSegments.slice(1) // всё после префикса
-
-  // Определяем целевой хост по первому сегменту пути
-  let targetBase
-  if (prefix === 'assets') {
-    targetBase = 'https://assets.deadlock-api.com'
-  } else if (prefix === 'analytics') {
-    targetBase = 'https://api.deadlock-api.com'
-  } else {
-    res.status(404).json({ error: `Unknown API prefix: "${prefix}"` })
-    return
-  }
-
-  // Строим целевой URL
-  const targetPath = restSegments.join('/')
-  const targetUrl = new URL(targetPath, targetBase + '/')
-
-  // Прокидываем все query-параметры кроме служебного "path"
-  const incomingUrl = new URL(req.url, `http://${req.headers.host}`)
-  incomingUrl.searchParams.forEach((value, key) => {
-    if (key !== 'path') targetUrl.searchParams.append(key, value)
-  })
+  const qsStr = qs.toString()
+  const targetUrl = `${targetBase}/${rest}${qsStr ? '?' + qsStr : ''}`
 
   try {
-    const upstream = await fetch(targetUrl.toString(), {
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'DeadHub/1.0',
-      },
+    const upstream = await fetch(targetUrl, {
+      headers: { 'Accept': 'application/json', 'User-Agent': 'DeadHub/1.0' },
     })
 
+    const body = await upstream.text()
+
     if (!upstream.ok) {
+      console.error(`[proxy] ${upstream.status} from ${targetUrl}`)
       res.status(upstream.status).json({
-        error: `Upstream returned ${upstream.status}`,
-        url: targetUrl.toString(),
+        error: `Upstream ${upstream.status}`,
+        upstream_url: targetUrl,
       })
       return
     }
 
-    const data = await upstream.json()
-    
-    // Кешируем на 1 час на CDN-уровне Vercel
+    res.setHeader('Content-Type', 'application/json')
     res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=600')
-    res.status(200).json(data)
+    res.status(200).send(body)
 
-  } catch (error) {
-    console.error('Proxy error:', error.message, '→', targetUrl.toString())
-    res.status(500).json({ error: error.message, url: targetUrl.toString() })
+  } catch (err) {
+    console.error('[proxy] fetch error:', err.message, '→', targetUrl)
+    res.status(500).json({ error: err.message, upstream_url: targetUrl })
   }
 }
