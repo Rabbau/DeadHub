@@ -1,13 +1,5 @@
 {
-    "version": 2,
-    "routes": [
-      {
-        "src": "/api/assets/(.*)",
-        "dest": "https://assets.deadlock-api.com/$1"
-      },
-      {
-        "src": "/api/analytics/(.*)",
-        "dest": "https://api.deadlock-api.com/$1"
-      }
-    ]
-  }
+  "rewrites": [
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
+}
