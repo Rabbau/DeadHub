@@ -4,19 +4,13 @@ import { ASSETS_API_BASE } from './config.js';
 function normalizeItem(raw) {
   let imageUrl = null;
 
+  // 1️⃣ Приоритет: shop_image — цветная иконка из магазина (для предметов)
   if (raw.shop_image && typeof raw.shop_image === 'string' && raw.shop_image.trim() !== '') {
     imageUrl = raw.shop_image;
   }
-
-  if (!imageUrl && raw.image && typeof raw.image === 'string' && raw.image.trim() !== '') {
+  // 2️⃣ Если нет shop_image — берём image (для способностей или старых данных)
+  else if (raw.image && typeof raw.image === 'string' && raw.image.trim() !== '') {
     imageUrl = raw.image;
-  }
-
-  if (!imageUrl && raw.images && typeof raw.images === 'object') {
-    const icon = raw.images.icon_image_small ?? raw.images.icon_image ?? null;
-    if (icon && typeof icon === 'string' && icon.trim() !== '') {
-      imageUrl = icon;
-    }
   }
 
   return {
@@ -27,6 +21,7 @@ function normalizeItem(raw) {
     cost: raw.cost ?? raw.item_cost ?? null,
     image_url: imageUrl,
     shop_image: raw.shop_image ?? null,
+    image: raw.image ?? null,
     winrate: raw.win_rate ?? raw.winrate ?? null,
     pickrate: raw.purchase_rate ?? raw.pickrate ?? null,
     type: raw.type ?? null,
@@ -34,7 +29,6 @@ function normalizeItem(raw) {
   };
 }
 
-// Фильтр для основных списков (без подчёркивания, с ценой, с типом)
 function isValidItem(item) {
   if (item.cost === 9999 || item.cost === null) return false;
   if (item.name && item.name.includes('_')) return false;
@@ -42,7 +36,6 @@ function isValidItem(item) {
   return true;
 }
 
-// Для главной страницы и рандомного билда — только чистые предметы
 export async function fetchItems(language = 'english') {
   const data = await httpGet(`${ASSETS_API_BASE}/v1/assets/items?language=${language}`, {
     cacheKey: `items_all_${language}`,
@@ -78,13 +71,11 @@ export async function fetchItemsByHero(heroId, language = 'english') {
   }
 }
 
-// Для страницы "Предметы" — возвращаем все upgrade без фильтрации
 export async function fetchAllItems(language = 'english') {
   const data = await httpGet(`${ASSETS_API_BASE}/v1/assets/items?language=${language}`, {
     cacheKey: `items_all_raw_${language}`,
   });
   const list = Array.isArray(data) ? data : data.data ?? data.items ?? [];
-  // только upgrade, но без isValidItem (чтобы и скрытые, и 9999 попали)
   return list
     .map(normalizeItem)
     .filter(item => item.type === 'upgrade');

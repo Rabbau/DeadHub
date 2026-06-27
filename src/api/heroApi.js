@@ -1,7 +1,6 @@
 import { httpGet } from './httpClient.js';
 import { ASSETS_API_BASE, ANALYTICS_API_BASE } from './config.js';
 
-const IMG_BASE = 'https://assets.deadlock-api.com/images/heroes';
 const ITEM_IMG_BASE = 'https://assets.deadlock-api.com/images/items';
 
 async function fetchAbilityDetails(class_name, language = 'english') {
@@ -54,12 +53,21 @@ function normalizeHero(heroData, statsData = [], abilitiesDetails = {}) {
       const image = details.image || details.shop_image || null;
       const description = details.description?.desc || details.description || '';
 
+      let abilityImageUrl = null;
+      if (image) {
+        if (image.startsWith('http')) {
+          abilityImageUrl = image;
+        } else {
+          abilityImageUrl = `${ITEM_IMG_BASE}/${image}`;
+        }
+      }
+
       return {
         name: displayName || class_name,
         description: description,
         cooldown: details.cooldown ?? null,
         cast_range: details.cast_range ?? null,
-        image_url: image ? (image.startsWith('http') ? image : `${ITEM_IMG_BASE}/${image}`) : null,
+        image_url: abilityImageUrl,
         class_name: class_name,
       };
     });
@@ -84,6 +92,12 @@ function normalizeHero(heroData, statsData = [], abilitiesDetails = {}) {
     }
   }
 
+  // Берём картинку из ответа API
+  const imageUrl = heroData.images?.icon_hero_card || 
+                   heroData.images?.minimap_image || 
+                   heroData.images?.icon_image_small || 
+                   null;
+
   return {
     id: heroData.id ?? heroData.hero_id,
     name: heroData.name ?? `Hero ${heroData.id}`,
@@ -91,10 +105,7 @@ function normalizeHero(heroData, statsData = [], abilitiesDetails = {}) {
     role: heroData.role ?? heroData.player_role ?? null,
     complexity: heroData.complexity ?? null,
     description,
-    image_url:
-      heroData.images?.icon_hero_card ??
-      heroData.images?.minimap_image ??
-      `${IMG_BASE}/${heroData.id}_card.png`,
+    image_url: imageUrl,
     stats: {
       winrate: winrate > 1 ? winrate / 100 : winrate,
       pickrate: pickrate > 1 ? pickrate / 100 : pickrate,
