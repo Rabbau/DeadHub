@@ -50,16 +50,11 @@ function ItemsPage() {
   };
 
   items.forEach(item => {
-    const hasValidCost = item.cost !== null && item.cost !== undefined && item.cost !== 9999;
+    const hasUnderscore = item.name && item.name.includes('_');
+    const isInvalidCost = item.cost === 9999 || item.cost === null || item.cost === undefined;
+    const hasShopImage = item.shop_image && item.shop_image.trim() !== '';
 
-    // Если нет shop_image — отправляем в indev
-    if (!item.shop_image) {
-      groups.indev.items.push(item);
-      return;
-    }
-
-    // Если есть shop_image, но нет цены или цена 9999 — тоже в indev
-    if (!hasValidCost) {
+    if (!hasShopImage || isInvalidCost || hasUnderscore) {
       groups.indev.items.push(item);
       return;
     }
@@ -80,7 +75,7 @@ function ItemsPage() {
     <div className="page">
       <div className="page-header">
         <h1 className="page-title">{t('itemsPage.title')}</h1>
-        <span className="count-badge">{items.length} {t('home.heroCount')}</span>
+        <span className="count-badge">{items.length} {t('itemsPage.count')}</span>
       </div>
 
       {Object.entries(groups).map(([key, group]) => (
