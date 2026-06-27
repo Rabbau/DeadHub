@@ -1,35 +1,24 @@
 import { httpGet } from './httpClient.js';
 import { ASSETS_API_BASE } from './config.js';
 
-const ITEM_IMG_BASE = 'https://assets.deadlock-api.com/images/items';
-
 function normalizeItem(raw) {
   let imageUrl = null;
 
-  if (raw.shop_image) {
-    if (raw.shop_image.startsWith('http://') || raw.shop_image.startsWith('https://')) {
-      imageUrl = raw.shop_image;
-    } else {
-      imageUrl = `${ITEM_IMG_BASE}/${raw.shop_image}`;
-    }
+  // shop_image — уже полный URL из API
+  if (raw.shop_image && typeof raw.shop_image === 'string' && raw.shop_image.trim() !== '') {
+    imageUrl = raw.shop_image;
   }
 
-  if (!imageUrl && raw.image) {
-    if (raw.image.startsWith('http://') || raw.image.startsWith('https://')) {
-      imageUrl = raw.image;
-    } else {
-      imageUrl = `${ITEM_IMG_BASE}/${raw.image}`;
-    }
+  // если нет shop_image — пробуем image (для способностей или старых данных)
+  if (!imageUrl && raw.image && typeof raw.image === 'string' && raw.image.trim() !== '') {
+    imageUrl = raw.image;
   }
 
+  // если ничего нет — пробуем images
   if (!imageUrl && raw.images && typeof raw.images === 'object') {
     const icon = raw.images.icon_image_small ?? raw.images.icon_image ?? null;
-    if (icon) {
-      if (icon.startsWith('http://') || icon.startsWith('https://')) {
-        imageUrl = icon;
-      } else {
-        imageUrl = `${ITEM_IMG_BASE}/${icon}`;
-      }
+    if (icon && typeof icon === 'string' && icon.trim() !== '') {
+      imageUrl = icon;
     }
   }
 
