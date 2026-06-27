@@ -22,6 +22,11 @@ function HomePage() {
     )
   }
 
+  // Определяем скрытых героев (pickrate === 0 или null)
+  const isHidden = (hero) => hero.stats.pickrate === 0 || hero.stats.pickrate === null
+  const mainHeroes = heroes.filter(h => !isHidden(h))
+  const hiddenHeroes = heroes.filter(h => isHidden(h))
+
   return (
     <div className="page">
       <div className="page-header">
@@ -63,14 +68,33 @@ function HomePage() {
         </button>
       </div>
 
-      {/* Сетка героев */}
-      <div className="hero-grid">
-        {heroes.map(hero => (
-          <Link to={`/hero/${hero.id}`} key={hero.id}>
-            <HeroCard hero={hero} />
-          </Link>
-        ))}
-      </div>
+      {/* Основные герои */}
+      {mainHeroes.length > 0 && (
+        <div className="section">
+          <h2 className="section__title">Основные герои ({mainHeroes.length})</h2>
+          <div className="hero-grid">
+            {mainHeroes.map(hero => (
+              <Link to={`/hero/${hero.id}`} key={hero.id}>
+                <HeroCard hero={hero} />
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Скрытые герои */}
+      {hiddenHeroes.length > 0 && (
+        <div className="section">
+          <h2 className="section__title">Скрытые герои ({hiddenHeroes.length})</h2>
+          <div className="hero-grid">
+            {hiddenHeroes.map(hero => (
+              <Link to={`/hero/${hero.id}`} key={hero.id}>
+                <HeroCard hero={hero} />
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
