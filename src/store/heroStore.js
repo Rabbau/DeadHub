@@ -1,19 +1,17 @@
-/**
- * @fileoverview Глобальный стор героев (Zustand).
- * Единственное место, где хранится список героев и фильтры.
- */
-
 import { create } from 'zustand'
 import { fetchHeroes } from '../api/index.js'
 
+const getSavedLanguage = () => {
+  return localStorage.getItem('dlhub_language') || 'english'
+}
+
 export const useHeroStore = create((set, get) => ({
-  /** @type {import('../types/index.js').Hero[]} */
   heroes: [],
   loading: false,
   error: null,
   lastFetched: null,
+  language: getSavedLanguage(),
 
-  // UI-фильтры
   search: '',
   role: 'all',
   sort: 'winrate',
@@ -24,18 +22,20 @@ export const useHeroStore = create((set, get) => ({
   setSort: (sort) => set({ sort }),
   setDir: (dir) => set({ dir }),
 
-  /**
-   * Загрузить героев (с дедупликацией запросов).
-   */
+  setLanguage: (lang) => {
+    localStorage.setItem('dlhub_language', lang)
+    set({ language: lang, heroes: [], lastFetched: null })
+    get().loadHeroes()
+  },
+
   loadHeroes: async () => {
     if (get().loading) return
-    // Не перезапрашиваем если свежие данные (< 5 мин в рамках сессии)
-    const { lastFetched, heroes } = get()
+    const { lastFetched, heroes, language } = get()
     if (heroes.length && lastFetched && Date.now() - lastFetched < 5 * 60 * 1000) return
 
     set({ loading: true, error: null })
     try {
-      const heroes = await fetchHeroes()
+      const heroes = await fetchHeroes(language)
       set({ heroes, loading: false, lastFetched: Date.now() })
     } catch (e) {
       set({ error: e.message, loading: false })

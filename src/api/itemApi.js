@@ -6,17 +6,14 @@ const ITEM_IMG_BASE = 'https://assets.deadlock-api.com/images/items';
 function normalizeItem(raw) {
   let imageUrl = null;
 
-  // 1️⃣ ПРИОРИТЕТ: shop_image — цветная иконка из магазина
   if (raw.shop_image) {
     if (raw.shop_image.startsWith('http://') || raw.shop_image.startsWith('https://')) {
       imageUrl = raw.shop_image;
     } else {
-      // Если относительный путь — добавляем базовый URL
       imageUrl = `${ITEM_IMG_BASE}/${raw.shop_image}`;
     }
   }
 
-  // 2️⃣ Если нет shop_image, пробуем image
   if (!imageUrl && raw.image) {
     if (raw.image.startsWith('http://') || raw.image.startsWith('https://')) {
       imageUrl = raw.image;
@@ -25,7 +22,6 @@ function normalizeItem(raw) {
     }
   }
 
-  // 3️⃣ Если ничего нет — пробуем images.icon_image_small
   if (!imageUrl && raw.images && typeof raw.images === 'object') {
     const icon = raw.images.icon_image_small ?? raw.images.icon_image ?? null;
     if (icon) {
@@ -44,7 +40,7 @@ function normalizeItem(raw) {
     category: raw.tier_name ?? raw.type ?? raw.category ?? null,
     cost: raw.cost ?? raw.item_cost ?? null,
     image_url: imageUrl,
-    shop_image: raw.shop_image ?? null, // сохраняем на всякий случай
+    shop_image: raw.shop_image ?? null,
     winrate: raw.win_rate ?? raw.winrate ?? null,
     pickrate: raw.purchase_rate ?? raw.pickrate ?? null,
     type: raw.type ?? null,
@@ -52,7 +48,6 @@ function normalizeItem(raw) {
   };
 }
 
-// Фильтр для "чистых" предметов
 function isValidItem(item) {
   if (item.cost === 9999 || item.cost === null) return false;
   if (item.name && item.name.includes('_')) return false;
@@ -60,23 +55,23 @@ function isValidItem(item) {
   return true;
 }
 
-export async function fetchItems() {
-  const data = await httpGet(`${ASSETS_API_BASE}/v1/assets/items`, {
-    cacheKey: 'items_all_v2',
+export async function fetchItems(language = 'english') {
+  const data = await httpGet(`${ASSETS_API_BASE}/v1/assets/items?language=${language}`, {
+    cacheKey: `items_all_${language}`,
   });
   const list = Array.isArray(data) ? data : data.data ?? data.items ?? [];
   return list.map(normalizeItem).filter(isValidItem);
 }
 
-export async function fetchBuyableItems() {
-  const allItems = await fetchItems();
+export async function fetchBuyableItems(language = 'english') {
+  const allItems = await fetchItems(language);
   return allItems.filter(item => item.type === 'upgrade');
 }
 
-export async function fetchItemsBySlot(slotType) {
+export async function fetchItemsBySlot(slotType, language = 'english') {
   try {
-    const data = await httpGet(`${ASSETS_API_BASE}/v1/assets/items/by-slot-type/${slotType}`, {
-      cacheKey: `items_slot_${slotType}`,
+    const data = await httpGet(`${ASSETS_API_BASE}/v1/assets/items/by-slot-type/${slotType}?language=${language}`, {
+      cacheKey: `items_slot_${slotType}_${language}`,
     });
     const list = Array.isArray(data) ? data : data.data ?? data.items ?? [];
     return list.map(normalizeItem).filter(isValidItem);
@@ -85,9 +80,9 @@ export async function fetchItemsBySlot(slotType) {
   }
 }
 
-export async function fetchItemsByHero(heroId) {
+export async function fetchItemsByHero(heroId, language = 'english') {
   try {
-    const allItems = await fetchBuyableItems();
+    const allItems = await fetchBuyableItems(language);
     const shuffled = [...allItems].sort(() => Math.random() - 0.5);
     return shuffled.slice(0, 6);
   } catch {
@@ -95,9 +90,9 @@ export async function fetchItemsByHero(heroId) {
   }
 }
 
-export async function fetchAllItems() {
-  const data = await httpGet(`${ASSETS_API_BASE}/v1/assets/items`, {
-    cacheKey: 'items_all_raw',
+export async function fetchAllItems(language = 'english') {
+  const data = await httpGet(`${ASSETS_API_BASE}/v1/assets/items?language=${language}`, {
+    cacheKey: `items_all_raw_${language}`,
   });
   const list = Array.isArray(data) ? data : data.data ?? data.items ?? [];
   return list.map(normalizeItem);

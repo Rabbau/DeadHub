@@ -1,14 +1,13 @@
 import { useParams, Link } from 'react-router-dom';
 import { useHeroDetail } from '../hooks/useHeroDetail';
 import { formatWinrate, formatPickrate, winrateColor } from '../services/heroService';
+import { useHeroStore } from '../store/heroStore';
 
-// Функция для безопасного получения строки описания (может быть HTML)
 function getAbilityDescription(ability) {
   const desc = ability.description;
   if (!desc) return '';
   if (typeof desc === 'string') return desc;
   if (typeof desc === 'object') {
-    // Может быть объект с полями desc, active, passive и т.д.
     return desc.desc || desc.active || desc.passive || '';
   }
   return '';
@@ -16,7 +15,8 @@ function getAbilityDescription(ability) {
 
 function HeroPage() {
   const { id } = useParams();
-  const { hero, loading, error } = useHeroDetail(id);
+  const language = useHeroStore(state => state.language);
+  const { hero, loading, error } = useHeroDetail(id, language);
 
   if (loading) {
     return (
@@ -80,7 +80,6 @@ function HeroPage() {
             <p className="hero-detail__description">{hero.description}</p>
           )}
 
-          {/* Способности */}
           <div className="section">
             <h2 className="section__title">Способности</h2>
             {hero.abilities && hero.abilities.length > 0 ? (

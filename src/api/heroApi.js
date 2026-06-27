@@ -4,11 +4,10 @@ import { ASSETS_API_BASE, ANALYTICS_API_BASE } from './config.js';
 const IMG_BASE = 'https://assets.deadlock-api.com/images/heroes';
 const ITEM_IMG_BASE = 'https://assets.deadlock-api.com/images/items';
 
-// Функция для получения деталей способности по class_name
-async function fetchAbilityDetails(class_name) {
+async function fetchAbilityDetails(class_name, language = 'english') {
   try {
-    const url = `${ASSETS_API_BASE}/v1/assets/items/${class_name}`;
-    const data = await httpGet(url, { cacheKey: `ability_${class_name}` });
+    const url = `${ASSETS_API_BASE}/v1/assets/items/${class_name}?language=${language}`;
+    const data = await httpGet(url, { cacheKey: `ability_${class_name}_${language}` });
     return data;
   } catch (e) {
     console.warn(`Failed to fetch ability details for ${class_name}:`, e);
@@ -17,7 +16,6 @@ async function fetchAbilityDetails(class_name) {
 }
 
 function normalizeHero(heroData, statsData = [], abilitiesDetails = {}) {
-  // Статистика
   let totalWins = 0;
   let totalMatches = 0;
   let totalPicks = 0;
@@ -38,7 +36,6 @@ function normalizeHero(heroData, statsData = [], abilitiesDetails = {}) {
   const games = totalMatches > 0 ? totalMatches : heroData.matches ?? 0;
   const pickrate = games > 0 ? totalPicks / games : 0;
 
-  // 🌟 СПОСОБНОСТИ — только основные (signature1-4)
   let abilities = [];
 
   if (heroData.items && typeof heroData.items === 'object') {
@@ -47,14 +44,12 @@ function normalizeHero(heroData, statsData = [], abilitiesDetails = {}) {
     const filteredEntries = entries.filter(([key]) => abilityKeys.includes(key));
 
     abilities = filteredEntries.map(([key, class_name]) => {
-      // Преобразуем строку в читаемое название
       let displayName = class_name
         .replace(/^citadel_ability_/, '')
         .replace(/^ability_/, '')
         .replace(/_/g, ' ')
         .replace(/\b\w/g, l => l.toUpperCase());
 
-      // Берём детали из abilitiesDetails (если есть)
       const details = abilitiesDetails[class_name] || {};
       const image = details.image || details.shop_image || null;
       const description = details.description?.desc || details.description || '';
@@ -70,7 +65,6 @@ function normalizeHero(heroData, statsData = [], abilitiesDetails = {}) {
     });
   }
 
-  // Если способностей нет, пробуем другие источники
   if (abilities.length === 0 && heroData.abilities && Array.isArray(heroData.abilities)) {
     abilities = heroData.abilities.map((a) => ({
       name: a.name ?? 'Unknown',
@@ -81,7 +75,6 @@ function normalizeHero(heroData, statsData = [], abilitiesDetails = {}) {
     }));
   }
 
-  // Описание
   let description = null;
   if (heroData.description) {
     if (typeof heroData.description === 'string') {
@@ -112,9 +105,9 @@ function normalizeHero(heroData, statsData = [], abilitiesDetails = {}) {
   };
 }
 
-export async function fetchHeroes() {
-  const heroesUrl = `${ASSETS_API_BASE}/v1/assets/heroes`;
-  const heroesData = await httpGet(heroesUrl, { cacheKey: 'heroes_list_v2' });
+export async function fetchHeroes(language = 'english') {
+  const heroesUrl = `${ASSETS_API_BASE}/v1/assets/heroes?language=${language}`;
+  const heroesData = await httpGet(heroesUrl, { cacheKey: `heroes_list_${language}` });
   const heroes = Array.isArray(heroesData) ? heroesData : heroesData.data ?? heroesData.heroes ?? [];
 
   if (!heroes.length) {
@@ -133,23 +126,21 @@ export async function fetchHeroes() {
   });
 
   const results = await Promise.all(statsPromises);
-  // На главной странице не нужно догружать иконки способностей (экономим запросы)
   return results.map(({ hero, stats }) => normalizeHero(hero, stats, {}));
 }
 
-export async function fetchHeroDetail(id) {
-  const heroUrl = `${ASSETS_API_BASE}/v1/assets/heroes/${id}`;
+export async function fetchHeroDetail(id, language = 'english') {
+  const heroUrl = `${ASSETS_API_BASE}/v1/assets/heroes/${id}?language=${language}`;
   const statsUrl = `${ANALYTICS_API_BASE}/v1/analytics/hero-build-stats/${id}`;
 
   const [heroResult, statsResult] = await Promise.allSettled([
-    httpGet(heroUrl, { cacheKey: `hero_${id}` }),
+    httpGet(heroUrl, { cacheKey: `hero_${id}_${language}` }),
     httpGet(statsUrl, { cacheKey: `hero_stats_${id}` }),
   ]);
 
   const hero = heroResult.status === 'fulfilled' ? heroResult.value : { id: Number(id) };
   const stats = statsResult.status === 'fulfilled' ? statsResult.value : [];
 
-  // 🔥 Догружаем детали способностей
   let abilitiesDetails = {};
   if (hero.items && typeof hero.items === 'object') {
     const entries = Object.entries(hero.items);
@@ -161,7 +152,7 @@ export async function fetchHeroDetail(id) {
 
     if (abilityClassNames.length > 0) {
       const detailsPromises = abilityClassNames.map((className) =>
-        fetchAbilityDetails(className)
+        fetchAbilityDetails(className, language)
       );
       const detailsResults = await Promise.allSettled(detailsPromises);
       detailsResults.forEach((result, index) => {

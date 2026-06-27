@@ -1,8 +1,3 @@
-/**
- * @fileoverview Хук useHeroes — соединяет стор и сервисный слой.
- * Компоненты используют только этот хук, не обращаясь к стору напрямую.
- */
-
 import { useEffect, useMemo } from 'react'
 import { useHeroStore } from '../store/heroStore.js'
 import { filterAndSort, extractRoles } from '../services/heroService.js'
@@ -12,7 +7,7 @@ export function useHeroes() {
 
   useEffect(() => {
     store.loadHeroes()
-  }, [])
+  }, [store.language])
 
   const filtered = useMemo(
     () => filterAndSort(store.heroes, {
@@ -32,6 +27,8 @@ export function useHeroes() {
     loading: store.loading,
     error: store.error,
     roles,
+    language: store.language,
+    setLanguage: store.setLanguage,
 
     // Filters
     search: store.search,
