@@ -1,7 +1,8 @@
 {
   "rewrites": [
-    { "source": "/api/assets/:path*",    "destination": "/api/proxy?path=assets/:path*" },
-    { "source": "/api/analytics/:path*", "destination": "/api/proxy?path=analytics/:path*" },
-    { "source": "/((?!api/).*)",         "destination": "/index.html" }
+    {
+      "source": "/api/(.*)",
+      "destination": "https://api.deadlock-api.com/$1"
+    }
   ]
 }
