@@ -30,7 +30,7 @@ function BuildPage() {
           </div>
 
           <div className="build-card__items">
-            {group.items.map(item => <ItemCard key={item.id} item={item} />)}
+            {build.items.map(item => <ItemCard key={item.id} item={item} />)}
           </div>
         </div>
       )}

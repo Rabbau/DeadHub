@@ -61,7 +61,7 @@ function isValidItem(item) {
 }
 
 export async function fetchItems() {
-  const data = await httpGet(`${ASSETS_API_BASE}/v2/items`, {
+  const data = await httpGet(`${ASSETS_API_BASE}/v1/assets/items`, {
     cacheKey: 'items_all_v2',
   });
   const list = Array.isArray(data) ? data : data.data ?? data.items ?? [];
@@ -75,7 +75,7 @@ export async function fetchBuyableItems() {
 
 export async function fetchItemsBySlot(slotType) {
   try {
-    const data = await httpGet(`${ASSETS_API_BASE}/v2/items/by-slot-type/${slotType}`, {
+    const data = await httpGet(`${ASSETS_API_BASE}/v1/assets/items/by-slot-type/${slotType}`, {
       cacheKey: `items_slot_${slotType}`,
     });
     const list = Array.isArray(data) ? data : data.data ?? data.items ?? [];
@@ -96,7 +96,7 @@ export async function fetchItemsByHero(heroId) {
 }
 
 export async function fetchAllItems() {
-  const data = await httpGet(`${ASSETS_API_BASE}/v2/items`, {
+  const data = await httpGet(`${ASSETS_API_BASE}/v1/assets/items`, {
     cacheKey: 'items_all_raw',
   });
   const list = Array.isArray(data) ? data : data.data ?? data.items ?? [];

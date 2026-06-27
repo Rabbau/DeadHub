@@ -7,7 +7,7 @@ const ITEM_IMG_BASE = 'https://assets.deadlock-api.com/images/items';
 // Функция для получения деталей способности по class_name
 async function fetchAbilityDetails(class_name) {
   try {
-    const url = `${ASSETS_API_BASE}/v2/items/${class_name}`;
+    const url = `${ASSETS_API_BASE}/v1/assets/items/${class_name}`;
     const data = await httpGet(url, { cacheKey: `ability_${class_name}` });
     return data;
   } catch (e) {
@@ -113,7 +113,7 @@ function normalizeHero(heroData, statsData = [], abilitiesDetails = {}) {
 }
 
 export async function fetchHeroes() {
-  const heroesUrl = `${ASSETS_API_BASE}/v2/heroes?only_active=true`;
+  const heroesUrl = `${ASSETS_API_BASE}/v1/assets/heroes`;
   const heroesData = await httpGet(heroesUrl, { cacheKey: 'heroes_list_v2' });
   const heroes = Array.isArray(heroesData) ? heroesData : heroesData.data ?? heroesData.heroes ?? [];
 
@@ -138,7 +138,7 @@ export async function fetchHeroes() {
 }
 
 export async function fetchHeroDetail(id) {
-  const heroUrl = `${ASSETS_API_BASE}/v2/heroes/${id}`;
+  const heroUrl = `${ASSETS_API_BASE}/v1/assets/heroes/${id}`;
   const statsUrl = `${ANALYTICS_API_BASE}/v1/analytics/hero-build-stats/${id}`;
 
   const [heroResult, statsResult] = await Promise.allSettled([
