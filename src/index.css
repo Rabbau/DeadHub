@@ -992,3 +992,58 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
   height: 1.2em;
   vertical-align: middle;
 }
+
+/* ── Language Toggle ────────────────────────────────────────── */
+.lang-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.lang-option {
+  color: var(--text-3);
+  transition: color var(--t-fast);
+  padding: 2px 0;
+}
+
+.lang-option.active {
+  color: var(--neon);
+}
+
+.lang-slider {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: border-color var(--t-fast);
+  flex-shrink: 0;
+}
+
+.lang-slider:hover {
+  border-color: var(--neon-dim);
+}
+
+.lang-slider-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--neon);
+  transition: transform var(--t-base);
+  box-shadow: 0 0 8px var(--neon-dim);
+}
+
+.lang-slider-thumb.right {
+  transform: translateX(16px);
+}

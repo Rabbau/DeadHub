@@ -21,25 +21,19 @@ function Nav() {
           <NavLink to="/items" className="nav__link">Предметы</NavLink>
           <NavLink to="/build" className="nav__link">Случайный билд</NavLink>
         </div>
-        <button 
-          onClick={toggleLanguage} 
-          style={{
-            background: 'var(--bg-surface)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-sm)',
-            color: 'var(--text-1)',
-            padding: '4px 12px',
-            fontFamily: 'var(--font-display)',
-            fontSize: '0.8rem',
-            fontWeight: 600,
-            cursor: 'pointer',
-            transition: 'border-color var(--t-fast)',
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--neon-dim)'}
-          onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--border)'}
+        <div 
+          className="lang-toggle"
+          onClick={toggleLanguage}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === 'Enter' && toggleLanguage()}
         >
-          {language === 'english' ? '🇬🇧 EN' : '🇷🇺 RU'}
-        </button>
+          <span className={`lang-option ${language === 'english' ? 'active' : ''}`}>EN</span>
+          <div className="lang-slider">
+            <div className={`lang-slider-thumb ${language === 'russian' ? 'right' : ''}`} />
+          </div>
+          <span className={`lang-option ${language === 'russian' ? 'active' : ''}`}>RU</span>
+        </div>
       </div>
     </nav>
   );
