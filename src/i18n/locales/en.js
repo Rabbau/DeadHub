@@ -14,7 +14,7 @@ export default {
       sortByPickrate: 'By pickrate',
       sortByName: 'By name',
       mainHeroes: 'Main Heroes',
-      hiddenHeroes: 'Hidden Heroes'
+      hiddenHeroes: 'InDev Heroes'
     },
     heroPage: {
       back: '← Back to list',

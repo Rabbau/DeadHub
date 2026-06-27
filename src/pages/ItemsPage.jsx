@@ -50,15 +50,19 @@ function ItemsPage() {
   };
 
   items.forEach(item => {
-    const hasUnderscore = item.name && item.name.includes('_');
     const hasValidCost = item.cost !== null && item.cost !== undefined && item.cost !== 9999;
 
-    if (hasUnderscore && hasValidCost) {
+    // Если нет shop_image — отправляем в indev
+    if (!item.shop_image) {
       groups.indev.items.push(item);
       return;
     }
-    if (hasUnderscore) return;
-    if (!hasValidCost) return;
+
+    // Если есть shop_image, но нет цены или цена 9999 — тоже в indev
+    if (!hasValidCost) {
+      groups.indev.items.push(item);
+      return;
+    }
 
     const cost = item.cost;
     if (cost <= 800) groups.t1.items.push(item);

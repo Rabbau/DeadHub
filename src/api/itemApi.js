@@ -4,12 +4,12 @@ import { ASSETS_API_BASE } from './config.js';
 function normalizeItem(raw) {
   let imageUrl = null;
 
-  // shop_image — уже полный URL из API
+  // shop_image — уже полный URL
   if (raw.shop_image && typeof raw.shop_image === 'string' && raw.shop_image.trim() !== '') {
     imageUrl = raw.shop_image;
   }
 
-  // если нет shop_image — пробуем image (для способностей или старых данных)
+  // если нет shop_image — пробуем image
   if (!imageUrl && raw.image && typeof raw.image === 'string' && raw.image.trim() !== '') {
     imageUrl = raw.image;
   }
@@ -84,5 +84,9 @@ export async function fetchAllItems(language = 'english') {
     cacheKey: `items_all_raw_${language}`,
   });
   const list = Array.isArray(data) ? data : data.data ?? data.items ?? [];
-  return list.map(normalizeItem);
+  // Фильтруем только покупаемые предметы (upgrade)
+  return list
+    .map(normalizeItem)
+    .filter(item => item.type === 'upgrade')
+    .filter(isValidItem);
 }

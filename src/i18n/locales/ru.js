@@ -14,7 +14,7 @@ export default {
       sortByPickrate: 'По пикрейту',
       sortByName: 'По имени',
       mainHeroes: 'Основные герои',
-      hiddenHeroes: 'Скрытые герои'
+      hiddenHeroes: 'В разработке и скрытые герои'
     },
     heroPage: {
       back: '← Назад к списку',
