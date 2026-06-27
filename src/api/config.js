@@ -1,12 +1,8 @@
-const MODE = import.meta.env.VITE_API_MODE || 'local'
+const MODE = import.meta.env.VITE_API_MODE || 'vercel'
 
-export const ASSETS_API_BASE    = MODE === 'local'
-  ? 'https://assets.deadlock-api.com'
-  : '/api/assets'
-
-export const ANALYTICS_API_BASE = MODE === 'local'
-  ? 'https://api.deadlock-api.com'
-  : '/api/analytics'
+// Оба хоста теперь через api.deadlock-api.com — assets заблокирован
+export const ASSETS_API_BASE    = '/api/analytics'
+export const ANALYTICS_API_BASE = '/api/analytics'
 
 export const BACKEND_BASE = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000/api/v1'
 export const API_MODE = MODE
@@ -21,11 +17,11 @@ export function getEndpoints() {
     }
   }
   return {
-    heroes:       () => `${ASSETS_API_BASE}/v2/heroes?only_active=true`,
-    heroDetail:   (id) => `${ASSETS_API_BASE}/v2/heroes/${id}`,
+    heroes:       () => `${ANALYTICS_API_BASE}/v1/heroes`,
+    heroDetail:   (id) => `${ANALYTICS_API_BASE}/v1/heroes/${id}`,
     heroStats:    (id) => `${ANALYTICS_API_BASE}/v1/analytics/hero-build-stats/${id}`,
-    abilityDetail:(cls) => `${ASSETS_API_BASE}/v2/items/${cls}`,
-    items:        () => `${ASSETS_API_BASE}/v2/items?only_active=true`,
+    abilityDetail:(cls) => `${ANALYTICS_API_BASE}/v1/items/${cls}`,
+    items:        () => `${ANALYTICS_API_BASE}/v1/items`,
     itemsByHero:  (heroId) => `${ANALYTICS_API_BASE}/v1/analytics/hero/${heroId}/items`,
   }
 }
