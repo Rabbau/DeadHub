@@ -1,14 +1,18 @@
 import { useState, useEffect } from 'react';
 import { fetchAllItems } from '../api/index.js';
 import ItemCard from '../components/ui/ItemCard';
+import { useHeroStore } from '../store/heroStore';
+import { useTranslation } from '../hooks/useTranslation';
 
 function ItemsPage() {
+  const language = useHeroStore(state => state.language);
+  const t = useTranslation();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchAllItems()
+    fetchAllItems(language)
       .then(data => {
         setItems(data);
         setLoading(false);
@@ -17,13 +21,13 @@ function ItemsPage() {
         setError(err.message);
         setLoading(false);
       });
-  }, []);
+  }, [language]);
 
   if (loading) {
     return (
       <div className="state-center">
         <div className="spinner" />
-        <span>Загрузка предметов...</span>
+        <span>{t('common.loading')}</span>
       </div>
     );
   }
@@ -31,18 +35,18 @@ function ItemsPage() {
   if (error) {
     return (
       <div className="state-center state-error">
-        ⚠️ Ошибка: {error}
+        ⚠️ {t('common.error')}: {error}
       </div>
     );
   }
 
   const groups = {
-    t1: { label: 'T1 (≤ 800)', items: [] },
-    t2: { label: 'T2 (801–1600)', items: [] },
-    t3: { label: 'T3 (1601–3200)', items: [] },
-    t4: { label: 'T4 (3201–6400)', items: [] },
-    t5: { label: 'T5 (> 6400)', items: [] },
-    indev: { label: 'InDev (скрытые)', items: [] },
+    t1: { label: t('itemsPage.t1'), items: [] },
+    t2: { label: t('itemsPage.t2'), items: [] },
+    t3: { label: t('itemsPage.t3'), items: [] },
+    t4: { label: t('itemsPage.t4'), items: [] },
+    t5: { label: t('itemsPage.t5'), items: [] },
+    indev: { label: t('itemsPage.indev'), items: [] },
   };
 
   items.forEach(item => {
@@ -71,8 +75,8 @@ function ItemsPage() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1 className="page-title">Все <em>предметы</em></h1>
-        <span className="count-badge">{items.length} предметов</span>
+        <h1 className="page-title">{t('itemsPage.title')}</h1>
+        <span className="count-badge">{items.length} {t('home.heroCount')}</span>
       </div>
 
       {Object.entries(groups).map(([key, group]) => (
@@ -80,7 +84,7 @@ function ItemsPage() {
           <div className="section" key={key}>
             <h2 className="section__title">{group.label} ({group.items.length})</h2>
             <div className="items-grid">
-                {group.items.map(item => <ItemCard key={item.id} item={item} />)}
+              {group.items.map(item => <ItemCard key={item.id} item={item} />)}
             </div>
           </div>
         )

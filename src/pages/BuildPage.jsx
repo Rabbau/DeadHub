@@ -1,18 +1,20 @@
 import { useRandomBuild } from '../hooks/useRandomBuild';
 import ItemCard from '../components/ui/ItemCard';
+import { useTranslation } from '../hooks/useTranslation';
 
 function BuildPage() {
   const { build, loading, generate } = useRandomBuild();
+  const t = useTranslation();
 
   return (
     <div className="page build-page">
-      <h1 className="page-title">Случайный билд <em>дня</em></h1>
+      <h1 className="page-title">{t('buildPage.title')}</h1>
       <p className="build-page__intro">
-        Нажми кнопку — получи героя и 12 предметов (4 оружия, 4 духа, 4 жизнестойкости).
+        {t('buildPage.description')}
       </p>
 
       <button className="btn btn-primary" onClick={generate} disabled={loading}>
-        {loading ? 'Генерация...' : '🎲 Сгенерировать'}
+        {loading ? t('common.loading') : t('buildPage.generate')}
       </button>
 
       {build && (
@@ -30,7 +32,7 @@ function BuildPage() {
           </div>
 
           <div className="build-card__items">
-            {build.items.map(item => <ItemCard key={item.id} item={item} />)}
+            {build.items.map(item => <ItemCard key={item.id} item={item} compact={true} />)}
           </div>
         </div>
       )}

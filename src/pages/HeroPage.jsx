@@ -2,6 +2,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useHeroDetail } from '../hooks/useHeroDetail';
 import { formatWinrate, formatPickrate, winrateColor } from '../services/heroService';
 import { useHeroStore } from '../store/heroStore';
+import { useTranslation } from '../hooks/useTranslation';
 
 function getAbilityDescription(ability) {
   const desc = ability.description;
@@ -17,12 +18,13 @@ function HeroPage() {
   const { id } = useParams();
   const language = useHeroStore(state => state.language);
   const { hero, loading, error } = useHeroDetail(id, language);
+  const t = useTranslation();
 
   if (loading) {
     return (
       <div className="state-center">
         <div className="spinner" />
-        <span>Загрузка героя...</span>
+        <span>{t('common.loading')}</span>
       </div>
     );
   }
@@ -30,7 +32,7 @@ function HeroPage() {
   if (error || !hero) {
     return (
       <div className="state-center state-error">
-        ⚠️ {error || 'Герой не найден'}
+        ⚠️ {t('common.error')}: {error || t('heroPage.noHeroFound')}
       </div>
     );
   }
@@ -39,7 +41,7 @@ function HeroPage() {
 
   return (
     <div className="page">
-      <Link to="/" className="back-link">← Назад к списку</Link>
+      <Link to="/" className="back-link">{t('heroPage.back')}</Link>
 
       <div className="hero-detail">
         <div className="hero-detail__portrait">
@@ -59,19 +61,19 @@ function HeroPage() {
 
           <div className="hero-detail__stats-row">
             <div className="stat-card">
-              <div className="stat-card__label">Винрейт</div>
+              <div className="stat-card__label">{t('heroPage.winrate')}</div>
               <div className={`stat-card__value winrate-${wrColor}`}>
                 {hero.stats.games_played > 0 ? formatWinrate(hero.stats.winrate) : '—'}
               </div>
             </div>
             <div className="stat-card">
-              <div className="stat-card__label">Пикрейт</div>
+              <div className="stat-card__label">{t('heroPage.pickrate')}</div>
               <div className="stat-card__value">
                 {hero.stats.games_played > 0 ? formatPickrate(hero.stats.pickrate) : '—'}
               </div>
             </div>
             <div className="stat-card">
-              <div className="stat-card__label">Матчей</div>
+              <div className="stat-card__label">{t('heroPage.matches')}</div>
               <div className="stat-card__value">{hero.stats.games_played.toLocaleString()}</div>
             </div>
           </div>
@@ -81,7 +83,7 @@ function HeroPage() {
           )}
 
           <div className="section">
-            <h2 className="section__title">Способности</h2>
+            <h2 className="section__title">{t('heroPage.abilities')}</h2>
             {hero.abilities && hero.abilities.length > 0 ? (
               <div className="abilities-list">
                 {hero.abilities.map((ability, idx) => {
@@ -118,7 +120,7 @@ function HeroPage() {
               </div>
             ) : (
               <p style={{ color: 'var(--text-3)', fontSize: '0.9rem' }}>
-                Способности не найдены для этого героя.
+                {t('heroPage.noAbilities')}
               </p>
             )}
           </div>
