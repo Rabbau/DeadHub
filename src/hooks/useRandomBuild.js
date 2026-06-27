@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useHeroStore } from '../store/heroStore.js';
 import { fetchItemsBySlot } from '../api/itemApi.js';
-import { pickRandomHero, pickRandomItems } from '../services/heroService.js';
+import { pickRandomItems } from '../services/heroService.js';
 
 export function useRandomBuild() {
   const { heroes } = useHeroStore();
@@ -9,10 +9,17 @@ export function useRandomBuild() {
   const [loading, setLoading] = useState(false);
 
   const generate = useCallback(async () => {
-    if (!heroes.length) return;
+    // Фильтруем героев с пикрейтом > 0 (только активные)
+    const availableHeroes = heroes.filter(h => h.stats.pickrate > 0);
+    if (!availableHeroes.length) {
+      console.warn('No available heroes with pickrate > 0');
+      return;
+    }
+
     setLoading(true);
     try {
-      const hero = pickRandomHero(heroes);
+      // Случайный герой из отфильтрованных
+      const hero = availableHeroes[Math.floor(Math.random() * availableHeroes.length)];
 
       // Получаем предметы по слотам
       const [weaponItems, spiritItems, vitalityItems] = await Promise.all([
@@ -21,7 +28,6 @@ export function useRandomBuild() {
         fetchItemsBySlot('vitality'),
       ]);
 
-      // Выбираем по 4 случайных предмета из каждого слота
       const pick4 = (arr) => {
         const shuffled = [...arr].sort(() => Math.random() - 0.5);
         return shuffled.slice(0, 4);
