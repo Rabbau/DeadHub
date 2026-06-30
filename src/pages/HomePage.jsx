@@ -2,6 +2,7 @@ import { useHeroes } from '../hooks/useHeroes'
 import HeroCard from '../components/hero/HeroCard'
 import { Link } from 'react-router-dom'
 import { useTranslation } from '../hooks/useTranslation'
+import SkeletonGrid from '../components/ui/SkeletonGrid'
 
 function HomePage() {
   const { heroes, loading, error, search, setSearch, role, setRole, sort, setSort, dir, setDir, roles } = useHeroes()
@@ -9,9 +10,13 @@ function HomePage() {
 
   if (loading) {
     return (
-      <div className="state-center">
-        <div className="spinner" />
-        <span>{t('common.loading')}</span>
+      <div className="page">
+        <div className="page-header">
+          <div>
+            <h1 className="page-title">{t('home.title')} <em>Deadlock</em></h1>
+          </div>
+        </div>
+        <SkeletonGrid type="hero" count={16} />
       </div>
     )
   }

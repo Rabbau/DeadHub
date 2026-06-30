@@ -3,6 +3,7 @@ import { useHeroDetail } from '../hooks/useHeroDetail';
 import { formatWinrate, formatPickrate, winrateColor } from '../services/heroService';
 import { useHeroStore } from '../store/heroStore';
 import { useTranslation } from '../hooks/useTranslation';
+import SkeletonGrid from '../components/ui/SkeletonGrid';
 
 function getAbilityDescription(ability) {
   const desc = ability.description;
@@ -22,9 +23,15 @@ function HeroPage() {
 
   if (loading) {
     return (
-      <div className="state-center">
-        <div className="spinner" />
-        <span>{t('common.loading')}</span>
+      <div className="page">
+        <div className="hero-detail">
+          <div className="skeleton skeleton-portrait" />
+          <div>
+            <div className="skeleton" style={{ height: 40, width: '50%', marginBottom: 12 }} />
+            <div className="skeleton" style={{ height: 24, width: '25%', marginBottom: 24 }} />
+            <div className="skeleton" style={{ height: 80, width: '100%' }} />
+          </div>
+        </div>
       </div>
     );
   }

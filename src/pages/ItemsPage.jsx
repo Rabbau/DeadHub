@@ -3,6 +3,7 @@ import { fetchAllItems } from '../api/index.js';
 import ItemCard from '../components/ui/ItemCard';
 import { useHeroStore } from '../store/heroStore';
 import { useTranslation } from '../hooks/useTranslation';
+import SkeletonGrid from '../components/ui/SkeletonGrid';
 
 function ItemsPage() {
   const language = useHeroStore(state => state.language);
@@ -25,9 +26,11 @@ function ItemsPage() {
 
   if (loading) {
     return (
-      <div className="state-center">
-        <div className="spinner" />
-        <span>{t('common.loading')}</span>
+      <div className="page">
+        <div className="page-header">
+          <h1 className="page-title">{t('itemsPage.title')}</h1>
+        </div>
+        <SkeletonGrid type="item" count={18} />
       </div>
     );
   }
