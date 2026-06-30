@@ -3,6 +3,11 @@ import { ASSETS_API_BASE, ANALYTICS_API_BASE } from './config.js';
 
 const ITEM_IMG_BASE = 'https://assets.deadlock-api.com/images/items';
 
+function capitalize(str) {
+  if (!str || typeof str !== 'string') return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 async function fetchAbilityDetails(class_name, language = 'english') {
   try {
     const url = `${ASSETS_API_BASE}/v1/assets/items/${class_name}?language=${language}`;
@@ -102,7 +107,7 @@ function normalizeHero(heroData, statsData = [], abilitiesDetails = {}) {
     id: heroData.id ?? heroData.hero_id,
     name: heroData.name ?? `Hero ${heroData.id}`,
     slug: heroData.name?.toLowerCase().replace(/\s+/g, '-') ?? String(heroData.id),
-    role: heroData.role ?? heroData.player_role ?? null,
+    role: capitalize(heroData.hero_type) ?? heroData.role ?? heroData.player_role ?? null,
     complexity: heroData.complexity ?? null,
     description,
     image_url: imageUrl,
