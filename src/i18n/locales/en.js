@@ -26,7 +26,7 @@ export default {
   },
   itemsPage: {
     title: 'All Items',
-    count: 'items',  // <-- добавить
+    count: 'items', 
     t1: 'T1 (≤ 800)',
     t2: 'T2 (801–1600)',
     t3: 'T3 (1601–3200)',
@@ -38,6 +38,12 @@ export default {
     title: 'Random Build of the Day',
     description: 'Press the button to get a hero and 12 items (4 weapons, 4 spirit, 4 vitality).',
     generate: '🎲 Generate'
+  },
+  itemCard: {
+    slotWeapon: 'Weapon',
+    slotVitality: 'Vitality',
+    slotSpirit: 'Spirit',
+    tier: 'Tier'
   },
   common: {
     loading: 'Loading...',

@@ -39,6 +39,12 @@ export default {
     description: 'Нажми кнопку — получи героя и 12 предметов (4 оружия, 4 духа, 4 жизнестойкости).',
     generate: '🎲 Сгенерировать'
   },
+  itemCard: {
+    slotWeapon: 'Оружие',
+    slotVitality: 'Живучесть',
+    slotSpirit: 'Дух',
+    tier: 'Тир'
+  },
   common: {
     loading: 'Загрузка...',
     error: 'Ошибка'

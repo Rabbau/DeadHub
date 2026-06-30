@@ -1090,3 +1090,191 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
 }
+
+
+/* ── Item tooltip ──────────────────────────────────────────── */
+.item-card-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.item-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  width: 220px;
+  background: var(--bg-card);
+  border: 1px solid var(--neon-dim);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--t-fast), transform var(--t-fast);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.item-card-wrap:hover .item-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.item-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--neon-dim);
+}
+
+.item-tooltip__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.item-tooltip__name {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: 0.02em;
+}
+
+.item-tooltip__cost {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--copper);
+  white-space: nowrap;
+}
+
+.item-tooltip__desc {
+  font-size: 0.75rem;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
+.item-tooltip__meta {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.item-tooltip__badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  color: var(--text-3);
+}
+
+.item-tooltip__badge--weapon { color: var(--copper); border-color: #e8875a40; }
+.item-tooltip__badge--vitality { color: var(--good); border-color: #3ddc8440; }
+.item-tooltip__badge--spirit { color: var(--neon); border-color: var(--neon-dim); }
+
+/* ── Mobile nav ────────────────────────────────────────────── */
+.nav__burger {
+  display: none;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-1);
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.nav__burger:hover { border-color: var(--neon-dim); color: var(--neon); }
+
+.nav__overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 8, 12, 0.7);
+  backdrop-filter: blur(2px);
+  z-index: 90;
+}
+
+.nav__overlay.open { display: block; }
+
+.nav__drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 260px;
+  background: var(--bg-deep);
+  border-left: 1px solid var(--border);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  transform: translateX(100%);
+  transition: transform var(--t-base);
+}
+
+.nav__drawer.open { transform: translateX(0); }
+
+.nav__drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.nav__drawer-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  font-size: 1.1rem;
+}
+
+.nav__drawer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nav__drawer-links .nav__link {
+  padding: 12px 14px;
+  font-size: 1rem;
+}
+
+.nav__drawer-lang {
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 720px) {
+  .nav__links { display: none; }
+  .nav__inner > div:nth-child(2):not(.nav__links) { display: none; } /* desktop lang toggle hidden via JS instead, see below */
+  .nav__burger { display: flex; }
+}
+
+
+@media (max-width: 720px) {
+  .nav__desktop-lang { display: none !important; }
+}
