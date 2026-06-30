@@ -22,7 +22,11 @@ export default {
     pickrate: 'Pickrate',
     matches: 'Matches',
     abilities: 'Abilities',
-    noAbilities: 'Abilities not found for this hero.'
+    noAbilities: 'Abilities not found for this hero.',
+    complexity1: 'Great for beginners',
+    complexity2: 'Medium complexity',
+    complexity3: 'High complexity',
+    complexity4: 'For experienced players'
   },
   itemsPage: {
     title: 'All Items',

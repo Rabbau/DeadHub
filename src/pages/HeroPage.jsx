@@ -15,6 +15,14 @@ function getAbilityDescription(ability) {
   return '';
 }
 
+function getComplexityKey(complexity) {
+  if (complexity === 1) return 'heroPage.complexity1';
+  if (complexity === 2) return 'heroPage.complexity2';
+  if (complexity === 3) return 'heroPage.complexity3';
+  if (complexity === 4) return 'heroPage.complexity4';
+  return null;
+}
+
 function HeroPage() {
   const { id } = useParams();
   const language = useHeroStore(state => state.language);
@@ -63,7 +71,9 @@ function HeroPage() {
           <h1 className="hero-detail__name">{hero.name}</h1>
           <div className="hero-detail__meta">
             {hero.role && <span className="tag tag--role">{hero.role}</span>}
-            {hero.complexity && <span className="tag tag--complexity">{hero.complexity}</span>}
+            {getComplexityKey(hero.complexity) && (
+  <span className="tag tag--complexity">{t(getComplexityKey(hero.complexity))}</span>
+)}
           </div>
 
           <div className="hero-detail__stats-row">

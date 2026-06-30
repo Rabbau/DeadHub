@@ -22,7 +22,11 @@ export default {
     pickrate: 'Пикрейт',
     matches: 'Матчей',
     abilities: 'Способности',
-    noAbilities: 'Способности не найдены для этого героя.'
+    noAbilities: 'Способности не найдены для этого героя.',
+    complexity1: 'Идеально для новичков',
+    complexity2: 'Средняя сложность',
+    complexity3: 'Высокая сложность',
+    complexity4: 'Для опытных игроков'
   },
   itemsPage: {
     title: 'Все предметы',
