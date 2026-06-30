@@ -1208,7 +1208,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
   inset: 0;
   background: rgba(5, 8, 12, 0.7);
   backdrop-filter: blur(2px);
-  z-index: 90;
+  z-index: 990;
 }
 
 .nav__overlay.open { display: block; }
@@ -1221,7 +1221,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
   width: 260px;
   background: var(--bg-deep);
   border-left: 1px solid var(--border);
-  z-index: 100;
+  z-index: 1000;
   display: flex;
   flex-direction: column;
   padding: 20px;

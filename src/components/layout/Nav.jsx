@@ -54,30 +54,32 @@ function Nav() {
   const closeDrawer = () => setDrawerOpen(false);
 
   return (
-    <nav className="nav">
-      <div className="nav__inner">
-        <div className="nav__logo">
-          Dead<span>Hub</span>
-        </div>
+    <>
+      <nav className="nav">
+        <div className="nav__inner">
+          <div className="nav__logo">
+            Dead<span>Hub</span>
+          </div>
 
-        <div className="nav__links">
-          <NavLink to="/" className="nav__link" end>{t('nav.heroes')}</NavLink>
-          <NavLink to="/items" className="nav__link">{t('nav.items')}</NavLink>
-          <NavLink to="/build" className="nav__link">{t('nav.randomBuild')}</NavLink>
-        </div>
+          <div className="nav__links">
+            <NavLink to="/" className="nav__link" end>{t('nav.heroes')}</NavLink>
+            <NavLink to="/items" className="nav__link">{t('nav.items')}</NavLink>
+            <NavLink to="/build" className="nav__link">{t('nav.randomBuild')}</NavLink>
+          </div>
 
-        <div className="nav__desktop-lang" style={{ display: 'flex' }}>
-          <LangToggle language={language} onToggle={toggleLanguage} />
-        </div>
+          <div className="nav__desktop-lang" style={{ display: 'flex' }}>
+            <LangToggle language={language} onToggle={toggleLanguage} />
+          </div>
 
-        <button
-          className="nav__burger"
-          onClick={() => setDrawerOpen(true)}
-          aria-label="Open menu"
-        >
-          ☰
-        </button>
-      </div>
+          <button
+            className="nav__burger"
+            onClick={() => setDrawerOpen(true)}
+            aria-label="Open menu"
+          >
+            ☰
+          </button>
+        </div>
+      </nav>
 
       <div className={`nav__overlay ${drawerOpen ? 'open' : ''}`} onClick={closeDrawer} />
 
@@ -101,7 +103,7 @@ function Nav() {
           <LangToggle language={language} onToggle={toggleLanguage} />
         </div>
       </div>
-    </nav>
+    </>
   );
 }
 

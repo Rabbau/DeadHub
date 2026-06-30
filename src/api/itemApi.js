@@ -4,11 +4,9 @@ import { ASSETS_API_BASE } from './config.js';
 function normalizeItem(raw) {
   let imageUrl = null;
 
-  // 1️⃣ Приоритет: shop_image — цветная иконка из магазина (для предметов)
   if (raw.shop_image && typeof raw.shop_image === 'string' && raw.shop_image.trim() !== '') {
     imageUrl = raw.shop_image;
   }
-  // 2️⃣ Если нет shop_image — берём image (для способностей или старых данных)
   else if (raw.image && typeof raw.image === 'string' && raw.image.trim() !== '') {
     imageUrl = raw.image;
   }
@@ -26,6 +24,10 @@ function normalizeItem(raw) {
     pickrate: raw.purchase_rate ?? raw.pickrate ?? null,
     type: raw.type ?? null,
     slot_type: raw.slot_type ?? raw.item_slot_type ?? null,
+    item_slot_type: raw.item_slot_type ?? raw.slot_type ?? null,
+    item_tier: raw.item_tier ?? null,
+    tooltip_sections: raw.tooltip_sections ?? null,
+    properties: raw.properties ?? null,
   };
 }
 
