@@ -41,6 +41,7 @@ export default {
     heroType: 'Тип героя',
     tags: 'Теги',
     gunTag: 'Тип оружия',
+    perLevel: '/ур',
   },
   home: {
     title: 'Мета-хаб',
@@ -52,7 +53,7 @@ export default {
     sortByPickrate: 'По пикрейту',
     sortByName: 'По имени',
     mainHeroes: 'Основные герои',
-    hiddenHeroes: 'Скрытые герои'
+    hiddenHeroes: 'Скрытые герои',
   },
   heroPage: {
     back: '← Назад к списку',

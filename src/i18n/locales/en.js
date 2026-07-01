@@ -41,6 +41,7 @@ export default {
     heroType: 'Hero Type',
     tags: 'Tags',
     gunTag: 'Gun Tag',
+    perLevel: '/lvl',
   },
   home: {
     title: 'Meta Hub',

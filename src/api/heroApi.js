@@ -102,14 +102,13 @@ function normalizeHero(heroData, statsData = [], abilitiesDetails = {}) {
                    heroData.images?.icon_image_small ||
                    null;
 
-  // Извлекаем стартовые статы
+  // Стартовые статы
   const startingStats = heroData.starting_stats || {};
   const stats = {
     winrate: winrate > 1 ? winrate / 100 : winrate,
     pickrate: pickrate > 1 ? pickrate / 100 : pickrate,
     kda: null,
     games_played: games,
-    // Новые поля
     maxHealth: startingStats.max_health?.value ?? null,
     maxMoveSpeed: startingStats.max_move_speed?.value ?? null,
     sprintSpeed: startingStats.sprint_speed?.value ?? null,
@@ -124,6 +123,13 @@ function normalizeHero(heroData, statsData = [], abilitiesDetails = {}) {
     gunTag: heroData.gun_tag ?? null,
   };
 
+  // Приросты за уровень
+  const levelUpgrades = heroData.standard_level_up_upgrades || {};
+  const levelScaling = {
+    healthPerLevel: levelUpgrades.MODIFIER_VALUE_BASE_HEALTH_FROM_LEVEL ?? null,
+    meleeDamagePerLevel: levelUpgrades.MODIFIER_VALUE_BASE_MELEE_DAMAGE_FROM_LEVEL ?? null,
+  };
+
   return {
     id: heroData.id ?? heroData.hero_id,
     name: heroData.name ?? `Hero ${heroData.id}`,
@@ -134,6 +140,7 @@ function normalizeHero(heroData, statsData = [], abilitiesDetails = {}) {
     image_url: imageUrl,
     stats,
     abilities,
+    levelScaling, // <-- добавлено
   };
 }
 

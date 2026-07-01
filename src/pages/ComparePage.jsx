@@ -120,11 +120,15 @@ function ComparePage() {
                 {/* Новые строки */}
                 <tr>
                   <td>{t('compare.health')}</td>
-                  {selectedHeroes.map((hero, idx) => (
-                    <td key={hero.id} className={`col-hero-${idx}`}>
-                      {hero.stats.maxHealth ?? '—'}
-                    </td>
-                  ))}
+                  {selectedHeroes.map((hero, idx) => {
+                    const base = hero.stats.maxHealth;
+                    const perLevel = hero.levelScaling?.healthPerLevel;
+                    return (
+                      <td key={hero.id} className={`col-hero-${idx}`}>
+                        {base !== null ? `${base}${perLevel ? ` + ${perLevel}${t('compare.perLevel')}` : ''}` : '—'}
+                      </td>
+                    );
+                  })}
                 </tr>
                 <tr>
                   <td>{t('compare.moveSpeed')}</td>
@@ -160,19 +164,27 @@ function ComparePage() {
                 </tr>
                 <tr>
                   <td>{t('compare.lightMelee')}</td>
-                  {selectedHeroes.map((hero, idx) => (
-                    <td key={hero.id} className={`col-hero-${idx}`}>
-                      {hero.stats.lightMeleeDamage ?? '—'}
-                    </td>
-                  ))}
+                  {selectedHeroes.map((hero, idx) => {
+                    const base = hero.stats.lightMeleeDamage;
+                    const perLevel = hero.levelScaling?.meleeDamagePerLevel;
+                    return (
+                      <td key={hero.id} className={`col-hero-${idx}`}>
+                        {base !== null ? `${base}${perLevel ? ` + ${perLevel}${t('compare.perLevel')}` : ''}` : '—'}
+                      </td>
+                    );
+                  })}
                 </tr>
                 <tr>
                   <td>{t('compare.heavyMelee')}</td>
-                  {selectedHeroes.map((hero, idx) => (
-                    <td key={hero.id} className={`col-hero-${idx}`}>
-                      {hero.stats.heavyMeleeDamage ?? '—'}
-                    </td>
-                  ))}
+                  {selectedHeroes.map((hero, idx) => {
+                    const base = hero.stats.heavyMeleeDamage;
+                    const perLevel = hero.levelScaling?.meleeDamagePerLevel;
+                    return (
+                      <td key={hero.id} className={`col-hero-${idx}`}>
+                        {base !== null ? `${base}${perLevel ? ` + ${perLevel}${t('compare.perLevel')}` : ''}` : '—'}
+                      </td>
+                    );
+                  })}
                 </tr>
                 <tr>
                   <td>{t('compare.groundDash')}</td>
