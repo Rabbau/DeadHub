@@ -97,11 +97,32 @@ function normalizeHero(heroData, statsData = [], abilitiesDetails = {}) {
     }
   }
 
-  // Берём картинку из ответа API
-  const imageUrl = heroData.images?.icon_hero_card || 
-                   heroData.images?.minimap_image || 
-                   heroData.images?.icon_image_small || 
+  const imageUrl = heroData.images?.icon_hero_card ||
+                   heroData.images?.minimap_image ||
+                   heroData.images?.icon_image_small ||
                    null;
+
+  // Извлекаем стартовые статы
+  const startingStats = heroData.starting_stats || {};
+  const stats = {
+    winrate: winrate > 1 ? winrate / 100 : winrate,
+    pickrate: pickrate > 1 ? pickrate / 100 : pickrate,
+    kda: null,
+    games_played: games,
+    // Новые поля
+    maxHealth: startingStats.max_health?.value ?? null,
+    maxMoveSpeed: startingStats.max_move_speed?.value ?? null,
+    sprintSpeed: startingStats.sprint_speed?.value ?? null,
+    stamina: startingStats.stamina?.value ?? null,
+    healthRegen: startingStats.base_health_regen?.value ?? null,
+    lightMeleeDamage: startingStats.light_melee_damage?.value ?? null,
+    heavyMeleeDamage: startingStats.heavy_melee_damage?.value ?? null,
+    groundDashDistance: startingStats.ground_dash_distance_in_meters?.value ?? null,
+    airDashDistance: startingStats.air_dash_distance_in_meters?.value ?? null,
+    heroType: heroData.hero_type ?? null,
+    tags: heroData.tags || [],
+    gunTag: heroData.gun_tag ?? null,
+  };
 
   return {
     id: heroData.id ?? heroData.hero_id,
@@ -111,12 +132,7 @@ function normalizeHero(heroData, statsData = [], abilitiesDetails = {}) {
     complexity: heroData.complexity ?? null,
     description,
     image_url: imageUrl,
-    stats: {
-      winrate: winrate > 1 ? winrate / 100 : winrate,
-      pickrate: pickrate > 1 ? pickrate / 100 : pickrate,
-      kda: null,
-      games_played: games,
-    },
+    stats,
     abilities,
   };
 }

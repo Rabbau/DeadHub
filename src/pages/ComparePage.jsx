@@ -9,8 +9,10 @@ function ComparePage() {
   const { selectedIds, addHero, removeHero, replace, clear } = useCompareStore();
   const t = useTranslation();
 
-  const selectedHeroes = heroes.filter(h => selectedIds.includes(h.id));
-  const filteredHeroes = heroes.filter(h =>
+  // Берём только героев с pickrate > 0
+  const activeHeroes = heroes.filter(h => h.stats.pickrate > 0);
+  const selectedHeroes = activeHeroes.filter(h => selectedIds.includes(h.id));
+  const filteredHeroes = activeHeroes.filter(h =>
     h.name.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -112,6 +114,103 @@ function ComparePage() {
                       <ul className="compare-abilities">
                         {hero.abilities?.map((a, i) => <li key={i}>{a.name}</li>)}
                       </ul>
+                    </td>
+                  ))}
+                </tr>
+                {/* Новые строки */}
+                <tr>
+                  <td>{t('compare.health')}</td>
+                  {selectedHeroes.map((hero, idx) => (
+                    <td key={hero.id} className={`col-hero-${idx}`}>
+                      {hero.stats.maxHealth ?? '—'}
+                    </td>
+                  ))}
+                </tr>
+                <tr>
+                  <td>{t('compare.moveSpeed')}</td>
+                  {selectedHeroes.map((hero, idx) => (
+                    <td key={hero.id} className={`col-hero-${idx}`}>
+                      {hero.stats.maxMoveSpeed ?? '—'}
+                    </td>
+                  ))}
+                </tr>
+                <tr>
+                  <td>{t('compare.sprintSpeed')}</td>
+                  {selectedHeroes.map((hero, idx) => (
+                    <td key={hero.id} className={`col-hero-${idx}`}>
+                      {hero.stats.sprintSpeed ?? '—'}
+                    </td>
+                  ))}
+                </tr>
+                <tr>
+                  <td>{t('compare.stamina')}</td>
+                  {selectedHeroes.map((hero, idx) => (
+                    <td key={hero.id} className={`col-hero-${idx}`}>
+                      {hero.stats.stamina ?? '—'}
+                    </td>
+                  ))}
+                </tr>
+                <tr>
+                  <td>{t('compare.healthRegen')}</td>
+                  {selectedHeroes.map((hero, idx) => (
+                    <td key={hero.id} className={`col-hero-${idx}`}>
+                      {hero.stats.healthRegen ?? '—'}
+                    </td>
+                  ))}
+                </tr>
+                <tr>
+                  <td>{t('compare.lightMelee')}</td>
+                  {selectedHeroes.map((hero, idx) => (
+                    <td key={hero.id} className={`col-hero-${idx}`}>
+                      {hero.stats.lightMeleeDamage ?? '—'}
+                    </td>
+                  ))}
+                </tr>
+                <tr>
+                  <td>{t('compare.heavyMelee')}</td>
+                  {selectedHeroes.map((hero, idx) => (
+                    <td key={hero.id} className={`col-hero-${idx}`}>
+                      {hero.stats.heavyMeleeDamage ?? '—'}
+                    </td>
+                  ))}
+                </tr>
+                <tr>
+                  <td>{t('compare.groundDash')}</td>
+                  {selectedHeroes.map((hero, idx) => (
+                    <td key={hero.id} className={`col-hero-${idx}`}>
+                      {hero.stats.groundDashDistance ?? '—'}
+                    </td>
+                  ))}
+                </tr>
+                <tr>
+                  <td>{t('compare.airDash')}</td>
+                  {selectedHeroes.map((hero, idx) => (
+                    <td key={hero.id} className={`col-hero-${idx}`}>
+                      {hero.stats.airDashDistance ?? '—'}
+                    </td>
+                  ))}
+                </tr>
+                <tr>
+                  <td>{t('compare.heroType')}</td>
+                  {selectedHeroes.map((hero, idx) => (
+                    <td key={hero.id} className={`col-hero-${idx}`}>
+                      {hero.stats.heroType || '—'}
+                    </td>
+                  ))}
+                </tr>
+                <tr>
+                  <td>{t('compare.tags')}</td>
+                  {selectedHeroes.map((hero, idx) => (
+                    <td key={hero.id} className={`col-hero-${idx}`}>
+                      {hero.stats.tags?.join(', ') || '—'}
+                    </td>
+                  ))}
+                </tr>
+                <tr>
+                  <td>{t('compare.gunTag')}</td>
+                  {selectedHeroes.map((hero, idx) => (
+                    <td key={hero.id} className={`col-hero-${idx}`}>
+                      {hero.stats.gunTag || '—'}
                     </td>
                   ))}
                 </tr>
