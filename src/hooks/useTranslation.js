@@ -3,7 +3,7 @@ import { getTranslation } from '../i18n';
 
 export function useTranslation() {
   const language = useHeroStore(state => state.language);
-  return function t(key) {
-    return getTranslation(language, key);
+  return function t(key, params = {}) {
+    return getTranslation(language, key, params);
   };
 }

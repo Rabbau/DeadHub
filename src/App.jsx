@@ -4,6 +4,7 @@ import HomePage from './pages/HomePage';
 import HeroPage from './pages/HeroPage';
 import BuildPage from './pages/BuildPage';
 import ItemsPage from './pages/ItemsPage';
+import TierListPage from './pages/TierListPage';
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Route path="hero/:id" element={<HeroPage />} />
         <Route path="items" element={<ItemsPage />} />
         <Route path="build" element={<BuildPage />} />
+        <Route path="tierlist" element={<TierListPage />} />
       </Route>
     </Routes>
   );

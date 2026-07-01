@@ -1315,3 +1315,161 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
 .item-tooltip__stat.elevated .item-tooltip__stat-value {
   color: var(--neon);
 }
+
+/* ── Tier List ─────────────────────────────────────────────── */
+.tierlist-page .page-header {
+  margin-bottom: 20px;
+}
+.tierlist-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.tierlist-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--bg-deep);
+  border-radius: 12px;
+  padding: 8px;
+  border: 1px solid var(--border);
+}
+
+.tier-row {
+  display: flex;
+  background: var(--bg-surface);
+  border-radius: 8px;
+  overflow: hidden;
+  min-height: 70px;
+  border: 1px solid var(--border);
+}
+.tier-row__label {
+  flex: 0 0 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #000;
+}
+.tier-row__container {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 10px;
+  min-height: 70px;
+  align-items: center;
+  border-left: 1px solid var(--border);
+}
+.tier-row__empty {
+  color: var(--text-3);
+  font-size: 0.8rem;
+  font-style: italic;
+  padding: 4px 12px;
+}
+
+.tier-hero-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  width: 64px;
+  transition: border-color 0.2s;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+.tier-hero-card:hover {
+  border-color: var(--neon-dim);
+}
+.tier-hero-card:active {
+  cursor: grabbing;
+}
+.tier-hero-card--dragging {
+  opacity: 0.8;
+  transform: scale(1.05);
+  border-color: var(--neon);
+  box-shadow: 0 0 20px var(--neon-dim);
+}
+.tier-hero-card__img {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 4px;
+  background: var(--bg-surface);
+  pointer-events: none;
+}
+.tier-hero-card__placeholder {
+  width: 44px;
+  height: 44px;
+  border-radius: 4px;
+  background: var(--bg-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--text-3);
+  pointer-events: none;
+}
+.tier-hero-card__name {
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-align: center;
+  max-width: 56px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+.tierlist-pool {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.hero-pool {
+  background: var(--bg-surface);
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  min-height: 80px;
+  transition: border-color 0.2s;
+}
+
+.hero-pool__header {
+  font-weight: 600;
+  color: var(--text-2);
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+}
+
+.hero-pool__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  min-height: 60px;
+}
+
+.hero-pool__empty {
+  color: var(--text-3);
+  font-style: italic;
+  padding: 20px;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .tier-row__label { flex-basis: 32px; font-size: 1rem; }
+  .tier-hero-card { width: 52px; padding: 2px 4px; }
+  .tier-hero-card__img,
+  .tier-hero-card__placeholder { width: 32px; height: 32px; }
+  .tier-hero-card__name { font-size: 0.5rem; max-width: 44px; }
+  .tierlist-actions { flex-wrap: wrap; }
+}

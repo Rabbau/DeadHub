@@ -2,7 +2,18 @@ export default {
   nav: {
     heroes: 'Heroes',
     items: 'Items',
-    randomBuild: 'Random Build'
+    randomBuild: 'Random Build',
+    tierlist: 'Tier List',
+  },
+  tierList: {
+    title: 'Hero Tier List',
+    subtitle: 'Total heroes: {count}',
+    reset: 'Reset',
+    exportPNG: '📥 PNG',
+    poolHeader: '🗂️ Hero Pool ({count})',
+    emptyPool: 'All heroes are distributed',
+    emptyTier: 'Drop here',
+    confirmReset: 'Reset tier list? All heroes will return to the pool.',
   },
   home: {
     title: 'Meta Hub',

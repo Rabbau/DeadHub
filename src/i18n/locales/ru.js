@@ -2,7 +2,18 @@ export default {
   nav: {
     heroes: 'Герои',
     items: 'Предметы',
-    randomBuild: 'Случайный билд'
+    randomBuild: 'Случайный билд',
+    tierlist: 'Тир-лист',
+  },
+  tierList: {
+    title: 'Тир-лист героев',
+    subtitle: 'Всего героев: {count}',
+    reset: 'Сбросить',
+    exportPNG: '📥 PNG',
+    poolHeader: '🗂️ Пул героев ({count})',
+    emptyPool: 'Все герои распределены',
+    emptyTier: 'Перетащи сюда',
+    confirmReset: 'Сбросить тир-лист? Все герои вернутся в пул.',
   },
   home: {
     title: 'Мета-хаб',

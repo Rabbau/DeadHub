@@ -3,7 +3,7 @@ import ru from './locales/ru.js';
 
 const locales = { english: en, russian: ru };
 
-export function getTranslation(lang, key) {
+export function getTranslation(lang, key, params = {}) {
   const keys = key.split('.');
   let value = locales[lang];
   for (const k of keys) {
@@ -14,5 +14,12 @@ export function getTranslation(lang, key) {
       return key;
     }
   }
+
+  if (typeof value === 'string') {
+    return value.replace(/\{(\w+)\}/g, (_, name) =>
+      params[name] !== undefined ? params[name] : `{${name}}`
+    );
+  }
+
   return value;
 }

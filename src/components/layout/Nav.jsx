@@ -65,6 +65,7 @@ function Nav() {
             <NavLink to="/" className="nav__link" end>{t('nav.heroes')}</NavLink>
             <NavLink to="/items" className="nav__link">{t('nav.items')}</NavLink>
             <NavLink to="/build" className="nav__link">{t('nav.randomBuild')}</NavLink>
+            <NavLink to="/tierlist" className="nav__link">{t('nav.tierlist')}</NavLink>
           </div>
 
           <div className="nav__desktop-lang" style={{ display: 'flex' }}>
@@ -97,6 +98,7 @@ function Nav() {
           <NavLink to="/" className="nav__link" end onClick={closeDrawer}>{t('nav.heroes')}</NavLink>
           <NavLink to="/items" className="nav__link" onClick={closeDrawer}>{t('nav.items')}</NavLink>
           <NavLink to="/build" className="nav__link" onClick={closeDrawer}>{t('nav.randomBuild')}</NavLink>
+          <NavLink to="/tierlist" className="nav__link" onClick={closeDrawer}>{t('nav.tierlist')}</NavLink>
         </div>
 
         <div className="nav__drawer-lang">
