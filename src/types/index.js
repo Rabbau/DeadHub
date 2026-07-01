@@ -14,10 +14,27 @@
 
 /**
  * @typedef {Object} HeroStats
- * @property {number} winrate       - 0..1
- * @property {number} pickrate      - 0..1
+ * @property {number} winrate
+ * @property {number} pickrate
  * @property {number|null} kda
  * @property {number} games_played
+ * @property {number|null} maxHealth
+ * @property {number|null} maxMoveSpeed
+ * @property {number|null} sprintSpeed
+ * @property {number|null} stamina
+ * @property {number|null} healthRegen
+ * @property {number|null} lightMeleeDamage
+ * @property {number|null} heavyMeleeDamage
+ * @property {number|null} groundDashDistance
+ * @property {number|null} airDashDistance
+ * @property {string|null} heroType
+ * @property {string[]} tags
+ * @property {string|null} gunTag
+ * @property {number|null} bulletDamage
+ * @property {number|null} clipSize
+ * @property {number|null} roundsPerSecond
+ * @property {number|null} reloadTime
+ * @property {number|null} staminaCooldown
  */
 
 /**

@@ -19,7 +19,7 @@ async function fetchAbilityDetails(class_name, language = 'english') {
   }
 }
 
-function normalizeHero(heroData, statsData = [], abilitiesDetails = {}) {
+function normalizeHero(heroData, statsData = [], abilitiesDetails = {}, weaponStats = {}) {
   let totalWins = 0;
   let totalMatches = 0;
   let totalPicks = 0;
@@ -104,11 +104,17 @@ function normalizeHero(heroData, statsData = [], abilitiesDetails = {}) {
 
   // Стартовые статы
   const startingStats = heroData.starting_stats || {};
+  
+  // Вычисляем перезарядку выносливости (Stamina Cooldown)
+  const staminaRegen = startingStats.stamina_regen_per_second?.value ?? null;
+  const staminaCooldown = staminaRegen ? 1 / staminaRegen : null;
+
   const stats = {
     winrate: winrate > 1 ? winrate / 100 : winrate,
     pickrate: pickrate > 1 ? pickrate / 100 : pickrate,
     kda: null,
     games_played: games,
+    // Базовые статы из starting_stats
     maxHealth: startingStats.max_health?.value ?? null,
     maxMoveSpeed: startingStats.max_move_speed?.value ?? null,
     sprintSpeed: startingStats.sprint_speed?.value ?? null,
@@ -121,14 +127,25 @@ function normalizeHero(heroData, statsData = [], abilitiesDetails = {}) {
     heroType: heroData.hero_type ?? null,
     tags: heroData.tags || [],
     gunTag: heroData.gun_tag ?? null,
+    // Оружейные статы (из отдельного запроса)
+    bulletDamage: weaponStats.bulletDamage ?? null,
+    clipSize: weaponStats.clipSize ?? null,
+    roundsPerSecond: weaponStats.roundsPerSecond ?? null,
+    reloadTime: weaponStats.reloadTime ?? null,
+    // Вычисленное
+    staminaCooldown: staminaCooldown,
   };
 
   // Приросты за уровень
   const levelUpgrades = heroData.standard_level_up_upgrades || {};
   const levelScaling = {
     healthPerLevel: levelUpgrades.MODIFIER_VALUE_BASE_HEALTH_FROM_LEVEL ?? null,
+    bulletDamagePerLevel: levelUpgrades.MODIFIER_VALUE_BASE_BULLET_DAMAGE_FROM_LEVEL ?? null,
     meleeDamagePerLevel: levelUpgrades.MODIFIER_VALUE_BASE_MELEE_DAMAGE_FROM_LEVEL ?? null,
+    techPowerPerLevel: levelUpgrades.MODIFIER_VALUE_TECH_POWER ?? null,
   };
+
+  const color = heroData.colors?.style_hex || null;
 
   return {
     id: heroData.id ?? heroData.hero_id,
@@ -140,7 +157,8 @@ function normalizeHero(heroData, statsData = [], abilitiesDetails = {}) {
     image_url: imageUrl,
     stats,
     abilities,
-    levelScaling, // <-- добавлено
+    levelScaling,
+    color,
   };
 }
 
@@ -165,7 +183,7 @@ export async function fetchHeroes(language = 'english') {
   });
 
   const results = await Promise.all(statsPromises);
-  return results.map(({ hero, stats }) => normalizeHero(hero, stats, {}));
+  return results.map(({ hero, stats }) => normalizeHero(hero, stats, {}, {}));
 }
 
 export async function fetchHeroDetail(id, language = 'english') {
@@ -180,6 +198,7 @@ export async function fetchHeroDetail(id, language = 'english') {
   const hero = heroResult.status === 'fulfilled' ? heroResult.value : { id: Number(id) };
   const stats = statsResult.status === 'fulfilled' ? statsResult.value : [];
 
+  // Загружаем детали способностей
   let abilitiesDetails = {};
   if (hero.items && typeof hero.items === 'object') {
     const entries = Object.entries(hero.items);
@@ -203,5 +222,24 @@ export async function fetchHeroDetail(id, language = 'english') {
     }
   }
 
-  return normalizeHero(hero, stats, abilitiesDetails);
+  // Загружаем оружие
+  let weaponStats = {};
+  const weaponClass = hero.items?.weapon_primary;
+  if (weaponClass) {
+    try {
+      const weaponData = await httpGet(`${ASSETS_API_BASE}/v1/assets/items/${weaponClass}?language=${language}`, {
+        cacheKey: `weapon_${weaponClass}_${language}`,
+      });
+      weaponStats = {
+        bulletDamage: weaponData.bullet_damage ?? null,
+        clipSize: weaponData.clip_size ?? null,
+        roundsPerSecond: weaponData.rounds_per_second ?? null,
+        reloadTime: weaponData.reload_time ?? null,
+      };
+    } catch (e) {
+      console.warn(`Failed to load weapon stats for ${weaponClass}:`, e);
+    }
+  }
+
+  return normalizeHero(hero, stats, abilitiesDetails, weaponStats);
 }
