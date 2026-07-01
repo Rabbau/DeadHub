@@ -1831,3 +1831,143 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spac
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Ability Card Enhanced ──────────────────────────────────── */
+.ability-card {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  transition: border-color var(--t-fast);
+}
+
+.ability-card:hover {
+  border-color: var(--neon-dim);
+}
+
+.ability-card__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.ability-card__icon-img {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+  object-fit: contain;
+  padding: 4px;
+}
+
+.ability-card__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-3);
+  letter-spacing: 0.04em;
+}
+
+.ability-card__name {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: 0.02em;
+}
+
+.ability-card__desc {
+  font-size: 0.82rem;
+  color: var(--text-2);
+  margin-top: 3px;
+  line-height: 1.5;
+}
+
+.ability-card__props {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+  font-size: 0.72rem;
+  color: var(--text-2);
+}
+
+.ability-card__prop {
+  display: inline-flex;
+  gap: 4px;
+  background: var(--bg-surface);
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+.ability-card__prop-label {
+  color: var(--text-3);
+}
+
+.ability-card__prop-value {
+  color: var(--text-1);
+  font-weight: 600;
+}
+
+.ability-card__upgrades {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+  font-size: 0.75rem;
+}
+
+.ability-card__upgrade {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  padding: 3px 0;
+  color: var(--text-2);
+}
+
+.ability-card__upgrade-tier {
+  font-weight: 700;
+  color: var(--neon);
+  font-size: 0.7rem;
+  min-width: 24px;
+}
+
+.ability-card__upgrade-desc {
+  color: var(--text-1);
+  font-weight: 500;
+}
+
+
+/* ── Color-coded stat blocks with gradient ──────────────────── */
+.hero-stats-card.weapon-block {
+  border-color: var(--copper);
+  background: linear-gradient(145deg, rgba(232, 135, 90, 0.12) 0%, var(--bg-card) 60%);
+}
+
+.hero-stats-card.weapon-block .hero-stats-card__title {
+  color: var(--copper);
+}
+
+.hero-stats-card.vitality-block {
+  border-color: var(--good);
+  background: linear-gradient(145deg, rgba(61, 220, 132, 0.12) 0%, var(--bg-card) 60%);
+}
+
+.hero-stats-card.vitality-block .hero-stats-card__title {
+  color: var(--good);
+}

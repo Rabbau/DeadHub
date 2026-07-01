@@ -19,7 +19,7 @@ async function fetchAbilityDetails(class_name, language = 'english') {
   }
 }
 
-function normalizeHero(heroData, statsData = [], abilitiesDetails = {}, weaponStats = {}) {
+function normalizeHero(heroData, statsData = [], abilitiesDetails = {}, weaponStats = {}, abilityExtras = {}) {
   let totalWins = 0;
   let totalMatches = 0;
   let totalPicks = 0;
@@ -67,6 +67,9 @@ function normalizeHero(heroData, statsData = [], abilitiesDetails = {}, weaponSt
         }
       }
 
+      // Дополнительные данные из abilityExtras
+      const extra = abilityExtras[class_name] || {};
+
       return {
         name: displayName || class_name,
         description: description,
@@ -74,6 +77,11 @@ function normalizeHero(heroData, statsData = [], abilitiesDetails = {}, weaponSt
         cast_range: details.cast_range ?? null,
         image_url: abilityImageUrl,
         class_name: class_name,
+        // Новые поля
+        properties: extra.properties || {},
+        upgrades: extra.upgrades || [],
+        tooltip_details: extra.tooltip_details || null,
+        ability_type: extra.ability_type || null,
       };
     });
   }
@@ -85,6 +93,10 @@ function normalizeHero(heroData, statsData = [], abilitiesDetails = {}, weaponSt
       cooldown: a.cooldown ?? null,
       cast_range: a.cast_range ?? null,
       image_url: null,
+      properties: {},
+      upgrades: [],
+      tooltip_details: null,
+      ability_type: null,
     }));
   }
 
@@ -102,10 +114,7 @@ function normalizeHero(heroData, statsData = [], abilitiesDetails = {}, weaponSt
                    heroData.images?.icon_image_small ||
                    null;
 
-  // Стартовые статы
   const startingStats = heroData.starting_stats || {};
-  
-  // Вычисляем перезарядку выносливости (Stamina Cooldown)
   const staminaRegen = startingStats.stamina_regen_per_second?.value ?? null;
   const staminaCooldown = staminaRegen ? 1 / staminaRegen : null;
 
@@ -114,7 +123,6 @@ function normalizeHero(heroData, statsData = [], abilitiesDetails = {}, weaponSt
     pickrate: pickrate > 1 ? pickrate / 100 : pickrate,
     kda: null,
     games_played: games,
-    // Базовые статы из starting_stats
     maxHealth: startingStats.max_health?.value ?? null,
     maxMoveSpeed: startingStats.max_move_speed?.value ?? null,
     sprintSpeed: startingStats.sprint_speed?.value ?? null,
@@ -127,16 +135,13 @@ function normalizeHero(heroData, statsData = [], abilitiesDetails = {}, weaponSt
     heroType: heroData.hero_type ?? null,
     tags: heroData.tags || [],
     gunTag: heroData.gun_tag ?? null,
-    // Оружейные статы (из отдельного запроса)
     bulletDamage: weaponStats.bulletDamage ?? null,
     clipSize: weaponStats.clipSize ?? null,
     roundsPerSecond: weaponStats.roundsPerSecond ?? null,
     reloadTime: weaponStats.reloadTime ?? null,
-    // Вычисленное
     staminaCooldown: staminaCooldown,
   };
 
-  // Приросты за уровень
   const levelUpgrades = heroData.standard_level_up_upgrades || {};
   const levelScaling = {
     healthPerLevel: levelUpgrades.MODIFIER_VALUE_BASE_HEALTH_FROM_LEVEL ?? null,
@@ -189,16 +194,34 @@ export async function fetchHeroes(language = 'english') {
 export async function fetchHeroDetail(id, language = 'english') {
   const heroUrl = `${ASSETS_API_BASE}/v1/assets/heroes/${id}?language=${language}`;
   const statsUrl = `${ANALYTICS_API_BASE}/v1/analytics/hero-build-stats/${id}`;
+  const abilitiesUrl = `${ASSETS_API_BASE}/v1/assets/items/by-hero-id/${id}?language=${language}`;
 
-  const [heroResult, statsResult] = await Promise.allSettled([
+  const [heroResult, statsResult, abilitiesResult] = await Promise.allSettled([
     httpGet(heroUrl, { cacheKey: `hero_${id}_${language}` }),
     httpGet(statsUrl, { cacheKey: `hero_stats_${id}` }),
+    httpGet(abilitiesUrl, { cacheKey: `hero_abilities_${id}_${language}` }),
   ]);
 
   const hero = heroResult.status === 'fulfilled' ? heroResult.value : { id: Number(id) };
   const stats = statsResult.status === 'fulfilled' ? statsResult.value : [];
+  const abilitiesData = abilitiesResult.status === 'fulfilled' ? abilitiesResult.value : [];
 
-  // Загружаем детали способностей
+  // Превращаем массив способностей в объект по class_name
+  const abilityExtras = {};
+  if (Array.isArray(abilitiesData)) {
+    abilitiesData.forEach(item => {
+      if (item.class_name) {
+        abilityExtras[item.class_name] = {
+          properties: item.properties || {},
+          upgrades: item.upgrades || [],
+          tooltip_details: item.tooltip_details || null,
+          ability_type: item.ability_type || null,
+        };
+      }
+    });
+  }
+
+  // Загружаем детали способностей для иконок и описаний
   let abilitiesDetails = {};
   if (hero.items && typeof hero.items === 'object') {
     const entries = Object.entries(hero.items);
@@ -223,23 +246,28 @@ export async function fetchHeroDetail(id, language = 'english') {
   }
 
   // Загружаем оружие
-  let weaponStats = {};
-  const weaponClass = hero.items?.weapon_primary;
-  if (weaponClass) {
-    try {
-      const weaponData = await httpGet(`${ASSETS_API_BASE}/v1/assets/items/${weaponClass}?language=${language}`, {
-        cacheKey: `weapon_${weaponClass}_${language}`,
-      });
-      weaponStats = {
-        bulletDamage: weaponData.bullet_damage ?? null,
-        clipSize: weaponData.clip_size ?? null,
-        roundsPerSecond: weaponData.rounds_per_second ?? null,
-        reloadTime: weaponData.reload_time ?? null,
-      };
-    } catch (e) {
-      console.warn(`Failed to load weapon stats for ${weaponClass}:`, e);
+    // Загружаем оружие
+    let weaponStats = {};
+    const weaponClass = hero.items?.weapon_primary;
+    if (weaponClass) {
+      try {
+        const weaponData = await httpGet(`${ASSETS_API_BASE}/v1/assets/items/${weaponClass}?language=${language}`, {
+          cacheKey: `weapon_${weaponClass}_${language}`,
+        });
+        console.log(`[DEBUG] Weapon data for ${weaponClass}:`, weaponData);
+        
+        // Берём данные из weapon_info
+        const info = weaponData.weapon_info || {};
+        weaponStats = {
+          bulletDamage: info.bullet_damage ?? null,
+          clipSize: info.clip_size ?? null,
+          roundsPerSecond: info.shots_per_second ?? null,
+          reloadTime: info.reload_duration ?? null,
+        };
+      } catch (e) {
+        console.warn(`Failed to load weapon stats for ${weaponClass}:`, e);
+      }
     }
-  }
 
-  return normalizeHero(hero, stats, abilitiesDetails, weaponStats);
+  return normalizeHero(hero, stats, abilitiesDetails, weaponStats, abilityExtras);
 }

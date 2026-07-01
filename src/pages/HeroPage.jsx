@@ -49,6 +49,46 @@ function HeroPage() {
   const s = hero.stats;
   const ls = hero.levelScaling || {};
 
+  // Важные ключи свойств для отображения
+  const importantProps = [
+    'Damage', 'Cooldown', 'Radius', 'Duration', 'CastRange',
+    'DPS', 'Charges', 'Heal', 'FireRate', 'Slow', 'Lifesteal',
+    'StunDuration', 'BurnDuration', 'DebuffDuration', 'ExplodeDelay',
+    'FlameAuraRadius', 'GroundFlameDuration', 'SlowDuration',
+    'IncomingDamagePercentFromCaster', 'TechPower'
+  ];
+
+  // Функция перевода ключа свойства
+  const translatePropKey = (key) => {
+    const translated = t(`abilityProps.${key}`);
+    return translated === `abilityProps.${key}` ? key : translated;
+  };
+
+  // Функция форматирования улучшений с переводом
+  const formatUpgrade = (upgrade) => {
+    if (!upgrade.property_upgrades || upgrade.property_upgrades.length === 0) return null;
+    return upgrade.property_upgrades.map((u) => {
+      const name = u.name;
+      const bonus = u.bonus;
+      let displayBonus = bonus;
+      if (typeof bonus === 'number') {
+        displayBonus = bonus > 0 ? `+${bonus}` : `${bonus}`;
+      }
+      const translatedName = translatePropKey(name);
+      return `${translatedName}: ${displayBonus}`;
+    }).join(', ');
+  };
+
+  // Фильтруем свойства для отображения
+  const getDisplayProps = (props) => {
+    return Object.entries(props).filter(([key, prop]) => {
+      const value = prop.value;
+      if (value === undefined || value === null || value === '' || value === '0' || value === '0m' || value === '0s') return false;
+      if (key.startsWith('Ability') && !['AbilityCharges', 'AbilityCooldown', 'AbilityDuration', 'AbilityCastRange'].includes(key)) return false;
+      return true;
+    });
+  };
+
   return (
     <div className="hero-page-wrapper" style={{ position: 'relative', minHeight: '100vh' }}>
       {/* Фоновый слой с градиентом */}
@@ -114,21 +154,21 @@ function HeroPage() {
             <div className="hero-stats-section">
               <h2 className="section__title">{t('heroPage.baseStats')}</h2>
               <div className="hero-stats-grid">
-                {/* Weapon Stats */}
-                <div className="hero-stats-card">
+                {/* Weapon Stats - оранжевый блок */}
+                <div className="hero-stats-card weapon-block">
                   <h3 className="hero-stats-card__title">{t('heroPage.weaponStats')}</h3>
                   <ul className="hero-stats-list">
                     <li><span>{t('heroPage.bulletDamage')}</span> <strong>{s.bulletDamage ?? '—'}</strong></li>
                     <li><span>{t('heroPage.ammo')}</span> <strong>{s.clipSize ?? '—'}</strong></li>
-                    <li><span>{t('heroPage.shotsPerSecond')}</span> <strong>{s.roundsPerSecond ?? '—'}</strong></li>
-                    <li><span>{t('heroPage.reloadTime')}</span> <strong>{s.reloadTime ? `${s.reloadTime}s` : '—'}</strong></li>
+                    <li><span>{t('heroPage.shotsPerSecond')}</span> <strong>{s.roundsPerSecond ? s.roundsPerSecond.toFixed(2) : '—'}</strong></li>
+                    <li><span>{t('heroPage.reloadTime')}</span> <strong>{s.reloadTime ? `${s.reloadTime.toFixed(2)}s` : '—'}</strong></li>
                     <li><span>{t('heroPage.lightMelee')}</span> <strong>{s.lightMeleeDamage ?? '—'}</strong></li>
                     <li><span>{t('heroPage.heavyMelee')}</span> <strong>{s.heavyMeleeDamage ?? '—'}</strong></li>
                   </ul>
                 </div>
 
-                {/* Vitality Stats */}
-                <div className="hero-stats-card">
+                {/* Vitality Stats - зелёный блок */}
+                <div className="hero-stats-card vitality-block">
                   <h3 className="hero-stats-card__title">{t('heroPage.vitalityStats')}</h3>
                   <ul className="hero-stats-list">
                     <li><span>{t('heroPage.maxHealth')}</span> <strong>{s.maxHealth ?? '—'}</strong></li>
@@ -140,7 +180,7 @@ function HeroPage() {
                   </ul>
                 </div>
 
-                {/* Growth Stats */}
+                {/* Growth Stats - нейтральный */}
                 <div className="hero-stats-card">
                   <h3 className="hero-stats-card__title">{t('heroPage.growthStats')}</h3>
                   <ul className="hero-stats-list">
@@ -159,6 +199,10 @@ function HeroPage() {
                 <div className="abilities-list">
                   {hero.abilities.map((ability, idx) => {
                     const descText = getAbilityDescription(ability);
+                    const props = ability.properties || {};
+                    const upgrades = ability.upgrades || [];
+                    const displayProps = getDisplayProps(props);
+
                     return (
                       <div className="ability-card" key={idx}>
                         {ability.image_url ? (
@@ -170,7 +214,7 @@ function HeroPage() {
                         ) : (
                           <div className="ability-card__icon">{ability.name.slice(0, 2)}</div>
                         )}
-                        <div>
+                        <div className="ability-card__content">
                           <div className="ability-card__name">{ability.name}</div>
                           {descText && (
                             <div
@@ -178,10 +222,36 @@ function HeroPage() {
                               dangerouslySetInnerHTML={{ __html: descText }}
                             />
                           )}
-                          {(ability.cooldown || ability.cast_range) && (
-                            <div className="ability-card__meta">
-                              {ability.cooldown && <span>⏱ {ability.cooldown}</span>}
-                              {ability.cast_range && <span>📏 {ability.cast_range}</span>}
+
+                          {/* Свойства */}
+                          {displayProps.length > 0 && (
+                            <div className="ability-card__props">
+                              {displayProps.map(([key, prop]) => {
+                                const value = prop.value;
+                                const label = translatePropKey(key);
+                                return (
+                                  <span key={key} className="ability-card__prop">
+                                    <span className="ability-card__prop-label">{label}</span>
+                                    <span className="ability-card__prop-value">{value}</span>
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          )}
+
+                          {/* Улучшения (t1, t2, t3) */}
+                          {upgrades.length > 0 && (
+                            <div className="ability-card__upgrades">
+                              {upgrades.map((upgrade, i) => {
+                                const text = formatUpgrade(upgrade);
+                                if (!text) return null;
+                                return (
+                                  <div key={i} className="ability-card__upgrade">
+                                    <span className="ability-card__upgrade-tier">T{i+1}</span>
+                                    <span className="ability-card__upgrade-desc">{text}</span>
+                                  </div>
+                                );
+                              })}
                             </div>
                           )}
                         </div>
