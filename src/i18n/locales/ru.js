@@ -4,6 +4,7 @@ export default {
     items: 'Предметы',
     randomBuild: 'Случайный билд',
     tierlist: 'Тир-лист',
+    compare: 'Сравнение',
   },
   tierList: {
     title: 'Тир-лист героев',
@@ -14,6 +15,20 @@ export default {
     emptyPool: 'Все герои распределены',
     emptyTier: 'Перетащи сюда',
     confirmReset: 'Сбросить тир-лист? Все герои вернутся в пул.',
+  },
+  compare: {
+    title: 'Сравнение героев',
+    selectHint: 'Выберите до 3 героев из списка ниже',
+    selectAtLeastOne: 'Выберите хотя бы одного героя для сравнения',
+    searchPlaceholder: 'Поиск героя...',
+    attribute: 'Характеристика',
+    role: 'Роль',
+    complexity: 'Сложность',
+    winrate: 'Винрейт',
+    pickrate: 'Пикрейт',
+    matches: 'Матчи',
+    description: 'Описание',
+    abilities: 'Способности',
   },
   home: {
     title: 'Мета-хаб',

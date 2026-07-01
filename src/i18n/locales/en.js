@@ -4,6 +4,7 @@ export default {
     items: 'Items',
     randomBuild: 'Random Build',
     tierlist: 'Tier List',
+    compare: 'Compare',
   },
   tierList: {
     title: 'Hero Tier List',
@@ -14,6 +15,20 @@ export default {
     emptyPool: 'All heroes are distributed',
     emptyTier: 'Drop here',
     confirmReset: 'Reset tier list? All heroes will return to the pool.',
+  },
+  compare: {
+    title: 'Compare Heroes',
+    selectHint: 'Select up to 3 heroes from the list below',
+    selectAtLeastOne: 'Select at least one hero to compare',
+    searchPlaceholder: 'Search hero...',
+    attribute: 'Attribute',
+    role: 'Role',
+    complexity: 'Complexity',
+    winrate: 'Winrate',
+    pickrate: 'Pickrate',
+    matches: 'Matches',
+    description: 'Description',
+    abilities: 'Abilities',
   },
   home: {
     title: 'Meta Hub',
