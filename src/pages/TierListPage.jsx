@@ -109,6 +109,9 @@ function TierListPage() {
           </div>
         </div>
         <div className="tierlist-actions">
+          <span className="tierlist-reset-hint">
+            {t('tierList.resetHint')}
+          </span>
           <button className="btn btn-secondary" onClick={handleReset}>
             {t('tierList.reset')}
           </button>
