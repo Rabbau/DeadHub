@@ -254,7 +254,6 @@ export async function fetchHeroDetail(id, language = 'english') {
         const weaponData = await httpGet(`${ASSETS_API_BASE}/v1/assets/items/${weaponClass}?language=${language}`, {
           cacheKey: `weapon_${weaponClass}_${language}`,
         });
-        console.log(`[DEBUG] Weapon data for ${weaponClass}:`, weaponData);
         
         // Берём данные из weapon_info
         const info = weaponData.weapon_info || {};
