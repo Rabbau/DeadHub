@@ -16,16 +16,18 @@ function TierListPage() {
   const { heroes, loading } = useHeroes();
   const {
     tiers,
-    availableHeroes,
+    availableHeroIds,
     init,
     moveToTier,
     moveToPool,
     moveBetweenTiers,
+    reorder,
     reset,
   } = useTierStore();
   const t = useTranslation();
 
   const activeHeroes = heroes.filter(h => h.stats.pickrate > 0);
+  const heroMap = Object.fromEntries(heroes.map(h => [h.id, h]));
 
   useEffect(() => {
     if (activeHeroes.length) {
@@ -60,7 +62,6 @@ function TierListPage() {
     }
   };
 
-  // --- Сброс ---
   const handleReset = () => {
     if (confirm(t('tierList.confirmReset'))) {
       reset(activeHeroes);
@@ -76,23 +77,27 @@ function TierListPage() {
     );
   }
 
-  const total = Object.values(tiers).flat().length + availableHeroes.length;
+  const total = Object.values(tiers).flat().length + availableHeroIds.length;
 
   // Компонент карточки героя
-  const HeroCard = ({ hero, container }) => (
-    <div
-      className="tier-hero-card"
-      draggable="true"
-      onDragStart={(e) => handleDragStart(e, hero.id, container)}
-    >
-      {hero.image_url ? (
-        <img src={hero.image_url} alt={hero.name} className="tier-hero-card__img" />
-      ) : (
-        <div className="tier-hero-card__placeholder">{hero.name.slice(0, 2)}</div>
-      )}
-      <span className="tier-hero-card__name">{hero.name}</span>
-    </div>
-  );
+  const HeroCard = ({ heroId, container }) => {
+    const hero = heroMap[heroId];
+    if (!hero) return null;
+    return (
+      <div
+        className="tier-hero-card"
+        draggable="true"
+        onDragStart={(e) => handleDragStart(e, heroId, container)}
+      >
+        {hero.image_url ? (
+          <img src={hero.image_url} alt={hero.name} className="tier-hero-card__img" />
+        ) : (
+          <div className="tier-hero-card__placeholder">{hero.name.slice(0, 2)}</div>
+        )}
+        <span className="tier-hero-card__name">{hero.name}</span>
+      </div>
+    );
+  };
 
   return (
     <div className="page tierlist-page">
@@ -107,7 +112,6 @@ function TierListPage() {
           <button className="btn btn-secondary" onClick={handleReset}>
             {t('tierList.reset')}
           </button>
-          {/* Кнопка PNG удалена */}
         </div>
       </div>
 
@@ -127,8 +131,8 @@ function TierListPage() {
                 {tierKey}
               </div>
               <div className="tier-row__container">
-                {tiers[tierKey]?.map((hero) => (
-                  <HeroCard key={hero.id} hero={hero} container={tierKey} />
+                {tiers[tierKey]?.map((heroId) => (
+                  <HeroCard key={heroId} heroId={heroId} container={tierKey} />
                 ))}
                 {(!tiers[tierKey] || tiers[tierKey].length === 0) && (
                   <div className="tier-row__empty">{t('tierList.emptyTier')}</div>
@@ -145,13 +149,13 @@ function TierListPage() {
             onDrop={(e) => handleDrop(e, 'pool')}
           >
             <div className="hero-pool__header">
-              {t('tierList.poolHeader', { count: availableHeroes.length })}
+              {t('tierList.poolHeader', { count: availableHeroIds.length })}
             </div>
             <div className="hero-pool__grid">
-              {availableHeroes.map((hero) => (
-                <HeroCard key={hero.id} hero={hero} container="pool" />
+              {availableHeroIds.map((heroId) => (
+                <HeroCard key={heroId} heroId={heroId} container="pool" />
               ))}
-              {availableHeroes.length === 0 && (
+              {availableHeroIds.length === 0 && (
                 <div className="hero-pool__empty">{t('tierList.emptyPool')}</div>
               )}
             </div>

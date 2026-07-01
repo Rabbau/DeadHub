@@ -6,49 +6,53 @@ const TIER_ORDER = ['S', 'A', 'B', 'C', 'D'];
 export const useTierStore = create(
   persist(
     (set, get) => ({
+      // Храним только ID героев
       tiers: { S: [], A: [], B: [], C: [], D: [] },
-      availableHeroes: [],
+      availableHeroIds: [],
       initialized: false,
 
-      init: (activeHeroes) => {
+      // Инициализация: принимает массив героев, сохраняет их ID
+      init: (heroes) => {
         const state = get();
         if (state.initialized) return;
-        // Если уже есть сохранённые данные, не сбрасываем
-        if (state.availableHeroes.length > 0 || Object.values(state.tiers).some(a => a.length > 0)) {
+        // Если уже есть сохранённые ID, не сбрасываем
+        if (state.availableHeroIds.length > 0 || Object.values(state.tiers).some(a => a.length > 0)) {
           set({ initialized: true });
           return;
         }
-        set({ availableHeroes: activeHeroes, initialized: true });
+        const ids = heroes.map(h => h.id);
+        set({ availableHeroIds: ids, initialized: true });
       },
 
       moveToTier: (heroId, tier) => {
-        const { availableHeroes, tiers } = get();
-        const idx = availableHeroes.findIndex(h => h.id === heroId);
+        const { availableHeroIds, tiers } = get();
+        const idx = availableHeroIds.indexOf(heroId);
         if (idx === -1) return;
-        const [hero] = availableHeroes.splice(idx, 1);
+        const newAvailable = [...availableHeroIds];
+        newAvailable.splice(idx, 1);
         const newTiers = { ...tiers };
-        newTiers[tier] = [...newTiers[tier], hero];
-        set({ availableHeroes: [...availableHeroes], tiers: newTiers });
+        newTiers[tier] = [...newTiers[tier], heroId];
+        set({ availableHeroIds: newAvailable, tiers: newTiers });
       },
 
       moveToPool: (heroId, fromTier) => {
-        const { availableHeroes, tiers } = get();
+        const { availableHeroIds, tiers } = get();
         const list = [...tiers[fromTier]];
-        const idx = list.findIndex(h => h.id === heroId);
+        const idx = list.indexOf(heroId);
         if (idx === -1) return;
-        const [hero] = list.splice(idx, 1);
+        list.splice(idx, 1);
         const newTiers = { ...tiers, [fromTier]: list };
-        set({ availableHeroes: [...availableHeroes, hero], tiers: newTiers });
+        set({ availableHeroIds: [...availableHeroIds, heroId], tiers: newTiers });
       },
 
       moveBetweenTiers: (heroId, from, to) => {
         const { tiers } = get();
         const fromList = [...tiers[from]];
-        const idx = fromList.findIndex(h => h.id === heroId);
+        const idx = fromList.indexOf(heroId);
         if (idx === -1) return;
-        const [hero] = fromList.splice(idx, 1);
+        fromList.splice(idx, 1);
         const toList = [...(tiers[to] || [])];
-        toList.push(hero);
+        toList.push(heroId);
         set({ tiers: { ...tiers, [from]: fromList, [to]: toList } });
       },
 
@@ -60,27 +64,36 @@ export const useTierStore = create(
         set({ tiers: { ...tiers, [tier]: list } });
       },
 
-      reset: (activeHeroes) => {
+      reset: (heroes) => {
+        const ids = heroes.map(h => h.id);
         set({
           tiers: { S: [], A: [], B: [], C: [], D: [] },
-          availableHeroes: activeHeroes,
+          availableHeroIds: ids,
           initialized: true,
         });
       },
 
-      findHero: (id) => {
-        const { availableHeroes, tiers } = get();
-        const all = [...availableHeroes, ...Object.values(tiers).flat()];
-        return all.find(h => h.id === id);
+      // Вспомогательные методы для работы с ID
+      getHeroIdsInTiers: () => {
+        const { tiers } = get();
+        return Object.values(tiers).flat();
       },
 
-      getContainer: (id) => {
-        const { availableHeroes, tiers } = get();
-        if (availableHeroes.some(h => h.id === id)) return 'pool';
-        for (const key of TIER_ORDER) {
-          if (tiers[key].some(h => h.id === id)) return key;
+      getAllHeroIds: () => {
+        const { availableHeroIds, tiers } = get();
+        return [...availableHeroIds, ...Object.values(tiers).flat()];
+      },
+
+      isHeroInTier: (heroId) => {
+        const { tiers } = get();
+        for (const tier of TIER_ORDER) {
+          if (tiers[tier].includes(heroId)) return tier;
         }
         return null;
+      },
+
+      isHeroInPool: (heroId) => {
+        return get().availableHeroIds.includes(heroId);
       },
     }),
     { name: 'tier-storage' }
