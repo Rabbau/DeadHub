@@ -1,5 +1,7 @@
 # Dead Hub
 
+[🌐 Live Demo](https://dead-hub.vercel.app/) • [📖 Documentation](#) • [🐛 Issues](../../issues)
+
 Фан-сайт сообщества для игры **Deadlock** (Valve) — справочник по героям, каталог предметов и генератор случайного билда. Данные загружаются с [deadlock-api.com](https://deadlock-api.com).
 
 ## Технологии
