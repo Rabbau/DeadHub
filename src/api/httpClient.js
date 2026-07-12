@@ -3,6 +3,8 @@
  * Абстрагирует fetch() — при замене на axios или другой клиент меняется только этот файл.
  */
 
+const CACHE_VERSION = '1';
+const CACHE_PREFIX = `dlhub_v${CACHE_VERSION}_`;
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 час
 
 /**
@@ -12,11 +14,11 @@ const CACHE_TTL_MS = 60 * 60 * 1000; // 1 час
  */
 function readCache(key) {
   try {
-    const raw = localStorage.getItem(`dlhub_${key}`);
+    const raw = localStorage.getItem(`${CACHE_PREFIX}${key}`);
     if (!raw) return null;
     const { data, ts } = JSON.parse(raw);
     if (Date.now() - ts > CACHE_TTL_MS) {
-      localStorage.removeItem(`dlhub_${key}`);
+      localStorage.removeItem(`${CACHE_PREFIX}${key}`);
       return null;
     }
     return data;
@@ -32,7 +34,7 @@ function readCache(key) {
  */
 function writeCache(key, data) {
   try {
-    localStorage.setItem(`dlhub_${key}`, JSON.stringify({ data, ts: Date.now() }));
+    localStorage.setItem(`${CACHE_PREFIX}${key}`, JSON.stringify({ data, ts: Date.now() }));
   } catch {
     // localStorage может быть заполнен — не критично
   }

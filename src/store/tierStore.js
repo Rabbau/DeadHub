@@ -3,6 +3,15 @@ import { persist } from 'zustand/middleware';
 
 const TIER_ORDER = ['S', 'A', 'B', 'C', 'D'];
 
+function arraysEqual(a, b) {
+  if (a.length !== b.length) return false;
+  return a.every((value, index) => value === b[index]);
+}
+
+function tiersEqual(left, right) {
+  return TIER_ORDER.every((tier) => arraysEqual(left[tier] || [], right[tier] || []));
+}
+
 export const useTierStore = create(
   persist(
     (set, get) => ({
@@ -11,17 +20,47 @@ export const useTierStore = create(
       availableHeroIds: [],
       initialized: false,
 
-      // Инициализация: принимает массив героев, сохраняет их ID
-      init: (heroes) => {
+      // Инициализация и синхронизация с актуальным списком героев
+      init: (heroIds) => {
         const state = get();
-        if (state.initialized) return;
-        // Если уже есть сохранённые ID, не сбрасываем
-        if (state.availableHeroIds.length > 0 || Object.values(state.tiers).some(a => a.length > 0)) {
-          set({ initialized: true });
+        const heroIdSet = new Set(heroIds);
+
+        const hasExistingData =
+          state.availableHeroIds.length > 0 ||
+          Object.values(state.tiers).some(a => a.length > 0);
+
+        if (!hasExistingData) {
+          if (arraysEqual(state.availableHeroIds, heroIds) && state.initialized) return;
+          set({ availableHeroIds: heroIds, initialized: true });
           return;
         }
-        const ids = heroes.map(h => h.id);
-        set({ availableHeroIds: ids, initialized: true });
+
+        const newTiers = {};
+        for (const tier of TIER_ORDER) {
+          newTiers[tier] = (state.tiers[tier] || []).filter(id => heroIdSet.has(id));
+        }
+
+        const newPool = state.availableHeroIds.filter(id => heroIdSet.has(id));
+        const assignedIds = new Set([
+          ...Object.values(newTiers).flat(),
+          ...newPool,
+        ]);
+        const newHeroIds = heroIds.filter(id => !assignedIds.has(id));
+        const nextPool = [...newPool, ...newHeroIds];
+
+        if (
+          tiersEqual(state.tiers, newTiers) &&
+          arraysEqual(state.availableHeroIds, nextPool) &&
+          state.initialized
+        ) {
+          return;
+        }
+
+        set({
+          tiers: newTiers,
+          availableHeroIds: nextPool,
+          initialized: true,
+        });
       },
 
       moveToTier: (heroId, tier) => {
@@ -64,8 +103,10 @@ export const useTierStore = create(
         set({ tiers: { ...tiers, [tier]: list } });
       },
 
-      reset: (heroes) => {
-        const ids = heroes.map(h => h.id);
+      reset: (heroIds) => {
+        const ids = Array.isArray(heroIds) && typeof heroIds[0] === 'object'
+          ? heroIds.map(h => h.id)
+          : heroIds;
         set({
           tiers: { S: [], A: [], B: [], C: [], D: [] },
           availableHeroIds: ids,

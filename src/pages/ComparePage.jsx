@@ -1,16 +1,15 @@
-import { useState } from 'react';
 import { useHeroes } from '../hooks/useHeroes';
 import { useCompareStore } from '../store/compareStore';
 import { useTranslation } from '../hooks/useTranslation';
 import { formatWinrate, formatPickrate, winrateColor } from '../services/heroService';
 
 function ComparePage() {
-  const { heroes, loading, search, setSearch } = useHeroes();
-  const { selectedIds, addHero, removeHero, replace, clear } = useCompareStore();
+  const { allHeroes, loading } = useHeroes();
+  const { selectedIds, addHero, removeHero, replace, search, setSearch, history, applyHistory } = useCompareStore();
   const t = useTranslation();
 
   // Берём только героев с pickrate > 0
-  const activeHeroes = heroes.filter(h => h.stats.pickrate > 0);
+  const activeHeroes = allHeroes.filter(h => h.stats.pickrate > 0);
   const selectedHeroes = activeHeroes.filter(h => selectedIds.includes(h.id));
   const filteredHeroes = activeHeroes.filter(h =>
     h.name.toLowerCase().includes(search.toLowerCase())
@@ -39,6 +38,31 @@ function ComparePage() {
   return (
     <div className="page compare-page">
       <h1 className="page-title">{t('compare.title')}</h1>
+
+      {history.length > 0 && (
+        <div className="compare-history">
+          <h2 className="section__title">{t('compare.history')}</h2>
+          <div className="compare-history__list">
+            {history.map(entry => {
+              const names = entry.ids
+                .map(id => allHeroes.find(h => h.id === id)?.name)
+                .filter(Boolean)
+                .join(' vs ');
+              return (
+                <button
+                  key={entry.key}
+                  type="button"
+                  className="compare-history__item"
+                  onClick={() => applyHistory(entry.ids)}
+                >
+                  {names || entry.ids.join(', ')}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div className="compare-container">
         {/* Панель выбранных героев */}
         <div className="compare-panel">

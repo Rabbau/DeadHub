@@ -1,21 +1,88 @@
 import { useRandomBuild } from '../hooks/useRandomBuild';
+import { useHeroes } from '../hooks/useHeroes';
 import ItemCard from '../components/ui/ItemCard';
 import { useTranslation } from '../hooks/useTranslation';
 
+const SLOT_LABEL_KEYS = {
+  weapon: 'itemCard.slotWeapon',
+  spirit: 'itemCard.slotSpirit',
+  vitality: 'itemCard.slotVitality',
+};
+
 function BuildPage() {
-  const { build, loading, generate } = useRandomBuild();
+  const { build, loading, error, options, updateOptions, generate } = useRandomBuild();
+  const { allHeroes } = useHeroes();
   const t = useTranslation();
+
+  const activeHeroes = allHeroes.filter(h => h.stats.pickrate > 0);
+
+  const errorMessage = error
+    ? (t(`buildPage.errors.${error}`) !== `buildPage.errors.${error}`
+        ? t(`buildPage.errors.${error}`)
+        : error)
+    : null;
+
+  const toggleSlot = (slot) => {
+    updateOptions({
+      slots: { ...options.slots, [slot]: !options.slots[slot] },
+    });
+  };
 
   return (
     <div className="page build-page">
       <h1 className="page-title">{t('buildPage.title')}</h1>
-      <p className="build-page__intro">
-        {t('buildPage.description')}
-      </p>
+      <p className="build-page__intro">{t('buildPage.description')}</p>
+
+      <div className="build-options">
+        <label className="build-options__field">
+          <span>{t('buildPage.heroSelect')}</span>
+          <select
+            className="select"
+            value={options.heroId}
+            onChange={e => updateOptions({ heroId: e.target.value })}
+          >
+            <option value="">{t('buildPage.randomHero')}</option>
+            {activeHeroes.map(hero => (
+              <option key={hero.id} value={hero.id}>{hero.name}</option>
+            ))}
+          </select>
+        </label>
+
+        <div className="build-options__field">
+          <span>{t('buildPage.slots')}</span>
+          <div className="chip-group">
+            {['weapon', 'spirit', 'vitality'].map(slot => (
+              <button
+                key={slot}
+                type="button"
+                className={`chip ${options.slots[slot] ? 'active' : ''}`}
+                onClick={() => toggleSlot(slot)}
+              >
+                {t(SLOT_LABEL_KEYS[slot])}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <label className="build-options__field build-options__field--inline">
+          <input
+            type="checkbox"
+            checked={!options.allowDuplicates}
+            onChange={e => updateOptions({ allowDuplicates: !e.target.checked })}
+          />
+          <span>{t('buildPage.noDuplicates')}</span>
+        </label>
+      </div>
 
       <button className="btn btn-primary" onClick={generate} disabled={loading}>
         {loading ? t('common.loading') : t('buildPage.generate')}
       </button>
+
+      {errorMessage && (
+        <p className="build-page__error state-error" style={{ marginTop: '1rem' }}>
+          ⚠️ {t('common.error')}: {errorMessage}
+        </p>
+      )}
 
       {build && (
         <div className="build-card">

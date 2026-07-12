@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useHeroes } from '../hooks/useHeroes';
 import { useTierStore } from '../store/tierStore';
 import { useTranslation } from '../hooks/useTranslation';
@@ -26,14 +26,17 @@ function TierListPage() {
   } = useTierStore();
   const t = useTranslation();
 
-  const activeHeroes = heroes.filter(h => h.stats.pickrate > 0);
+  const activeHeroIds = useMemo(
+    () => heroes.filter(h => h.stats.pickrate > 0).map(h => h.id),
+    [heroes],
+  );
   const heroMap = Object.fromEntries(heroes.map(h => [h.id, h]));
 
   useEffect(() => {
-    if (activeHeroes.length) {
-      init(activeHeroes);
+    if (activeHeroIds.length) {
+      init(activeHeroIds);
     }
-  }, [activeHeroes, init]);
+  }, [activeHeroIds, init]);
 
   // --- Drag handlers ---
   const handleDragStart = (e, heroId, from) => {
@@ -64,7 +67,7 @@ function TierListPage() {
 
   const handleReset = () => {
     if (confirm(t('tierList.confirmReset'))) {
-      reset(activeHeroes);
+      reset(activeHeroIds);
     }
   };
 

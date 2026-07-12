@@ -1,6 +1,7 @@
 export default {
   nav: {
     heroes: 'Heroes',
+    meta: 'Meta',
     items: 'Items',
     randomBuild: 'Random Build',
     tierlist: 'Tier List',
@@ -19,6 +20,7 @@ export default {
   },
   compare: {
     title: 'Compare Heroes',
+    history: 'Recent comparisons',
     selectHint: 'Select up to 3 heroes from the list below',
     selectAtLeastOne: 'Select at least one hero to compare',
     searchPlaceholder: 'Search hero...',
@@ -87,6 +89,10 @@ export default {
     bulletDamagePerLevel: 'Bullet DMG per Level',
     meleeDamagePerLevel: 'Melee DMG per Level',
     techPowerPerLevel: 'Spirit Power per Level',
+    popularBuilds: 'Popular Builds',
+    popularItems: 'Frequently Bought Items',
+    popularCombos: 'Popular Item Pairs',
+    matchesShort: 'matches',
   },
   abilityProps: {
     AbilityCharges: 'Charges',
@@ -375,7 +381,11 @@ export default {
   },
   itemsPage: {
     title: 'All Items',
-    count: 'items', 
+    count: 'items',
+    searchPlaceholder: 'Search item...',
+    allSlots: 'All slots',
+    allPrices: 'All prices',
+    noResults: 'No items match the filters',
     t1: 'T1 (800)',
     t2: 'T2 (1600)',
     t3: 'T3 (3200)',
@@ -383,10 +393,39 @@ export default {
     t5: 'T5 (> 6400)',
     indev: 'InDev (hidden)'
   },
+  itemPage: {
+    back: '← Back to items',
+    notFound: 'Item not found',
+    globalStats: 'Meta statistics',
+    winrate: 'Win rate',
+    matches: 'Matches',
+    players: 'Players',
+    heroUsage: 'Heroes who buy this item',
+    matchesShort: 'matches',
+  },
+  meta: {
+    title: 'Meta Dashboard',
+    subtitle: 'Live stats across {count} heroes',
+    heroOfWeek: 'Hero of the Week',
+    topWinrate: 'Top Win Rate',
+    topPickrate: 'Top Pick Rate',
+    matches: 'matches',
+  },
   buildPage: {
     title: 'Random Build of the Day',
-    description: 'Press the button to get a hero and 12 items (4 weapons, 4 spirit, 4 vitality).',
-    generate: '🎲 Generate'
+    description: 'Configure options and get a hero with items from selected slots.',
+    generate: '🎲 Generate',
+    heroSelect: 'Hero',
+    randomHero: 'Random hero',
+    slots: 'Slots',
+    noDuplicates: 'No duplicate items',
+    errors: {
+      heroesNotLoaded: 'Hero list is not loaded yet. Wait or refresh the page.',
+      noHeroes: 'No heroes available for generation.',
+      noSlots: 'Select at least one item slot.',
+      noItems: 'Could not pick items for the selected filters.',
+      generateError: 'Failed to generate a build. Please try again.',
+    },
   },
   itemCard: {
     slotWeapon: 'Weapon',

@@ -1,8 +1,10 @@
 import { useParams, Link } from 'react-router-dom';
 import { useHeroDetail } from '../hooks/useHeroDetail';
+import { useHeroBuilds } from '../hooks/useHeroBuilds';
 import { formatWinrate, formatPickrate, winrateColor } from '../services/heroService';
 import { useHeroStore } from '../store/heroStore';
 import { useTranslation } from '../hooks/useTranslation';
+import ItemCard from '../components/ui/ItemCard';
 
 function getAbilityDescription(ability) {
   const desc = ability.description;
@@ -26,6 +28,7 @@ function HeroPage() {
   const { id } = useParams();
   const language = useHeroStore(state => state.language);
   const { hero, loading, error } = useHeroDetail(id, language);
+  const { popularItems, combinations, loading: buildsLoading } = useHeroBuilds(hero?.id);
   const t = useTranslation();
 
   if (loading) {
@@ -192,6 +195,61 @@ function HeroPage() {
                 </div>
               </div>
             </div>
+
+            {(buildsLoading || popularItems.length > 0 || combinations.length > 0) && (
+              <div className="section">
+                <h2 className="section__title">{t('heroPage.popularBuilds')}</h2>
+                {buildsLoading ? (
+                  <p style={{ color: 'var(--text-3)' }}>{t('common.loading')}</p>
+                ) : (
+                  <>
+                    {popularItems.length > 0 && (
+                      <div className="popular-items-block">
+                        <h3 className="popular-items-block__title">{t('heroPage.popularItems')}</h3>
+                        <div className="popular-items-grid">
+                          {popularItems.map(entry => (
+                            <Link to={`/items/${entry.item.id}`} key={entry.itemId} className="popular-item-row">
+                              <ItemCard item={entry.item} compact />
+                              <div className="popular-item-row__stats">
+                                <span className={`winrate-${winrateColor(entry.winrate)}`}>
+                                  {formatWinrate(entry.winrate)}
+                                </span>
+                                <span>{entry.matches.toLocaleString()} {t('heroPage.matchesShort')}</span>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {combinations.length > 0 && (
+                      <div className="popular-combos-block">
+                        <h3 className="popular-items-block__title">{t('heroPage.popularCombos')}</h3>
+                        <div className="popular-combos-list">
+                          {combinations.map((combo, idx) => (
+                            <div key={idx} className="popular-combo-card">
+                              <div className="popular-combo-card__items">
+                                {combo.items.map(item => (
+                                  <Link to={`/items/${item.id}`} key={item.id}>
+                                    <ItemCard item={item} compact />
+                                  </Link>
+                                ))}
+                              </div>
+                              <div className="popular-combo-card__stats">
+                                <span className={`winrate-${winrateColor(combo.winrate)}`}>
+                                  WR {formatWinrate(combo.winrate)}
+                                </span>
+                                <span>{combo.matches.toLocaleString()} {t('heroPage.matchesShort')}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
 
             <div className="section">
               <h2 className="section__title">{t('heroPage.abilities')}</h2>

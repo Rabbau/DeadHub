@@ -82,3 +82,8 @@ export async function fetchAllItems(language = 'english') {
     .map(normalizeItem)
     .filter(item => item.type === 'upgrade');
 }
+
+export async function fetchItemById(id, language = 'english') {
+  const items = await fetchAllItems(language);
+  return items.find(item => item.id === Number(id)) ?? null;
+}

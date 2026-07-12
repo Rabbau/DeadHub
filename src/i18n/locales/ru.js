@@ -1,6 +1,7 @@
 export default {
   nav: {
     heroes: 'Герои',
+    meta: 'Мета',
     items: 'Предметы',
     randomBuild: 'Случайный билд',
     tierlist: 'Тир-лист',
@@ -19,6 +20,7 @@ export default {
   },
   compare: {
     title: 'Сравнение героев',
+    history: 'Недавние сравнения',
     selectHint: 'Выберите до 3 героев из списка ниже',
     selectAtLeastOne: 'Выберите хотя бы одного героя для сравнения',
     searchPlaceholder: 'Поиск героя...',
@@ -87,6 +89,10 @@ export default {
     bulletDamagePerLevel: 'Урон оружия за уровень',
     meleeDamagePerLevel: 'Урон ближней атаки за уровень',
     techPowerPerLevel: 'Сила духа за уровень',
+    popularBuilds: 'Популярные билды',
+    popularItems: 'Часто покупаемые предметы',
+    popularCombos: 'Популярные пары предметов',
+    matchesShort: 'матчей',
   },
   abilityProps: {
     AbilityCharges: 'Заряды',
@@ -375,7 +381,11 @@ export default {
   },
   itemsPage: {
     title: 'Все предметы',
-    count: 'предметов', 
+    count: 'предметов',
+    searchPlaceholder: 'Поиск предмета...',
+    allSlots: 'Все слоты',
+    allPrices: 'Все цены',
+    noResults: 'Ничего не найдено по фильтрам',
     t1: 'T1 (800)',
     t2: 'T2 (1600)',
     t3: 'T3 (3200)',
@@ -383,10 +393,39 @@ export default {
     t5: 'T5 (> 6400)',
     indev: 'InDev (скрытые)'
   },
+  itemPage: {
+    back: '← Назад к предметам',
+    notFound: 'Предмет не найден',
+    globalStats: 'Статистика в мете',
+    winrate: 'Винрейт',
+    matches: 'Матчи',
+    players: 'Игроков',
+    heroUsage: 'С какими героями берут',
+    matchesShort: 'матчей',
+  },
+  meta: {
+    title: 'Мета-дашборд',
+    subtitle: 'Актуальная статистика по {count} героям',
+    heroOfWeek: 'Герой недели',
+    topWinrate: 'Топ винрейт',
+    topPickrate: 'Топ пикрейт',
+    matches: 'матчей',
+  },
   buildPage: {
     title: 'Случайный билд дня',
-    description: 'Нажми кнопку — получи героя и 12 предметов (4 оружия, 4 духа, 4 жизнестойкости).',
-    generate: '🎲 Сгенерировать'
+    description: 'Настрой параметры и получи героя с предметами по выбранным слотам.',
+    generate: '🎲 Сгенерировать',
+    heroSelect: 'Герой',
+    randomHero: 'Случайный герой',
+    slots: 'Слоты',
+    noDuplicates: 'Без дубликатов предметов',
+    errors: {
+      heroesNotLoaded: 'Список героев ещё не загружен. Подожди или обнови страницу.',
+      noHeroes: 'Нет доступных героев для генерации.',
+      noSlots: 'Выбери хотя бы один слот предметов.',
+      noItems: 'Не удалось подобрать предметы по выбранным фильтрам.',
+      generateError: 'Не удалось сгенерировать билд. Попробуй ещё раз.',
+    },
   },
   itemCard: {
     slotWeapon: 'Оружие',

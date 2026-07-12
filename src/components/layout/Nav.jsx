@@ -63,6 +63,7 @@ function Nav() {
 
           <div className="nav__links">
             <NavLink to="/" className="nav__link" end>{t('nav.heroes')}</NavLink>
+            <NavLink to="/meta" className="nav__link">{t('nav.meta')}</NavLink>
             <NavLink to="/items" className="nav__link">{t('nav.items')}</NavLink>
             <NavLink to="/build" className="nav__link">{t('nav.randomBuild')}</NavLink>
             <NavLink to="/tierlist" className="nav__link">{t('nav.tierlist')}</NavLink>
@@ -97,10 +98,11 @@ function Nav() {
 
         <div className="nav__drawer-links">
           <NavLink to="/" className="nav__link" end onClick={closeDrawer}>{t('nav.heroes')}</NavLink>
+          <NavLink to="/meta" className="nav__link" onClick={closeDrawer}>{t('nav.meta')}</NavLink>
           <NavLink to="/items" className="nav__link" onClick={closeDrawer}>{t('nav.items')}</NavLink>
           <NavLink to="/build" className="nav__link" onClick={closeDrawer}>{t('nav.randomBuild')}</NavLink>
           <NavLink to="/tierlist" className="nav__link" onClick={closeDrawer}>{t('nav.tierlist')}</NavLink>
-          <NavLink to="/compare" className="nav__link">{t('nav.compare')}</NavLink>
+          <NavLink to="/compare" className="nav__link" onClick={closeDrawer}>{t('nav.compare')}</NavLink>
         </div>
 
         <div className="nav__drawer-lang">
