@@ -63,17 +63,7 @@ function BuildPage() {
             ))}
           </div>
         </div>
-
-        <label className="build-options__field build-options__field--inline">
-          <input
-            type="checkbox"
-            checked={!options.allowDuplicates}
-            onChange={e => updateOptions({ allowDuplicates: !e.target.checked })}
-          />
-          <span>{t('buildPage.noDuplicates')}</span>
-        </label>
       </div>
-
       <button className="btn btn-primary" onClick={generate} disabled={loading}>
         {loading ? t('common.loading') : t('buildPage.generate')}
       </button>
