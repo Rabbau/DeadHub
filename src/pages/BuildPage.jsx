@@ -9,6 +9,11 @@ const SLOT_LABEL_KEYS = {
   vitality: 'itemCard.slotVitality',
 };
 
+const MODE_LABEL_KEYS = {
+  balance: 'buildPage.modeBalance',
+  random: 'buildPage.modeRandom',
+};
+
 function BuildPage() {
   const { build, loading, error, options, updateOptions, generate } = useRandomBuild();
   const { allHeroes } = useHeroes();
@@ -59,6 +64,22 @@ function BuildPage() {
                 onClick={() => toggleSlot(slot)}
               >
                 {t(SLOT_LABEL_KEYS[slot])}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="build-options__field">
+          <span>{t('buildPage.mode')}</span>
+          <div className="chip-group">
+            {['balance', 'random'].map(mode => (
+              <button
+                key={mode}
+                type="button"
+                className={`chip ${options.mode === mode ? 'active' : ''}`}
+                onClick={() => updateOptions({ mode })}
+              >
+                {t(MODE_LABEL_KEYS[mode])}
               </button>
             ))}
           </div>

@@ -419,6 +419,9 @@ export default {
     randomHero: 'Случайный герой',
     slots: 'Слоты',
     noDuplicates: 'Без дубликатов предметов',
+    mode: 'Распределение предметов',
+    modeBalance: 'Баланс',
+    modeRandom: 'Полный рандом',
     errors: {
       heroesNotLoaded: 'Список героев ещё не загружен. Подожди или обнови страницу.',
       noHeroes: 'Нет доступных героев для генерации.',

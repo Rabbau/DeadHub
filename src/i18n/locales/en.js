@@ -419,6 +419,9 @@ export default {
     randomHero: 'Random hero',
     slots: 'Slots',
     noDuplicates: 'No duplicate items',
+    mode: 'Item distribution',
+    modeBalance: 'Balanced',
+    modeRandom: 'Full random',
     errors: {
       heroesNotLoaded: 'Hero list is not loaded yet. Wait or refresh the page.',
       noHeroes: 'No heroes available for generation.',

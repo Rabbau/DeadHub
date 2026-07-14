@@ -3,12 +3,36 @@ import { useHeroStore } from '../store/heroStore.js';
 import { fetchItemsBySlot } from '../api/itemApi.js';
 import { pickUniqueRandom } from '../services/itemService.js';
 
+const TOTAL_ITEMS = 12;
+
 const DEFAULT_OPTIONS = {
   heroId: '',
   slots: { weapon: true, spirit: true, vitality: true },
-  itemsPerSlot: 4,
+  mode: 'balance', // 'balance' | 'random'
   allowDuplicates: false,
 };
+
+// Делит totalItems между слотами максимально поровну,
+// учитывая, что в каком-то слоте может не хватить предметов —
+// тогда "недобор" перераспределяется на остальные слоты.
+function distributeBalanced(totalItems, poolSizes) {
+  const counts = new Array(poolSizes.length).fill(0);
+  let remaining = totalItems;
+  let progress = true;
+
+  while (remaining > 0 && progress) {
+    progress = false;
+    for (let i = 0; i < poolSizes.length && remaining > 0; i++) {
+      if (counts[i] < poolSizes[i]) {
+        counts[i]++;
+        remaining--;
+        progress = true;
+      }
+    }
+  }
+
+  return counts;
+}
 
 export function useRandomBuild() {
   const { heroes } = useHeroStore();
@@ -52,22 +76,32 @@ export function useRandomBuild() {
         ? availableHeroes.find(h => h.id === Number(options.heroId)) || availableHeroes[0]
         : availableHeroes[Math.floor(Math.random() * availableHeroes.length)];
 
-      const slotItems = await Promise.all(
+      const slotPools = await Promise.all(
         enabledSlots.map(slot => fetchItemsBySlot(slot)),
       );
 
-      const usedIds = new Set();
-      const items = [];
+      let items = [];
 
-      enabledSlots.forEach((slot, index) => {
-        let pool = slotItems[index];
-        if (!options.allowDuplicates) {
-          pool = pool.filter(item => !usedIds.has(item.id));
-        }
-        const picked = pickUniqueRandom(pool, options.itemsPerSlot);
-        picked.forEach(item => usedIds.add(item.id));
-        items.push(...picked);
-      });
+      if (options.mode === 'random') {
+        // Объединяем все пулы в один — категории больше не влияют на распределение
+        const combinedPool = slotPools.flat();
+        items = pickUniqueRandom(combinedPool, TOTAL_ITEMS);
+      } else {
+        // balance: делим 12 предметов поровну между выбранными категориями
+        const poolSizes = slotPools.map(pool => pool.length);
+        const counts = distributeBalanced(TOTAL_ITEMS, poolSizes);
+
+        const usedIds = new Set();
+        enabledSlots.forEach((slot, index) => {
+          let pool = slotPools[index];
+          if (!options.allowDuplicates) {
+            pool = pool.filter(item => !usedIds.has(item.id));
+          }
+          const picked = pickUniqueRandom(pool, counts[index]);
+          picked.forEach(item => usedIds.add(item.id));
+          items.push(...picked);
+        });
+      }
 
       if (!items.length) {
         setError('noItems');
