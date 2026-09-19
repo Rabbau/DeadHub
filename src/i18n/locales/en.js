@@ -12,7 +12,7 @@ export default {
     subtitle: 'Total heroes: {count}',
     reset: 'Reset',
     exportPNG: '📥 PNG',
-    poolHeader: '🗂️ Hero Pool ({count})',
+    poolHeader: 'Hero Pool ({count})',
     emptyPool: 'All heroes are distributed',
     emptyTier: 'Drop here',
     confirmReset: 'Reset tier list? All heroes will return to the pool.',
@@ -414,7 +414,7 @@ export default {
   buildPage: {
     title: 'Random Build of the Day',
     description: 'Configure options and get a hero with items from selected slots.',
-    generate: '🎲 Generate',
+    generate: 'Generate',
     heroSelect: 'Hero',
     randomHero: 'Random hero',
     slots: 'Slots',

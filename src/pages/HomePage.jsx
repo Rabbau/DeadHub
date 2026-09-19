@@ -24,7 +24,7 @@ function HomePage() {
   if (error) {
     return (
       <div className="state-center state-error">
-        ⚠️ {t('common.error')}: {error}
+        {t('common.error')}: {error}
       </div>
     )
   }
@@ -45,7 +45,7 @@ function HomePage() {
 
       <div className="filters">
         <div className="filters__search">
-          <span className="filters__search-icon">🔍</span>
+          <span className="filters__search-icon" aria-hidden="true">&gt;</span>
           <input
             type="text"
             className="input"

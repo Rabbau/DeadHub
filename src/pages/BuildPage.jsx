@@ -91,7 +91,7 @@ function BuildPage() {
 
       {errorMessage && (
         <p className="build-page__error state-error" style={{ marginTop: '1rem' }}>
-          ⚠️ {t('common.error')}: {errorMessage}
+          {t('common.error')}: {errorMessage}
         </p>
       )}
 

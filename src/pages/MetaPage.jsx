@@ -28,7 +28,7 @@ function MetaPage() {
   if (error) {
     return (
       <div className="state-center state-error">
-        ⚠️ {t('common.error')}: {error}
+        {t('common.error')}: {error}
       </div>
     );
   }

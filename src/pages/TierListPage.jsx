@@ -5,11 +5,11 @@ import { useTranslation } from '../hooks/useTranslation';
 
 const TIER_ORDER = ['S', 'A', 'B', 'C', 'D'];
 const TIER_COLORS = {
-  S: '#ff6b6b',
-  A: '#feca57',
-  B: '#48dbfb',
-  C: '#1dd1a1',
-  D: '#a29bfe',
+  S: '#ff4b78',
+  A: '#ffb531',
+  B: '#bdff32',
+  C: '#61adff',
+  D: '#9291ff',
 };
 
 function TierListPage() {

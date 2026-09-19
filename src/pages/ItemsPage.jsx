@@ -61,7 +61,7 @@ function ItemsPage() {
   if (error) {
     return (
       <div className="state-center state-error">
-        ⚠️ {t('common.error')}: {error}
+        {t('common.error')}: {error}
       </div>
     );
   }
@@ -75,7 +75,7 @@ function ItemsPage() {
 
       <div className="filters">
         <div className="filters__search">
-          <span className="filters__search-icon">🔍</span>
+          <span className="filters__search-icon" aria-hidden="true">&gt;</span>
           <input
             type="text"
             className="input"
@@ -103,7 +103,7 @@ function ItemsPage() {
       </div>
 
       {filtered.length === 0 && (
-        <p className="state-center" style={{ color: 'var(--text-2)', marginTop: '2rem' }}>
+        <p className="state-center" style={{ color: 'var(--muted)', marginTop: '2rem' }}>
           {t('itemsPage.noResults')}
         </p>
       )}

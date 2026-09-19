@@ -12,7 +12,7 @@ export default {
     subtitle: 'Всего героев: {count}',
     reset: 'Сбросить',
     exportPNG: '📥 PNG',
-    poolHeader: '🗂️ Пул героев ({count})',
+    poolHeader: 'Пул героев ({count})',
     emptyPool: 'Все герои распределены',
     emptyTier: 'Перетащи сюда',
     confirmReset: 'Сбросить тир-лист? Все герои вернутся в пул.',
@@ -414,7 +414,7 @@ export default {
   buildPage: {
     title: 'Случайный билд дня',
     description: 'Настрой параметры и получи героя с предметами по выбранным слотам.',
-    generate: '🎲 Сгенерировать',
+    generate: 'Сгенерировать',
     heroSelect: 'Герой',
     randomHero: 'Случайный герой',
     slots: 'Слоты',

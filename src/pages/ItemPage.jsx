@@ -32,7 +32,7 @@ function ItemPage() {
     const msg = error === 'notFound' ? t('itemPage.notFound') : (error || t('itemPage.notFound'));
     return (
       <div className="state-center state-error">
-        ⚠️ {t('common.error')}: {msg}
+        {t('common.error')}: {msg}
         <br />
         <Link to="/items" className="back-link" style={{ marginTop: '1rem', display: 'inline-block' }}>
           {t('itemPage.back')}

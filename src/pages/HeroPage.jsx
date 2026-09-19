@@ -43,7 +43,7 @@ function HeroPage() {
   if (error || !hero) {
     return (
       <div className="state-center state-error">
-        ⚠️ {t('common.error')}: {error || t('heroPage.noHeroFound')}
+        {t('common.error')}: {error || t('heroPage.noHeroFound')}
       </div>
     );
   }
@@ -200,7 +200,7 @@ function HeroPage() {
               <div className="section">
                 <h2 className="section__title">{t('heroPage.popularBuilds')}</h2>
                 {buildsLoading ? (
-                  <p style={{ color: 'var(--text-3)' }}>{t('common.loading')}</p>
+                  <p style={{ color: 'var(--muted)' }}>{t('common.loading')}</p>
                 ) : (
                   <>
                     {popularItems.length > 0 && (
@@ -318,7 +318,7 @@ function HeroPage() {
                   })}
                 </div>
               ) : (
-                <p style={{ color: 'var(--text-3)', fontSize: '0.9rem' }}>
+                <p style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>
                   {t('heroPage.noAbilities')}
                 </p>
               )}

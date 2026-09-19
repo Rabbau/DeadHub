@@ -5,38 +5,10 @@ import { useTranslation } from '../../hooks/useTranslation';
 
 function LangToggle({ language, onToggle }) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border)',
-        borderRadius: 'var(--radius-sm)',
-        padding: '2px',
-        cursor: 'pointer',
-        transition: 'border-color var(--t-fast)',
-      }}
-      onClick={onToggle}
-    >
-      <span style={{
-        padding: '4px 10px',
-        borderRadius: 'var(--radius-sm)',
-        background: language === 'english' ? 'var(--neon)' : 'transparent',
-        color: language === 'english' ? '#000' : 'var(--text-2)',
-        fontWeight: 600,
-        fontSize: '0.75rem',
-        transition: 'all var(--t-fast)',
-      }}>EN</span>
-      <span style={{
-        padding: '4px 10px',
-        borderRadius: 'var(--radius-sm)',
-        background: language === 'russian' ? 'var(--neon)' : 'transparent',
-        color: language === 'russian' ? '#000' : 'var(--text-2)',
-        fontWeight: 600,
-        fontSize: '0.75rem',
-        transition: 'all var(--t-fast)',
-      }}>RU</span>
-    </div>
+    <button type="button" className="lang-toggle" onClick={onToggle} aria-label="Switch language">
+      <span className={`lang-option ${language === 'english' ? 'active' : ''}`}>EN</span>
+      <span className={`lang-option ${language === 'russian' ? 'active' : ''}`}>RU</span>
+    </button>
   );
 }
 
@@ -70,7 +42,7 @@ function Nav() {
             <NavLink to="/compare" className="nav__link">{t('nav.compare')}</NavLink>
           </div>
 
-          <div className="nav__desktop-lang" style={{ display: 'flex' }}>
+          <div className="nav__desktop-lang">
             <LangToggle language={language} onToggle={toggleLanguage} />
           </div>
 

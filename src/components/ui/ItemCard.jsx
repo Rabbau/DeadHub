@@ -84,7 +84,7 @@ function ItemCard({ item, compact = false }) {
           />
         ) : null}
         {(!showImage || !loaded) && (
-          <div className={placeholderClass}>🛡</div>
+          <div className={placeholderClass}>?</div>
         )}
         <div className={nameClass}>{item.name}</div>
         {item.cost && <div className={costClass}>{item.cost} ₡</div>}
