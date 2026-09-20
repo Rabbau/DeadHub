@@ -14,10 +14,10 @@
 
 /**
  * @typedef {Object} HeroStats
- * @property {number} winrate
- * @property {number} pickrate
- * @property {number|null} kda
- * @property {number} games_played
+ * @property {number} winrate       - доля побед, 0..1
+ * @property {number} pickrate      - доля героя среди всех пиков выборки, 0..1 (у всех героев в сумме 1)
+ * @property {number|null} kda      - (убийства + помощь) / смерти; null, если матчей нет
+ * @property {number} games_played  - матчи героя в выборке (по игрокам)
  * @property {number|null} maxHealth
  * @property {number|null} maxMoveSpeed
  * @property {number|null} sprintSpeed
@@ -45,8 +45,10 @@
  * @property {string|null} role
  * @property {string|null} complexity  - "Simple" | "Moderate" | "Hard"
  * @property {string|null} description
- * @property {string|null} image_url
- * @property {HeroStats} stats
+ * @property {string|null} image_url   - большая карточка (~100 КБ)
+ * @property {string|null} icon_url    - маленькая иконка (~10 КБ) для списков и таблиц
+ * @property {boolean} released        - доступен игрокам (остальные — заготовки в разработке)
+ * @property {HeroStats} stats         - за выбранный период и диапазон рангов
  * @property {HeroAbility[]} abilities
  */
 

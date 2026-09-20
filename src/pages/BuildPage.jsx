@@ -19,7 +19,7 @@ function BuildPage() {
   const { allHeroes } = useHeroes();
   const t = useTranslation();
 
-  const activeHeroes = allHeroes.filter(h => h.stats.pickrate > 0);
+  const activeHeroes = allHeroes.filter(h => h.released);
 
   const errorMessage = error
     ? (t(`buildPage.errors.${error}`) !== `buildPage.errors.${error}`

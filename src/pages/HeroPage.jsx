@@ -5,6 +5,8 @@ import { formatWinrate, formatPickrate, winrateColor } from '../services/heroSer
 import { useHeroStore } from '../store/heroStore';
 import { useTranslation } from '../hooks/useTranslation';
 import ItemCard from '../components/ui/ItemCard';
+import StatsFilters from '../components/ui/StatsFilters';
+import HeroMatchups from '../components/matchups/HeroMatchups';
 
 function getAbilityDescription(ability) {
   const desc = ability.description;
@@ -27,7 +29,7 @@ function getComplexityKey(complexity) {
 function HeroPage() {
   const { id } = useParams();
   const language = useHeroStore(state => state.language);
-  const { hero, loading, error } = useHeroDetail(id, language);
+  const { hero, loading, refreshing, error } = useHeroDetail(id, language);
   const { popularItems, combinations, loading: buildsLoading } = useHeroBuilds(hero?.id);
   const t = useTranslation();
 
@@ -130,7 +132,9 @@ function HeroPage() {
               )}
             </div>
 
-            <div className="hero-detail__stats-row">
+            <StatsFilters />
+
+            <div className={`hero-detail__stats-row${refreshing ? ' is-refreshing' : ''}`}>
               <div className="stat-card">
                 <div className="stat-card__label">{t('heroPage.winrate')}</div>
                 <div className={`stat-card__value winrate-${wrColor}`}>
@@ -250,6 +254,8 @@ function HeroPage() {
                 )}
               </div>
             )}
+
+            <HeroMatchups heroId={hero.id} />
 
             <div className="section">
               <h2 className="section__title">{t('heroPage.abilities')}</h2>

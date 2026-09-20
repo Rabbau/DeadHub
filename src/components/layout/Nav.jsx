@@ -1,7 +1,20 @@
 import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { useHeroStore } from '../../store/heroStore';
 import { useTranslation } from '../../hooks/useTranslation';
+
+// also — префикс адреса, на котором пункт тоже считается активным (профиль игрока → «Игроки»)
+const NAV_LINKS = [
+  { to: '/', key: 'nav.heroes', end: true },
+  { to: '/meta', key: 'nav.meta' },
+  { to: '/matchups', key: 'nav.matchups' },
+  { to: '/items', key: 'nav.items' },
+  { to: '/build', key: 'nav.randomBuild' },
+  { to: '/tierlist', key: 'nav.tierlist' },
+  { to: '/compare', key: 'nav.compare' },
+  { to: '/leaderboard', key: 'nav.leaderboard' },
+  { to: '/players', key: 'nav.players', also: '/player/' },
+];
 
 function LangToggle({ language, onToggle }) {
   return (
@@ -17,6 +30,7 @@ function Nav() {
   const language = useHeroStore(state => state.language);
   const setLanguage = useHeroStore(state => state.setLanguage);
   const t = useTranslation();
+  const { pathname } = useLocation();
 
   const toggleLanguage = () => {
     const newLang = language === 'english' ? 'russian' : 'english';
@@ -24,6 +38,21 @@ function Nav() {
   };
 
   const closeDrawer = () => setDrawerOpen(false);
+
+  const renderLinks = (onClick) =>
+    NAV_LINKS.map((link) => (
+      <NavLink
+        key={link.to}
+        to={link.to}
+        end={link.end}
+        onClick={onClick}
+        className={({ isActive }) =>
+          `nav__link${isActive || (link.also && pathname.startsWith(link.also)) ? ' active' : ''}`
+        }
+      >
+        {t(link.key)}
+      </NavLink>
+    ));
 
   return (
     <>
@@ -33,14 +62,7 @@ function Nav() {
             Dead<span>Hub</span>
           </div>
 
-          <div className="nav__links">
-            <NavLink to="/" className="nav__link" end>{t('nav.heroes')}</NavLink>
-            <NavLink to="/meta" className="nav__link">{t('nav.meta')}</NavLink>
-            <NavLink to="/items" className="nav__link">{t('nav.items')}</NavLink>
-            <NavLink to="/build" className="nav__link">{t('nav.randomBuild')}</NavLink>
-            <NavLink to="/tierlist" className="nav__link">{t('nav.tierlist')}</NavLink>
-            <NavLink to="/compare" className="nav__link">{t('nav.compare')}</NavLink>
-          </div>
+          <div className="nav__links">{renderLinks()}</div>
 
           <div className="nav__desktop-lang">
             <LangToggle language={language} onToggle={toggleLanguage} />
@@ -68,14 +90,7 @@ function Nav() {
           </button>
         </div>
 
-        <div className="nav__drawer-links">
-          <NavLink to="/" className="nav__link" end onClick={closeDrawer}>{t('nav.heroes')}</NavLink>
-          <NavLink to="/meta" className="nav__link" onClick={closeDrawer}>{t('nav.meta')}</NavLink>
-          <NavLink to="/items" className="nav__link" onClick={closeDrawer}>{t('nav.items')}</NavLink>
-          <NavLink to="/build" className="nav__link" onClick={closeDrawer}>{t('nav.randomBuild')}</NavLink>
-          <NavLink to="/tierlist" className="nav__link" onClick={closeDrawer}>{t('nav.tierlist')}</NavLink>
-          <NavLink to="/compare" className="nav__link" onClick={closeDrawer}>{t('nav.compare')}</NavLink>
-        </div>
+        <div className="nav__drawer-links">{renderLinks(closeDrawer)}</div>
 
         <div className="nav__drawer-lang">
           <LangToggle language={language} onToggle={toggleLanguage} />

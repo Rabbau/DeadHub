@@ -27,7 +27,7 @@ function TierListPage() {
   const t = useTranslation();
 
   const activeHeroIds = useMemo(
-    () => heroes.filter(h => h.stats.pickrate > 0).map(h => h.id),
+    () => heroes.filter(h => h.released).map(h => h.id),
     [heroes],
   );
   const heroMap = Object.fromEntries(heroes.map(h => [h.id, h]));

@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { useHeroStore } from '../store/heroStore.js'
-import { filterAndSort, extractRoles } from '../services/heroService.js'
+import { filterAndSort, extractRoles, estimateSampleMatches } from '../services/heroService.js'
 
 export function useHeroes() {
   const store = useHeroStore()
@@ -21,14 +21,25 @@ export function useHeroes() {
 
   const roles = useMemo(() => extractRoles(store.heroes), [store.heroes])
 
+  const sampleMatches = useMemo(() => estimateSampleMatches(store.heroes), [store.heroes])
+
+  const hasHeroes = store.heroes.length > 0
+
   return {
     heroes: filtered,
     allHeroes: store.heroes,
-    loading: store.loading,
+    // loading — только первичная загрузка; при смене фильтров старый список остаётся на экране
+    loading: store.loading && !hasHeroes,
+    refreshing: store.loading && hasHeroes,
     error: store.error,
     roles,
+    sampleMatches,
     language: store.language,
     setLanguage: store.setLanguage,
+
+    // Период и диапазон рангов
+    statsFilters: store.filters,
+    setStatsFilters: store.setFilters,
 
     // Filters
     search: store.search,

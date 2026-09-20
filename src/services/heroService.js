@@ -98,3 +98,16 @@ export function filterAndSort(heroes, { role, sort = 'winrate', dir = 'desc', se
     if (pct >= 48) return 'neutral'
     return 'bad'
   }
+
+  // В строках hero-stats считаются игроки, а в матче их 12
+  const PLAYERS_PER_MATCH = 12
+
+  /**
+   * Размер выборки в матчах: при узких фильтрах (высокие ранги, короткий период) статистика «шумит».
+   * @param {import('../types/index.js').Hero[]} heroes
+   * @returns {number}
+   */
+  export function estimateSampleMatches(heroes) {
+    const picks = heroes.reduce((sum, hero) => sum + hero.stats.games_played, 0)
+    return Math.round(picks / PLAYERS_PER_MATCH)
+  }

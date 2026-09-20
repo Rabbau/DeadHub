@@ -1,7 +1,8 @@
 const MODE = import.meta.env.VITE_API_MODE || 'vercel'
 
-export const ASSETS_API_BASE = '/api';
-export const ANALYTICS_API_BASE = '/api';
+export const API_BASE = '/api';
+export const ASSETS_API_BASE = API_BASE;
+export const ANALYTICS_API_BASE = API_BASE;
 
 export const API_MODE = import.meta.env.VITE_API_MODE || 'direct';
 export const BACKEND_BASE = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000/api/v1';

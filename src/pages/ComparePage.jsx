@@ -8,8 +8,8 @@ function ComparePage() {
   const { selectedIds, addHero, removeHero, replace, search, setSearch, history, applyHistory } = useCompareStore();
   const t = useTranslation();
 
-  // Берём только героев с pickrate > 0
-  const activeHeroes = allHeroes.filter(h => h.stats.pickrate > 0);
+  // Только герои, доступные игрокам (а не заготовки в разработке)
+  const activeHeroes = allHeroes.filter(h => h.released);
   const selectedHeroes = activeHeroes.filter(h => selectedIds.includes(h.id));
   const filteredHeroes = activeHeroes.filter(h =>
     h.name.toLowerCase().includes(search.toLowerCase())

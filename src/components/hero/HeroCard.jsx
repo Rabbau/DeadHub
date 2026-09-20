@@ -3,6 +3,8 @@ import { formatWinrate, formatPickrate, winrateColor } from '../../services/hero
 function HeroCard({ hero }) {
   const wr = hero.stats.winrate
   const wrColor = winrateColor(wr)
+  // У героя может не быть матчей в выбранной выборке (узкий ранг/период) — тогда честный прочерк, а не 0%
+  const hasStats = hero.stats.games_played > 0
 
   return (
     <div className="hero-card">
@@ -20,10 +22,10 @@ function HeroCard({ hero }) {
         <div className="hero-card__name">{hero.name}</div>
         <div className="hero-card__stats">
           <span className="hero-card__stat">
-            WR <strong className={`winrate-${wrColor}`}>{formatWinrate(wr)}</strong>
+            WR <strong className={hasStats ? `winrate-${wrColor}` : undefined}>{hasStats ? formatWinrate(wr) : '—'}</strong>
           </span>
           <span className="hero-card__stat">
-            PR <strong>{formatPickrate(hero.stats.pickrate)}</strong>
+            PR <strong>{hasStats ? formatPickrate(hero.stats.pickrate) : '—'}</strong>
           </span>
         </div>
       </div>

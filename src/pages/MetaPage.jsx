@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom';
 import { useMetaDashboard } from '../hooks/useMetaDashboard';
 import { useTranslation } from '../hooks/useTranslation';
+import StatsFilters from '../components/ui/StatsFilters';
 
 function MetaPage() {
   const {
     loading,
+    refreshing,
     error,
     activeCount,
     topWinrate,
@@ -27,8 +29,11 @@ function MetaPage() {
 
   if (error) {
     return (
-      <div className="state-center state-error">
-        {t('common.error')}: {error}
+      <div className="page meta-page">
+        <StatsFilters />
+        <div className="state-center state-error">
+          {t('common.error')}: {error}
+        </div>
       </div>
     );
   }
@@ -55,50 +60,54 @@ function MetaPage() {
         </div>
       </div>
 
-      {heroOfWeek && (
-        <div className="meta-hero-week">
-          <h2 className="section__title">{t('meta.heroOfWeek')}</h2>
-          <Link to={`/hero/${heroOfWeek.id}`} className="meta-hero-week__card">
-            {heroOfWeek.image_url ? (
-              <img src={heroOfWeek.image_url} alt={heroOfWeek.name} className="meta-hero-week__img" />
-            ) : (
-              <div className="meta-hero-week__placeholder">{heroOfWeek.name.slice(0, 2)}</div>
-            )}
-            <div>
-              <div className="meta-hero-week__name">{heroOfWeek.name}</div>
-              <div className="meta-hero-week__stats">
-                <span className={`winrate-${winrateColor(heroOfWeek.stats.winrate)}`}>
-                  WR {formatWinrate(heroOfWeek.stats.winrate)}
-                </span>
-                <span>PR {formatPickrate(heroOfWeek.stats.pickrate)}</span>
-                <span>{heroOfWeek.stats.games_played.toLocaleString()} {t('meta.matches')}</span>
+      <StatsFilters />
+
+      <div className={refreshing ? 'is-refreshing' : undefined} aria-busy={refreshing}>
+        {heroOfWeek && (
+          <div className="meta-hero-week">
+            <h2 className="section__title">{t('meta.heroOfWeek')}</h2>
+            <Link to={`/hero/${heroOfWeek.id}`} className="meta-hero-week__card">
+              {heroOfWeek.image_url ? (
+                <img src={heroOfWeek.image_url} alt={heroOfWeek.name} className="meta-hero-week__img" />
+              ) : (
+                <div className="meta-hero-week__placeholder">{heroOfWeek.name.slice(0, 2)}</div>
+              )}
+              <div>
+                <div className="meta-hero-week__name">{heroOfWeek.name}</div>
+                <div className="meta-hero-week__stats">
+                  <span className={`winrate-${winrateColor(heroOfWeek.stats.winrate)}`}>
+                    WR {formatWinrate(heroOfWeek.stats.winrate)}
+                  </span>
+                  <span>PR {formatPickrate(heroOfWeek.stats.pickrate)}</span>
+                  <span>{heroOfWeek.stats.games_played.toLocaleString()} {t('meta.matches')}</span>
+                </div>
               </div>
-            </div>
-          </Link>
-        </div>
-      )}
-
-      <div className="meta-grid">
-        <div className="meta-panel">
-          <h2 className="section__title">{t('meta.topWinrate')}</h2>
-          <div className="meta-list">
-            {topWinrate.map((hero, i) =>
-              renderHeroRow(
-                hero,
-                i + 1,
-                formatWinrate(hero.stats.winrate),
-                `winrate-${winrateColor(hero.stats.winrate)}`,
-              ),
-            )}
+            </Link>
           </div>
-        </div>
+        )}
 
-        <div className="meta-panel">
-          <h2 className="section__title">{t('meta.topPickrate')}</h2>
-          <div className="meta-list">
-            {topPickrate.map((hero, i) =>
-              renderHeroRow(hero, i + 1, formatPickrate(hero.stats.pickrate)),
-            )}
+        <div className="meta-grid">
+          <div className="meta-panel">
+            <h2 className="section__title">{t('meta.topWinrate')}</h2>
+            <div className="meta-list">
+              {topWinrate.map((hero, i) =>
+                renderHeroRow(
+                  hero,
+                  i + 1,
+                  formatWinrate(hero.stats.winrate),
+                  `winrate-${winrateColor(hero.stats.winrate)}`,
+                ),
+              )}
+            </div>
+          </div>
+
+          <div className="meta-panel">
+            <h2 className="section__title">{t('meta.topPickrate')}</h2>
+            <div className="meta-list">
+              {topPickrate.map((hero, i) =>
+                renderHeroRow(hero, i + 1, formatPickrate(hero.stats.pickrate)),
+              )}
+            </div>
           </div>
         </div>
       </div>

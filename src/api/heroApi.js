@@ -1,7 +1,10 @@
 import { httpGet } from './httpClient.js';
 import { ASSETS_API_BASE, ANALYTICS_API_BASE } from './config.js';
+import { DEFAULT_FILTERS, toQueryString, toStatsParams } from '../services/statsFilters.js';
 
 const ITEM_IMG_BASE = 'https://assets.deadlock-api.com/images/items';
+const STATS_TTL_MS = 10 * 60 * 1000; // на стороне API ответы тоже кешируются на 10 минут
+const EMPTY_STATS = { total: 0, byHero: {} };
 
 function capitalize(str) {
   if (!str || typeof str !== 'string') return str;
@@ -19,26 +22,22 @@ async function fetchAbilityDetails(class_name, language = 'english') {
   }
 }
 
-function normalizeHero(heroData, statsData = [], abilitiesDetails = {}, weaponStats = {}, abilityExtras = {}) {
-  let totalWins = 0;
-  let totalMatches = 0;
-  let totalPicks = 0;
+/**
+ * Строка hero-stats нужна только для статистики; всё остальное берётся из assets API.
+ * @param {object} heroData — герой из assets API
+ * @param {{ matches: number, wins: number, kills: number, deaths: number, assists: number }|undefined} statsRow
+ * @param {number} totalMatches — сумма matches по всем героям выборки (для пикрейта)
+ */
+function normalizeHero(heroData, statsRow, totalMatches = 0, abilitiesDetails = {}, weaponStats = {}, abilityExtras = {}) {
+  const games = statsRow?.matches ?? 0;
+  const winrate = games > 0 ? statsRow.wins / games : 0;
+  // Пикрейт — доля героя среди всех пиков выборки (у всех героев в сумме 100%)
+  const pickrate = totalMatches > 0 ? games / totalMatches : 0;
+  const kda = games > 0 ? (statsRow.kills + statsRow.assists) / Math.max(1, statsRow.deaths) : null;
 
-  if (Array.isArray(statsData) && statsData.length > 0) {
-    statsData.forEach((build) => {
-      const wins = build.wins ?? 0;
-      const losses = build.losses ?? 0;
-      const matches = build.matches ?? 0;
-      const picks = build.players ?? 0;
-      totalWins += wins;
-      totalMatches += matches;
-      totalPicks += picks;
-    });
-  }
-
-  const winrate = totalMatches > 0 ? totalWins / totalMatches : 0;
-  const games = totalMatches > 0 ? totalMatches : heroData.matches ?? 0;
-  const pickrate = games > 0 ? totalPicks / games : 0;
+  // Герой доступен игрокам; остальные в assets — заготовки в разработке
+  const released =
+    heroData.player_selectable === true && heroData.disabled !== true && heroData.in_development !== true;
 
   let abilities = [];
 
@@ -114,14 +113,19 @@ function normalizeHero(heroData, statsData = [], abilitiesDetails = {}, weaponSt
                    heroData.images?.icon_image_small ||
                    null;
 
+  // Маленькая иконка (~10 КБ) — для списков и таблиц, где большая карточка (~100 КБ) избыточна
+  const iconUrl = heroData.images?.icon_image_small_webp ||
+                  heroData.images?.icon_image_small ||
+                  imageUrl;
+
   const startingStats = heroData.starting_stats || {};
   const staminaRegen = startingStats.stamina_regen_per_second?.value ?? null;
   const staminaCooldown = staminaRegen ? 1 / staminaRegen : null;
 
   const stats = {
-    winrate: winrate > 1 ? winrate / 100 : winrate,
-    pickrate: pickrate > 1 ? pickrate / 100 : pickrate,
-    kda: null,
+    winrate,
+    pickrate,
+    kda,
     games_played: games,
     maxHealth: startingStats.max_health?.value ?? null,
     maxMoveSpeed: startingStats.max_move_speed?.value ?? null,
@@ -160,6 +164,8 @@ function normalizeHero(heroData, statsData = [], abilitiesDetails = {}, weaponSt
     complexity: heroData.complexity ?? null,
     description,
     image_url: imageUrl,
+    icon_url: iconUrl,
+    released,
     stats,
     abilities,
     levelScaling,
@@ -167,9 +173,44 @@ function normalizeHero(heroData, statsData = [], abilitiesDetails = {}, weaponSt
   };
 }
 
-export async function fetchHeroes(language = 'english') {
+/** В кеш и в память попадает только нужное: ответ hero-stats — 20 полей на героя. */
+function slimHeroStats(rows) {
+  const byHero = {};
+  let total = 0;
+  (Array.isArray(rows) ? rows : []).forEach((row) => {
+    const matches = row.matches ?? 0;
+    total += matches;
+    byHero[row.hero_id] = {
+      matches,
+      wins: row.wins ?? 0,
+      kills: row.total_kills ?? 0,
+      deaths: row.total_deaths ?? 0,
+      assists: row.total_assists ?? 0,
+    };
+  });
+  return { total, byHero };
+}
+
+/**
+ * Статистика всех героев одним запросом с учётом периода и диапазона рангов.
+ * @param {import('../services/statsFilters.js').DEFAULT_FILTERS} [filters]
+ * @returns {Promise<{ total: number, byHero: Record<number, { matches: number, wins: number, kills: number, deaths: number, assists: number }> }>}
+ */
+export function fetchHeroStats(filters = DEFAULT_FILTERS) {
+  const url = `${ANALYTICS_API_BASE}/v1/analytics/hero-stats?${toQueryString(toStatsParams(filters))}`;
+  return httpGet(url, { ttl: STATS_TTL_MS, transform: slimHeroStats });
+}
+
+export async function fetchHeroes(language = 'english', filters = DEFAULT_FILTERS) {
   const heroesUrl = `${ASSETS_API_BASE}/v1/assets/heroes?language=${language}`;
-  const heroesData = await httpGet(heroesUrl, { cacheKey: `heroes_list_${language}` });
+  const [heroesData, stats] = await Promise.all([
+    httpGet(heroesUrl, { cacheKey: `heroes_list_${language}` }),
+    // Без статистики список героев всё равно показываем — просто с нулями
+    fetchHeroStats(filters).catch((err) => {
+      console.warn('Failed to load hero stats:', err);
+      return EMPTY_STATS;
+    }),
+  ]);
   const heroes = Array.isArray(heroesData) ? heroesData : heroesData.data ?? heroesData.heroes ?? [];
 
   if (!heroes.length) {
@@ -177,33 +218,21 @@ export async function fetchHeroes(language = 'english') {
     return [];
   }
 
-  const statsPromises = heroes.map((hero) => {
-    const statsUrl = `${ANALYTICS_API_BASE}/v1/analytics/hero-build-stats/${hero.id}`;
-    return httpGet(statsUrl, { cacheKey: `hero_stats_${hero.id}` })
-      .then((data) => ({ hero, stats: data }))
-      .catch((err) => {
-        console.warn(`Failed to load stats for hero ${hero.id}:`, err);
-        return { hero, stats: [] };
-      });
-  });
-
-  const results = await Promise.all(statsPromises);
-  return results.map(({ hero, stats }) => normalizeHero(hero, stats, {}, {}));
+  return heroes.map((hero) => normalizeHero(hero, stats.byHero[hero.id], stats.total));
 }
 
-export async function fetchHeroDetail(id, language = 'english') {
+export async function fetchHeroDetail(id, language = 'english', filters = DEFAULT_FILTERS) {
   const heroUrl = `${ASSETS_API_BASE}/v1/assets/heroes/${id}?language=${language}`;
-  const statsUrl = `${ANALYTICS_API_BASE}/v1/analytics/hero-build-stats/${id}`;
   const abilitiesUrl = `${ASSETS_API_BASE}/v1/assets/items/by-hero-id/${id}?language=${language}`;
 
   const [heroResult, statsResult, abilitiesResult] = await Promise.allSettled([
     httpGet(heroUrl, { cacheKey: `hero_${id}_${language}` }),
-    httpGet(statsUrl, { cacheKey: `hero_stats_${id}` }),
+    fetchHeroStats(filters),
     httpGet(abilitiesUrl, { cacheKey: `hero_abilities_${id}_${language}` }),
   ]);
 
   const hero = heroResult.status === 'fulfilled' ? heroResult.value : { id: Number(id) };
-  const stats = statsResult.status === 'fulfilled' ? statsResult.value : [];
+  const stats = statsResult.status === 'fulfilled' ? statsResult.value : EMPTY_STATS;
   const abilitiesData = abilitiesResult.status === 'fulfilled' ? abilitiesResult.value : [];
 
   // Превращаем массив способностей в объект по class_name
@@ -268,5 +297,5 @@ export async function fetchHeroDetail(id, language = 'english') {
       }
     }
 
-  return normalizeHero(hero, stats, abilitiesDetails, weaponStats, abilityExtras);
+  return normalizeHero(hero, stats.byHero[hero.id], stats.total, abilitiesDetails, weaponStats, abilityExtras);
 }

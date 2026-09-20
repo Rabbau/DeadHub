@@ -53,7 +53,7 @@ export function useRandomBuild() {
       return;
     }
 
-    let availableHeroes = heroes.filter(h => h.stats.pickrate > 0);
+    let availableHeroes = heroes.filter(h => h.released);
     if (!availableHeroes.length) availableHeroes = heroes;
 
     if (!availableHeroes.length) {

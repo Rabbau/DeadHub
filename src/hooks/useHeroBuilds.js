@@ -1,7 +1,14 @@
-import { useState, useEffect } from 'react';import { fetchHeroItemStats, fetchHeroItemPermutations } from '../api';
+import { useState, useEffect } from 'react';
+import { fetchHeroItemStats, fetchHeroItemPermutations } from '../api';
 import { fetchAllItems } from '../api/itemApi';
+import { useHeroStore } from '../store/heroStore';
+import { filtersKey } from '../services/statsFilters';
 
 export function useHeroBuilds(heroId) {
+  const language = useHeroStore(state => state.language);
+  const filters = useHeroStore(state => state.filters);
+  const filterKey = filtersKey(filters);
+
   const [popularItems, setPopularItems] = useState([]);
   const [combinations, setCombinations] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -13,9 +20,9 @@ export function useHeroBuilds(heroId) {
     setLoading(true);
 
     Promise.all([
-      fetchHeroItemStats(heroId),
-      fetchHeroItemPermutations(heroId),
-      fetchAllItems(),
+      fetchHeroItemStats(heroId, 100, filters),
+      fetchHeroItemPermutations(heroId, 50, 5, filters),
+      fetchAllItems(language),
     ])
       .then(([itemStats, perms, allItems]) => {
         if (cancelled) return;
@@ -46,7 +53,7 @@ export function useHeroBuilds(heroId) {
       });
 
     return () => { cancelled = true; };
-  }, [heroId]);
+  }, [heroId, language, filterKey]);
 
   return { popularItems, combinations, loading };
 }

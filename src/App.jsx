@@ -9,6 +9,10 @@ import ItemPage from './pages/ItemPage';
 import MetaPage from './pages/MetaPage';
 import TierListPage from './pages/TierListPage';
 import ComparePage from './pages/ComparePage';
+import MatchupsPage from './pages/MatchupsPage';
+import LeaderboardPage from './pages/LeaderboardPage';
+import PlayersPage from './pages/PlayersPage';
+import PlayerPage from './pages/PlayerPage';
 
 function App() {
   return (
@@ -23,6 +27,10 @@ function App() {
           <Route path="build" element={<BuildPage />} />
           <Route path="tierlist" element={<TierListPage />} />
           <Route path="compare" element={<ComparePage />} />
+          <Route path="matchups" element={<MatchupsPage />} />
+          <Route path="leaderboard" element={<LeaderboardPage />} />
+          <Route path="players" element={<PlayersPage />} />
+          <Route path="player/:id" element={<PlayerPage />} />
         </Route>
       </Routes>
       <Analytics />

@@ -4,6 +4,7 @@ import { useHeroStore } from '../store/heroStore';
 import { useHeroes } from '../hooks/useHeroes';
 import { useTranslation } from '../hooks/useTranslation';
 import ItemCard from '../components/ui/ItemCard';
+import StatsFilters from '../components/ui/StatsFilters';
 import { formatWinrate, winrateColor } from '../services/heroService';
 
 const SLOT_LABEL_KEYS = {
@@ -13,7 +14,7 @@ const SLOT_LABEL_KEYS = {
 };
 
 function ItemPage() {
-  const { item, stats, heroUsage, loading, error } = useItemDetail();
+  const { item, stats, heroUsage, loading, statsLoading, error } = useItemDetail();
   const { allHeroes } = useHeroes();
   const t = useTranslation();
 
@@ -72,8 +73,14 @@ function ItemPage() {
             <p className="item-detail__quip">{item.description.quip}</p>
           )}
 
+          <StatsFilters />
+
+          {!stats && !statsLoading && (
+            <p className="matchup-panel__empty">{t('filters.noData')}</p>
+          )}
+
           {stats && (
-            <div className="item-detail__stats">
+            <div className={`item-detail__stats${statsLoading ? ' is-refreshing' : ''}`}>
               <h2 className="section__title">{t('itemPage.globalStats')}</h2>
               <div className="hero-detail__stats-row">
                 <div className="stat-card">
