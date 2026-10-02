@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { useItemDetail } from '../hooks/useItemDetail';
-import { useHeroStore } from '../store/heroStore';
 import { useHeroes } from '../hooks/useHeroes';
 import { useTranslation } from '../hooks/useTranslation';
 import { usePageMeta } from '../hooks/usePageMeta';
@@ -26,7 +25,7 @@ function ItemPage() {
       title: t('seo.item.title', { name: item.name }),
       description: t('seo.item.description', { name: item.name }),
     }
-    : undefined);
+    : undefined, { noindex: Boolean(error) });
 
   const heroMap = Object.fromEntries(allHeroes.map(h => [h.id, h]));
 

@@ -67,7 +67,6 @@ function ItemCard({ item, compact = false }) {
 
   const slotLabel = item.item_slot_type ? t(SLOT_KEYS[item.item_slot_type] || '') : '';
   const stats = getItemStats(item);
-  const descText = item.description?.desc;
   const quipText = item.description?.quip;
 
   return (

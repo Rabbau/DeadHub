@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useHeroes } from './useHeroes';
+import { useHeroDeltas } from './useHeroDeltas';
 import { formatWinrate, formatPickrate, winrateColor } from '../services/heroService';
 
 // Герой попадает в рейтинги, если у него не меньше этой доли пиков выборки (и не меньше пола):
@@ -9,6 +10,8 @@ const MIN_GAMES_FLOOR = 30;
 
 export function useMetaDashboard() {
   const { allHeroes, loading, refreshing, error } = useHeroes();
+  // Победители и проигравшие: изменение к прошлому периоду (ещё один запрос к API, кешируется)
+  const { deltas, window: deltaWindow, loading: deltaLoading } = useHeroDeltas();
 
   const activeHeroes = useMemo(() => {
     const released = allHeroes.filter(h => h.released);
@@ -40,6 +43,10 @@ export function useMetaDashboard() {
     loading,
     refreshing,
     error,
+    allHeroes,
+    deltas,
+    deltaWindow,
+    deltaLoading,
     activeCount: activeHeroes.length,
     topWinrate,
     topPickrate,

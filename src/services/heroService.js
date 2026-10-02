@@ -3,8 +3,22 @@
  * Не знает ни про React, ни про API-структуру. Только доменная логика.
  */
 
+// Числовые ключи сортировки: что именно сравниваем у героя
+const SORT_VALUES = {
+  winrate: (hero) => hero.stats.winrate,
+  pickrate: (hero) => hero.stats.pickrate,
+  matches: (hero) => hero.stats.games_played,
+  kda: (hero) => hero.stats.kda ?? 0,
+  delta: (hero) => hero.delta?.dWr ?? 0, // изменение винрейта к прошлому периоду (hero.delta подмешивает useHeroes)
+}
+
+/** Есть ли у героя значение для этой сортировки: герои без него всегда в конце списка. */
+function hasSortValue(sort, hero) {
+  return sort === 'delta' ? Boolean(hero.delta?.reliable) : hero.stats.games_played > 0
+}
+
 /**
- * Отфильтровать и отсортировать героев.
+ * Отфильтровать и отсортировать героев. sort: winrate | pickrate | matches | kda | delta | name.
  * @param {import('../types/index.js').Hero[]} heroes
  * @param {{ role?: string, sort?: import('../types/index.js').SortKey, dir?: import('../types/index.js').SortDir, search?: string }} params
  * @returns {import('../types/index.js').Hero[]}
@@ -22,15 +36,17 @@ export function filterAndSort(heroes, { role, sort = 'winrate', dir = 'desc', se
     }
   
     result.sort((a, b) => {
-      let av, bv
       if (sort === 'name') {
-        av = a.name.toLowerCase()
-        bv = b.name.toLowerCase()
-        return dir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av)
+        const an = a.name.toLowerCase()
+        const bn = b.name.toLowerCase()
+        return dir === 'asc' ? an.localeCompare(bn) : bn.localeCompare(an)
       }
-      av = sort === 'winrate' ? a.stats.winrate : a.stats.pickrate
-      bv = sort === 'winrate' ? b.stats.winrate : b.stats.pickrate
-      return dir === 'asc' ? av - bv : bv - av
+      // Герои без матчей в выборке всегда в конце — иначе при сортировке «по возрастанию» они оказались бы первыми
+      const aHas = hasSortValue(sort, a)
+      const bHas = hasSortValue(sort, b)
+      if (aHas !== bHas) return aHas ? -1 : 1
+      const valueOf = SORT_VALUES[sort] ?? SORT_VALUES.winrate
+      return dir === 'asc' ? valueOf(a) - valueOf(b) : valueOf(b) - valueOf(a)
     })
   
     return result

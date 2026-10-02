@@ -3,12 +3,17 @@ import { useMetaDashboard } from '../hooks/useMetaDashboard';
 import { useTranslation } from '../hooks/useTranslation';
 import { usePageMeta } from '../hooks/usePageMeta';
 import StatsFilters from '../components/ui/StatsFilters';
+import WinnersLosers from '../components/ui/WinnersLosers';
 
 function MetaPage() {
   const {
     loading,
     refreshing,
     error,
+    allHeroes,
+    deltas,
+    deltaWindow,
+    deltaLoading,
     activeCount,
     topWinrate,
     topPickrate,
@@ -112,6 +117,8 @@ function MetaPage() {
             </div>
           </div>
         </div>
+
+        <WinnersLosers heroes={allHeroes} deltas={deltas} window={deltaWindow} loading={deltaLoading} />
       </div>
     </div>
   );

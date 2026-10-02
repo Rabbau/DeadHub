@@ -103,6 +103,16 @@ export const useTierStore = create(
         set({ tiers: { ...tiers, [tier]: list } });
       },
 
+      // Расставить героев целиком (например, по тир-листу из данных): остальные остаются в пуле
+      assign: (tiers, heroIds) => {
+        const placed = new Set(TIER_ORDER.flatMap((tier) => tiers[tier] || []));
+        set({
+          tiers: Object.fromEntries(TIER_ORDER.map((tier) => [tier, [...(tiers[tier] || [])]])),
+          availableHeroIds: heroIds.filter((id) => !placed.has(id)),
+          initialized: true,
+        });
+      },
+
       reset: (heroIds) => {
         const ids = Array.isArray(heroIds) && typeof heroIds[0] === 'object'
           ? heroIds.map(h => h.id)

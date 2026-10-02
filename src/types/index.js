@@ -63,7 +63,7 @@
  */
 
 /**
- * @typedef {'winrate'|'pickrate'|'name'} SortKey
+ * @typedef {'winrate'|'pickrate'|'matches'|'kda'|'delta'|'name'} SortKey
  * @typedef {'asc'|'desc'} SortDir
  */
 

@@ -1,13 +1,15 @@
 import { httpGet } from './httpClient.js';
-import { ASSETS_API_BASE } from './config.js';
+import { API_BASE, ASSETS_API_BASE } from './config.js';
+import { slimDistribution } from '../services/rankDistributionService.js';
 
 const RANKS_TTL_MS = 24 * 60 * 60 * 1000; // ранги меняются разве что с сезоном
+const DISTRIBUTION_TTL_MS = 6 * 60 * 60 * 1000; // состав игроков по рангам меняется медленно
 
 /**
  * Оставляем название, цвет и картинки бейджей по подрангам — остальное (chalk, png/webp-дубли) не нужно.
  * @returns {Array<{ tier: number, name: string, color: string|null, large: string|null, sub: Record<number, string|null> }>}
  */
-function slimRanks(list) {
+export function slimRanks(list) {
   return (Array.isArray(list) ? list : []).map((rank) => ({
     tier: rank.tier,
     name: rank.name,
@@ -25,5 +27,17 @@ export function fetchRanks(language = 'english') {
     cacheKey: `ranks_${language}`,
     ttl: RANKS_TTL_MS,
     transform: slimRanks,
+  });
+}
+
+/**
+ * Сколько игроков на каждом ранге: по тирам и подрангам (ответ — около 3 КБ).
+ * @returns {Promise<ReturnType<typeof slimDistribution>>}
+ */
+export function fetchRankDistribution() {
+  return httpGet(`${API_BASE}/v1/players/rank/distribution`, {
+    cacheKey: 'rank_distribution_v1',
+    ttl: DISTRIBUTION_TTL_MS,
+    transform: slimDistribution,
   });
 }

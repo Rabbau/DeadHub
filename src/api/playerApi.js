@@ -18,6 +18,22 @@ function slimProfile(raw) {
 }
 
 /**
+ * Профили нескольких игроков одним запросом (имя и аватар для таблицы матча): до двенадцати человек за раз.
+ * Игроков без открытого профиля в ответе нет — их показывают по Account ID.
+ * @param {number[]} accountIds
+ * @returns {Promise<ReturnType<typeof slimProfile>[]>}
+ */
+export function fetchSteamProfiles(accountIds) {
+  const ids = [...new Set((accountIds || []).filter((id) => Number.isInteger(id) && id > 0))].sort((a, b) => a - b);
+  if (ids.length === 0) return Promise.resolve([]);
+  return httpGet(`${API_BASE}/v1/players/steam?account_ids=${ids.join(',')}`, {
+    cacheKey: `player_steam_batch_${ids.join('-')}`,
+    ttl: PROFILE_TTL_MS,
+    transform: (rows) => (Array.isArray(rows) ? rows.map(slimProfile) : []),
+  });
+}
+
+/**
  * Поиск по нику, Account ID или SteamID64 (API понимает все три формата).
  * Кеш отключён: запросы разные на каждый ввод.
  * @returns {Promise<ReturnType<typeof slimProfile>[]>}

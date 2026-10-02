@@ -11,4 +11,6 @@
   <url><loc>https://dead-hub.vercel.app/build</loc></url>
   <url><loc>https://dead-hub.vercel.app/tierlist</loc></url>
   <url><loc>https://dead-hub.vercel.app/compare</loc></url>
+  <url><loc>https://dead-hub.vercel.app/ranks</loc></url>
+  <url><loc>https://dead-hub.vercel.app/draft</loc></url>
 </urlset>

@@ -1,0 +1,36 @@
+name: Scheduled redeploy
+
+# Страницы героев и предметов пререндерятся при сборке (scripts/prerender.mjs), поэтому новый герой — они выходят по
+# вторникам и пятницам — получает свою страницу и запись в sitemap только после нового деплоя. Этот workflow через
+# Deploy Hook просит Vercel собрать проект заново: сразу после релизов и раз в сутки на всякий случай (патчи, новые
+# предметы, правки данных). Без секрета VERCEL_DEPLOY_HOOK он ничего не делает — как его завести, написано в README.
+on:
+  schedule:
+    - cron: '30 22 * * 2,5' # вторник и пятница: релиз в 14:00 по тихоокеанскому времени, это 21:00 или 22:00 UTC
+    - cron: '17 4 * * *' # ежедневно; минута не круглая, чтобы не попадать в часовой наплыв запусков GitHub
+  workflow_dispatch:
+
+# Репозиторий не читается и не меняется: нужен только секрет с адресом хука
+permissions: {}
+
+concurrency:
+  group: redeploy
+  cancel-in-progress: false
+
+jobs:
+  redeploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ask Vercel to rebuild
+        env:
+          VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          set -euo pipefail
+          if [ -z "${VERCEL_DEPLOY_HOOK:-}" ]; then
+            echo "::notice::Секрет VERCEL_DEPLOY_HOOK не задан: пересборка пропущена (см. README, раздел «Деплой»)."
+            exit 0
+          fi
+          # Адрес хука — секрет: ответ в лог не выводим
+          curl --fail --silent --show-error --max-time 30 -X POST "$VERCEL_DEPLOY_HOOK" > /dev/null
+          echo "Vercel принял запрос на пересборку."

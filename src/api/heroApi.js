@@ -1,10 +1,11 @@
 import { httpGet } from './httpClient.js';
 import { ASSETS_API_BASE, ANALYTICS_API_BASE } from './config.js';
 import { DEFAULT_FILTERS, toQueryString, toStatsParams } from '../services/statsFilters.js';
+import { computeHeroDeltas, previousWindow } from '../services/deltaService.js';
+import { slimWeeklyStats, trendSince } from '../services/trendService.js';
 import { isReleaseWindow } from '../services/releaseService.js';
 import { CURRENT_UPDATE } from '../data/updates.js';
 
-const ITEM_IMG_BASE = 'https://assets.deadlock-api.com/images/items';
 const STATS_TTL_MS = 10 * 60 * 1000; // на стороне API ответы тоже кешируются на 10 минут
 // Список героев меняется главным образом в момент выхода нового героя: тогда меняются его флаги и картинки.
 // Вокруг релиза по расписанию Valve (минуты) список перепроверяется у сервера часто — посетитель должен
@@ -115,7 +116,7 @@ function normalizeHero(heroData, statsRow, totalMatches = 0, abilitiesDetails = 
     const abilityKeys = ['signature1', 'signature2', 'signature3', 'signature4'];
     const filteredEntries = entries.filter(([key]) => abilityKeys.includes(key));
 
-    abilities = filteredEntries.map(([key, class_name]) => {
+    abilities = filteredEntries.map(([, class_name]) => {
       let displayName = class_name
         .replace(/^citadel_ability_/, '')
         .replace(/^ability_/, '')
@@ -126,14 +127,9 @@ function normalizeHero(heroData, statsRow, totalMatches = 0, abilitiesDetails = 
       const image = details.image || details.shop_image || null;
       const description = details.description?.desc || details.description || '';
 
-      let abilityImageUrl = null;
-      if (image) {
-        if (image.startsWith('http')) {
-          abilityImageUrl = image;
-        } else {
-          abilityImageUrl = `${ITEM_IMG_BASE}/${image}`;
-        }
-      }
+      // Картинка — абсолютный адрес из хранилища ассетов API. Относительных имён без хоста в данных нет, а достраивать
+      // для них адрес самому сайту нельзя: CSP пускает картинки только с хранилища ассетов, Steam и самого сайта
+      const abilityImageUrl = typeof image === 'string' && image.startsWith('https://') ? image : null;
 
       // Дополнительные данные из abilityExtras
       const extra = abilityExtras[class_name] || {};
@@ -258,7 +254,7 @@ function normalizeHero(heroData, statsRow, totalMatches = 0, abilitiesDetails = 
 }
 
 /** В кеш и в память попадает только нужное: ответ hero-stats — 20 полей на героя. */
-function slimHeroStats(rows) {
+export function slimHeroStats(rows) {
   const byHero = {};
   let total = 0;
   (Array.isArray(rows) ? rows : []).forEach((row) => {
@@ -285,15 +281,67 @@ export function fetchHeroStats(filters = DEFAULT_FILTERS) {
   return httpGet(url, { ttl: STATS_TTL_MS, transform: slimHeroStats });
 }
 
+// Прошлый период уже закончился, его цифры почти не меняются — держим дольше текущих
+const PREVIOUS_STATS_TTL_MS = 6 * 60 * 60 * 1000;
+
+/**
+ * Статистика героев за окно прошлого периода (см. previousWindow) с теми же рангами и режимом, что у текущих
+ * фильтров. Один запрос на сочетание фильтров, дальше — из кеша.
+ * @param {typeof DEFAULT_FILTERS} filters
+ * @param {{ since: number, until: number }} window
+ */
+export function fetchPreviousHeroStats(filters, window) {
+  const params = { ...toStatsParams(filters), min_unix_timestamp: window.since, max_unix_timestamp: window.until };
+  const url = `${ANALYTICS_API_BASE}/v1/analytics/hero-stats?${toQueryString(params)}`;
+  return httpGet(url, { ttl: PREVIOUS_STATS_TTL_MS, transform: slimHeroStats });
+}
+
+// Недельная история меняется медленно (текущая неделя неполная), ответ тяжёлый (~250 КБ): держим долго
+const TREND_TTL_MS = 6 * 60 * 60 * 1000;
+
+/**
+ * Статистика героев по неделям за последние TREND_WEEKS недель (один запрос на всех героев) с теми же рангами
+ * и режимом, что у фильтров; период фильтров здесь не нужен — история всегда за последние недели.
+ * В кеш уходит облегчённый вид (см. slimWeeklyStats).
+ * @param {typeof DEFAULT_FILTERS} filters
+ */
+export function fetchWeeklyStats(filters) {
+  const params = { ...toStatsParams(filters), min_unix_timestamp: trendSince(), bucket: 'start_time_week' };
+  const url = `${ANALYTICS_API_BASE}/v1/analytics/hero-stats?${toQueryString(params)}`;
+  return httpGet(url, { ttl: TREND_TTL_MS, transform: slimWeeklyStats });
+}
+
+/**
+ * Изменение статистики героев к прошлому периоду: два запроса к hero-stats (текущий почти всегда уже в кеше,
+ * потому что именно по нему строится список героев).
+ * @param {typeof DEFAULT_FILTERS} filters
+ * @param {Array<{ at: number, title?: string }>} patches обновления игры — для периода «с патча»
+ * @returns {Promise<{ window: ReturnType<typeof previousWindow>, deltas: ReturnType<typeof computeHeroDeltas> }|null>}
+ *   null — сравнивать не с чем (нет предыдущего обновления)
+ */
+export async function fetchHeroDeltas(filters, patches) {
+  const window = previousWindow(filters, patches);
+  if (!window) return null;
+  const [current, previous] = await Promise.all([fetchHeroStats(filters), fetchPreviousHeroStats(filters, window)]);
+  return { window, deltas: computeHeroDeltas(current, previous) };
+}
+
+/**
+ * Справочник героев без статистики (id, имя, роль, иконки, флаги). Тот же запрос и тот же кеш, что у списка героев,
+ * поэтому поиск по сайту не стоит ни одного запроса, если список уже загружался.
+ */
+export function fetchHeroCatalog(language = 'english') {
+  return httpGet(`${ASSETS_API_BASE}/v1/assets/heroes?language=${language}`, {
+    cacheKey: `heroes_slim_${language}`,
+    ttl: heroesTtl(),
+    revalidate: true,
+    transform: slimHeroList,
+  });
+}
+
 export async function fetchHeroes(language = 'english', filters = DEFAULT_FILTERS) {
-  const heroesUrl = `${ASSETS_API_BASE}/v1/assets/heroes?language=${language}`;
   const [heroes, stats] = await Promise.all([
-    httpGet(heroesUrl, {
-      cacheKey: `heroes_slim_${language}`,
-      ttl: heroesTtl(),
-      revalidate: true,
-      transform: slimHeroList,
-    }),
+    fetchHeroCatalog(language),
     // Без статистики список героев всё равно показываем — просто с нулями
     fetchHeroStats(filters).catch((err) => {
       console.warn('Failed to load hero stats:', err);
@@ -318,6 +366,12 @@ export async function fetchHeroDetail(id, language = 'english', filters = DEFAUL
     fetchHeroStats(filters),
     httpGet(abilitiesUrl, { cacheKey: `hero_abilities_${id}_${language}` }),
   ]);
+
+  // Героя с таким id нет (404) или в адресе не число (400) — это несуществующая страница, а не сбой сети:
+  // иначе сайт показал бы пустую страницу «Hero 9999» с цифрами, которых нет
+  if (heroResult.status === 'rejected' && [400, 404].includes(heroResult.reason?.status)) {
+    throw Object.assign(new Error('notFound'), { status: heroResult.reason.status });
+  }
 
   const hero = heroResult.status === 'fulfilled' ? heroResult.value : { id: Number(id) };
   const stats = statsResult.status === 'fulfilled' ? statsResult.value : EMPTY_STATS;
@@ -351,7 +405,7 @@ export async function fetchHeroDetail(id, language = 'english', filters = DEFAUL
     const abilityKeys = ['signature1', 'signature2', 'signature3', 'signature4'];
     const abilityClassNames = entries
       .filter(([key]) => abilityKeys.includes(key))
-      .map(([key, value]) => value)
+      .map(([, value]) => value)
       .filter(Boolean);
 
     // Список способностей героя (by-hero-id) уже содержит полные данные каждой: название, описание, картинки,

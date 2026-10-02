@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useHeroStore } from '../../store/heroStore';
+import { useProfileStore } from '../../store/profileStore';
 import { useTranslation } from '../../hooks/useTranslation';
 import { isFreshPatch } from '../../services/patchService';
+import GlobalSearch from './GlobalSearch';
 
 // Основное меню. also — префикс адреса, на котором пункт тоже считается активным (профиль → «Игроки»);
 // badge — пункт, у которого может гореть значок NEW.
@@ -22,7 +24,12 @@ const MORE_LINKS = [
   { to: '/build', key: 'nav.randomBuild' },
   { to: '/tierlist', key: 'nav.tierlist' },
   { to: '/compare', key: 'nav.compare' },
+  { to: '/draft', key: 'nav.draft' },
+  { to: '/ranks', key: 'nav.ranks' },
 ];
+
+// «Мой профиль» появляется в меню, только когда посетитель его выбрал
+const MY_PROFILE_LINK = { to: '/me', key: 'nav.myProfile' };
 
 function LangToggle({ language, onToggle }) {
   return (
@@ -80,6 +87,7 @@ function Nav() {
   const setLanguage = useHeroStore(state => state.setLanguage);
   const patch = useHeroStore(state => state.patch);
   const seenUpdate = useHeroStore(state => state.seenUpdate);
+  const me = useProfileStore(state => state.me);
   const t = useTranslation();
   const { pathname } = useLocation();
 
@@ -113,7 +121,8 @@ function Nav() {
     </NavLink>
   );
 
-  const moreActive = MORE_LINKS.some((link) => pathname.startsWith(link.to));
+  const moreLinks = me ? [MY_PROFILE_LINK, ...MORE_LINKS] : MORE_LINKS;
+  const moreActive = moreLinks.some((link) => pathname.startsWith(link.to));
 
   return (
     <>
@@ -125,8 +134,10 @@ function Nav() {
 
           <div className="nav__links">
             {MAIN_LINKS.map((link) => renderLink(link))}
-            <MoreMenu links={MORE_LINKS} renderLink={(link) => renderLink(link)} active={moreActive} />
+            <MoreMenu links={moreLinks} renderLink={(link) => renderLink(link)} active={moreActive} />
           </div>
+
+          <GlobalSearch />
 
           <div className="nav__desktop-lang">
             <LangToggle language={language} onToggle={toggleLanguage} />
@@ -155,7 +166,7 @@ function Nav() {
         </div>
 
         <div className="nav__drawer-links">
-          {[...MAIN_LINKS, ...MORE_LINKS].map((link) => renderLink(link, closeDrawer))}
+          {[...MAIN_LINKS, ...moreLinks].map((link) => renderLink(link, closeDrawer))}
         </div>
 
         <div className="nav__drawer-lang">

@@ -1,7 +1,8 @@
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import Nav from './Nav'
 import ErrorBoundary from './ErrorBoundary'
+import PageFallback from './PageFallback'
 import { useHeroStore } from '../../store/heroStore'
 import { useTranslation } from '../../hooks/useTranslation'
 import { languageCode } from '../../services/siteMeta'
@@ -22,8 +23,11 @@ function Layout() {
       <Nav />
       <main className="layout__main">
         {/* Ошибка на странице не должна убирать меню: сбрасывается при переходе на другой адрес */}
+        {/* Если код страницы не скачался (нет сети, вышла новая сборка), ErrorBoundary предложит перезагрузить */}
         <ErrorBoundary resetKey={pathname}>
-          <Outlet />
+          <Suspense fallback={<PageFallback />}>
+            <Outlet />
+          </Suspense>
         </ErrorBoundary>
       </main>
       <footer className="footer">

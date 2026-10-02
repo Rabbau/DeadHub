@@ -1,4 +1,5 @@
 import { formatWinrate, formatPickrate, winrateColor } from '../../services/heroService'
+import DeltaBadge from '../ui/DeltaBadge'
 
 function HeroCard({ hero }) {
   const wr = hero.stats.winrate
@@ -27,6 +28,11 @@ function HeroCard({ hero }) {
           <span className="hero-card__stat">
             PR <strong>{hasStats ? formatPickrate(hero.stats.pickrate) : '—'}</strong>
           </span>
+          {hero.delta?.reliable && (
+            <span className="hero-card__stat">
+              Δ <strong><DeltaBadge delta={hero.delta} /></strong>
+            </span>
+          )}
         </div>
       </div>
     </div>

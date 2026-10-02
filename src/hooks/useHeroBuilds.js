@@ -52,6 +52,7 @@ export function useHeroBuilds(heroId) {
       });
 
     return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- вместо объекта фильтров следим за его ключом
   }, [heroId, language, ready, filterKey]);
 
   return { popularItems, combinations, loading };
