@@ -4,9 +4,13 @@ import { useHeroBuilds } from '../hooks/useHeroBuilds';
 import { formatWinrate, formatPickrate, winrateColor } from '../services/heroService';
 import { useHeroStore } from '../store/heroStore';
 import { useTranslation } from '../hooks/useTranslation';
+import { usePageMeta } from '../hooks/usePageMeta';
+import { CURRENT_UPDATE } from '../data/updates';
+import { humanizeKey, splitAbilityProps } from '../services/abilityService';
 import ItemCard from '../components/ui/ItemCard';
 import StatsFilters from '../components/ui/StatsFilters';
 import HeroMatchups from '../components/matchups/HeroMatchups';
+import UpcomingHero from '../components/hero/UpcomingHero';
 
 function getAbilityDescription(ability) {
   const desc = ability.description;
@@ -30,8 +34,22 @@ function HeroPage() {
   const { id } = useParams();
   const language = useHeroStore(state => state.language);
   const { hero, loading, refreshing, error } = useHeroDetail(id, language);
-  const { popularItems, combinations, loading: buildsLoading } = useHeroBuilds(hero?.id);
+  // У героя, которого ещё нет в игре, нет ни сборок, ни статистики — зря не запрашиваем
+  const { popularItems, combinations, loading: buildsLoading } = useHeroBuilds(hero && !hero.upcoming ? hero.id : undefined);
   const t = useTranslation();
+
+  // Название героя приходит из данных, поэтому до загрузки действуют общие заголовок и описание
+  usePageMeta(hero?.name
+    ? hero.upcoming
+      ? {
+        title: t('seo.heroSoon.title', { name: hero.name }),
+        description: t('seo.heroSoon.description', { name: hero.name, update: CURRENT_UPDATE.name }),
+      }
+      : {
+        title: t('seo.hero.title', { name: hero.name }),
+        description: t('seo.hero.description', { name: hero.name }),
+      }
+    : undefined);
 
   if (loading) {
     return (
@@ -50,6 +68,10 @@ function HeroPage() {
     );
   }
 
+  if (hero.upcoming) {
+    return <UpcomingHero hero={hero} />;
+  }
+
   const wrColor = winrateColor(hero.stats.winrate);
   const s = hero.stats;
   const ls = hero.levelScaling || {};
@@ -63,11 +85,9 @@ function HeroPage() {
     'IncomingDamagePercentFromCaster', 'TechPower'
   ];
 
-  // Функция перевода ключа свойства
-  const translatePropKey = (key) => {
-    const translated = t(`abilityProps.${key}`);
-    return translated === `abilityProps.${key}` ? key : translated;
-  };
+  // Перевод ключа свойства. Внутренние параметры игры без перевода («DragonSearchRadius») показываем словами
+  const hasPropLabel = (key) => t.has(`abilityProps.${key}`);
+  const translatePropKey = (key) => (hasPropLabel(key) ? t(`abilityProps.${key}`) : humanizeKey(key));
 
   // Функция форматирования улучшений с переводом
   const formatUpgrade = (upgrade) => {
@@ -265,7 +285,8 @@ function HeroPage() {
                     const descText = getAbilityDescription(ability);
                     const props = ability.properties || {};
                     const upgrades = ability.upgrades || [];
-                    const displayProps = getDisplayProps(props);
+                    // Основные свойства — сразу, внутренние параметры игры — под «Все параметры»
+                    const { main: mainProps, extra: extraProps } = splitAbilityProps(getDisplayProps(props), hasPropLabel);
 
                     return (
                       <div className="ability-card" key={idx}>
@@ -288,19 +309,29 @@ function HeroPage() {
                           )}
 
                           {/* Свойства */}
-                          {displayProps.length > 0 && (
+                          {mainProps.length > 0 && (
                             <div className="ability-card__props">
-                              {displayProps.map(([key, prop]) => {
-                                const value = prop.value;
-                                const label = translatePropKey(key);
-                                return (
-                                  <span key={key} className="ability-card__prop">
-                                    <span className="ability-card__prop-label">{label}</span>
-                                    <span className="ability-card__prop-value">{value}</span>
-                                  </span>
-                                );
-                              })}
+                              {mainProps.map(([key, prop]) => (
+                                <span key={key} className="ability-card__prop">
+                                  <span className="ability-card__prop-label">{translatePropKey(key)}</span>
+                                  <span className="ability-card__prop-value">{prop.value}</span>
+                                </span>
+                              ))}
                             </div>
+                          )}
+
+                          {extraProps.length > 0 && (
+                            <details className="ability-card__more">
+                              <summary>{t('heroPage.allParams', { count: extraProps.length })}</summary>
+                              <div className="ability-card__props">
+                                {extraProps.map(([key, prop]) => (
+                                  <span key={key} className="ability-card__prop">
+                                    <span className="ability-card__prop-label">{translatePropKey(key)}</span>
+                                    <span className="ability-card__prop-value">{prop.value}</span>
+                                  </span>
+                                ))}
+                              </div>
+                            </details>
                           )}
 
                           {/* Улучшения (t1, t2, t3) */}

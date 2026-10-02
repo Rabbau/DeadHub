@@ -2,19 +2,18 @@ import { useState, useEffect } from 'react';
 import { fetchHeroItemStats, fetchHeroItemPermutations } from '../api';
 import { fetchAllItems } from '../api/itemApi';
 import { useHeroStore } from '../store/heroStore';
-import { filtersKey } from '../services/statsFilters';
+import { useStatsFilters } from './useStatsFilters';
 
 export function useHeroBuilds(heroId) {
   const language = useHeroStore(state => state.language);
-  const filters = useHeroStore(state => state.filters);
-  const filterKey = filtersKey(filters);
+  const { filters, ready, key: filterKey } = useStatsFilters();
 
   const [popularItems, setPopularItems] = useState([]);
   const [combinations, setCombinations] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!heroId) return;
+    if (!heroId || !ready) return;
 
     let cancelled = false;
     setLoading(true);
@@ -53,7 +52,7 @@ export function useHeroBuilds(heroId) {
       });
 
     return () => { cancelled = true; };
-  }, [heroId, language, filterKey]);
+  }, [heroId, language, ready, filterKey]);
 
   return { popularItems, combinations, loading };
 }

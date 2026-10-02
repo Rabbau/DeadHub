@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useMetaDashboard } from '../hooks/useMetaDashboard';
 import { useTranslation } from '../hooks/useTranslation';
+import { usePageMeta } from '../hooks/usePageMeta';
 import StatsFilters from '../components/ui/StatsFilters';
 
 function MetaPage() {
@@ -17,6 +18,7 @@ function MetaPage() {
     winrateColor,
   } = useMetaDashboard();
   const t = useTranslation();
+  usePageMeta('meta');
 
   if (loading) {
     return (

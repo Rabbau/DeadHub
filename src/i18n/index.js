@@ -23,3 +23,19 @@ export function getTranslation(lang, key, params = {}) {
 
   return value;
 }
+
+/**
+ * Есть ли у ключа перевод. В отличие от getTranslation, ничего не пишет в консоль: нужен там,
+ * где отсутствие перевода — обычный случай (например, названия параметров способностей).
+ */
+export function hasTranslation(lang, key) {
+  let value = locales[lang];
+  for (const k of key.split('.')) {
+    if (value && typeof value === 'object' && Object.prototype.hasOwnProperty.call(value, k)) {
+      value = value[k];
+    } else {
+      return false;
+    }
+  }
+  return typeof value === 'string';
+}

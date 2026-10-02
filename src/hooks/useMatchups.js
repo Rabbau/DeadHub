@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { fetchCounterStats, fetchSynergyStats } from '../api/index.js';
-import { useHeroStore } from '../store/heroStore.js';
-import { filtersKey } from '../services/statsFilters.js';
+import { useStatsFilters } from './useStatsFilters.js';
 import { buildCounterIndex, buildSynergyIndex } from '../services/matchupService.js';
 
 /**
@@ -10,11 +9,11 @@ import { buildCounterIndex, buildSynergyIndex } from '../services/matchupService
  * При смене фильтров прежние данные остаются на экране, пока грузятся новые.
  */
 export function useMatchups() {
-  const filters = useHeroStore((state) => state.filters);
-  const filterKey = filtersKey(filters);
+  const { filters, ready, key: filterKey } = useStatsFilters();
   const [state, setState] = useState({ counters: null, synergy: null, loading: true, error: null });
 
   useEffect(() => {
+    if (!ready) return undefined;
     let cancelled = false;
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
@@ -33,7 +32,7 @@ export function useMatchups() {
       });
 
     return () => { cancelled = true; };
-  }, [filterKey]);
+  }, [ready, filterKey]);
 
   return state;
 }

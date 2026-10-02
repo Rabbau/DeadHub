@@ -1,11 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { fetchHeroDetail } from '../api/index.js';
-import { useHeroStore } from '../store/heroStore.js';
-import { filtersKey } from '../services/statsFilters.js';
+import { useStatsFilters } from './useStatsFilters.js';
 
 export function useHeroDetail(id, language = 'english') {
-  const filters = useHeroStore((state) => state.filters);
-  const filterKey = filtersKey(filters);
+  const { filters, ready, key: filterKey } = useStatsFilters();
 
   const [hero, setHero] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -14,7 +12,7 @@ export function useHeroDetail(id, language = 'english') {
   const loadedFor = useRef({ id: null, language: null });
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || !ready) return;
     let cancelled = false;
 
     // Тот же герой, сменились только фильтры — обновляем цифры на месте, без экрана загрузки
@@ -43,7 +41,7 @@ export function useHeroDetail(id, language = 'english') {
       });
 
     return () => { cancelled = true; };
-  }, [id, language, filterKey]);
+  }, [id, language, ready, filterKey]);
 
   return { hero, loading, refreshing, error };
 }

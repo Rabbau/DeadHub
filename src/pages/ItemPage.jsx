@@ -3,9 +3,12 @@ import { useItemDetail } from '../hooks/useItemDetail';
 import { useHeroStore } from '../store/heroStore';
 import { useHeroes } from '../hooks/useHeroes';
 import { useTranslation } from '../hooks/useTranslation';
+import { usePageMeta } from '../hooks/usePageMeta';
 import ItemCard from '../components/ui/ItemCard';
 import StatsFilters from '../components/ui/StatsFilters';
 import { formatWinrate, winrateColor } from '../services/heroService';
+import { isAvailableItem } from '../services/itemService';
+import { htmlToText } from '../services/text';
 
 const SLOT_LABEL_KEYS = {
   weapon: 'itemCard.slotWeapon',
@@ -17,6 +20,13 @@ function ItemPage() {
   const { item, stats, heroUsage, loading, statsLoading, error } = useItemDetail();
   const { allHeroes } = useHeroes();
   const t = useTranslation();
+
+  usePageMeta(item?.name
+    ? {
+      title: t('seo.item.title', { name: item.name }),
+      description: t('seo.item.description', { name: item.name }),
+    }
+    : undefined);
 
   const heroMap = Object.fromEntries(allHeroes.map(h => [h.id, h]));
 
@@ -64,13 +74,18 @@ function ItemPage() {
             )}
             {item.cost && <span className="tag">{item.cost} ₡</span>}
             {item.item_tier && <span className="tag">{t('itemCard.tier')} {item.item_tier}</span>}
+            {item.corruptible && <span className="tag tag--corrupt">{t('itemCard.corruptible')}</span>}
+            {!isAvailableItem(item) && <span className="tag tag--off">{t('itemPage.unavailable')}</span>}
           </div>
 
           {item.description?.desc && (
-            <p className="item-detail__desc">{item.description.desc}</p>
+            <p className="item-detail__desc">{htmlToText(item.description.desc)}</p>
           )}
           {item.description?.quip && (
-            <p className="item-detail__quip">{item.description.quip}</p>
+            <p className="item-detail__quip">{htmlToText(item.description.quip)}</p>
+          )}
+          {item.corruptible && (
+            <p className="item-detail__note">{t('itemPage.corruptibleNote')}</p>
           )}
 
           <StatsFilters />

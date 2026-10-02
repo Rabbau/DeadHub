@@ -1,5 +1,6 @@
 export const SLOT_TYPES = ['weapon', 'spirit', 'vitality'];
 
+// Цены тиров: T1 800, T2 1600, T3 3200, T4 6400. T5 — легендарные предметы, их цена в данных 9999.
 export const PRICE_TIERS = [
   { key: 'all', min: 0, max: Infinity },
   { key: 't1', min: 0, max: 800 },
@@ -9,11 +10,19 @@ export const PRICE_TIERS = [
   { key: 't5', min: 6401, max: Infinity },
 ];
 
+/**
+ * Предмет реально продаётся: включён, виден в магазине, у него есть цена, название и картинка.
+ * Цена 9999 — это нормально: так в данных записаны легендарные предметы (раньше сайт считал её заглушкой).
+ */
+export function isAvailableItem(item) {
+  const hasName = Boolean(item.name) && !item.name.includes('_'); // «upgrade_xxx» — служебные заготовки
+  const hasShopImage = Boolean(item.shop_image) && item.shop_image.trim() !== '';
+  return item.shopable !== false && item.disabled !== true && item.cost != null && hasName && hasShopImage;
+}
+
+/** Всё, что не продаётся: отключённые предметы и служебные заготовки. */
 export function isIndevItem(item) {
-  const hasUnderscore = item.name && item.name.includes('_');
-  const isInvalidCost = item.cost === 9999 || item.cost == null;
-  const hasShopImage = item.shop_image && item.shop_image.trim() !== '';
-  return !hasShopImage || isInvalidCost || hasUnderscore;
+  return !isAvailableItem(item);
 }
 
 export function getPriceTierKey(cost) {
@@ -25,7 +34,7 @@ export function getPriceTierKey(cost) {
   return 't5';
 }
 
-export function filterItems(items, { search = '', slot = 'all', priceTier = 'all' } = {}) {
+export function filterItems(items, { search = '', slot = 'all', priceTier = 'all', corruptible = false } = {}) {
   let result = [...items];
 
   if (search.trim()) {
@@ -45,6 +54,10 @@ export function filterItems(items, { search = '', slot = 'all', priceTier = 'all
         return cost >= tier.min && cost <= tier.max;
       });
     }
+  }
+
+  if (corruptible) {
+    result = result.filter(item => item.corruptible);
   }
 
   return result;
@@ -70,7 +83,7 @@ export function groupItemsByPrice(items, labels) {
   });
 
   Object.values(groups).forEach(group => {
-    group.items.sort((a, b) => (a.cost || 0) - (b.cost || 0));
+    group.items.sort((a, b) => (a.cost || 0) - (b.cost || 0) || a.name.localeCompare(b.name));
   });
 
   return groups;

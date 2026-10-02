@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { usePlayerSearch } from '../hooks/usePlayers';
 import { useTranslation } from '../hooks/useTranslation';
+import { usePageMeta } from '../hooks/usePageMeta';
 import { usePlayerStore } from '../store/playerStore';
 import { toAccountId } from '../services/playerService';
 import { formatNumber } from '../services/format';
@@ -10,6 +11,7 @@ import Avatar from '../components/ui/Avatar';
 
 function PlayersPage() {
   const t = useTranslation();
+  usePageMeta('players');
   const navigate = useNavigate();
   const language = useHeroStore((state) => state.language);
   const [params, setParams] = useSearchParams();

@@ -2,12 +2,15 @@ import { useHeroes } from '../hooks/useHeroes'
 import HeroCard from '../components/hero/HeroCard'
 import { Link } from 'react-router-dom'
 import { useTranslation } from '../hooks/useTranslation'
+import { usePageMeta } from '../hooks/usePageMeta'
 import SkeletonGrid from '../components/ui/SkeletonGrid'
 import StatsFilters from '../components/ui/StatsFilters'
+import NewHeroes from '../components/hero/NewHeroes'
 
 function HomePage() {
-  const { heroes, loading, refreshing, error, search, setSearch, role, setRole, sort, setSort, dir, setDir, roles } = useHeroes()
+  const { heroes, allHeroes, loading, refreshing, error, search, setSearch, role, setRole, sort, setSort, dir, setDir, roles } = useHeroes()
   const t = useTranslation()
+  usePageMeta('home')
 
   if (loading) {
     return (
@@ -34,9 +37,10 @@ function HomePage() {
     )
   }
 
-  // «Скрытые» — заготовки героев, недоступные игрокам (а не герои без матчей в выбранной выборке)
-  const mainHeroes = heroes.filter(h => h.released)
-  const hiddenHeroes = heroes.filter(h => !h.released)
+  // «Скрытые» — заготовки героев, недоступные игрокам (а не герои без матчей в выбранной выборке).
+  // Герои из голосования, которых ещё нет в игре, показываются отдельной полосой «Новые герои» выше.
+  const mainHeroes = heroes.filter(h => h.status === 'released')
+  const hiddenHeroes = heroes.filter(h => h.status === 'hidden')
 
   return (
     <div className="page">
@@ -45,8 +49,10 @@ function HomePage() {
           <h1 className="page-title">{t('home.title')} <em>Deadlock</em></h1>
           <div className="page-subtitle">{t('home.subtitle')}</div>
         </div>
-        <span className="count-badge">{heroes.length} {t('home.heroCount')}</span>
+        <span className="count-badge">{mainHeroes.length} {t('home.heroCount')}</span>
       </div>
+
+      <NewHeroes heroes={allHeroes} />
 
       <StatsFilters />
 

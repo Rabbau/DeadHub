@@ -3,7 +3,9 @@
  * Абстрагирует fetch() — при замене на axios или другой клиент меняется только этот файл.
  */
 
-const CACHE_VERSION = '2';
+// 3: ответы списков героев и предметов теперь «облегчаются» перед записью (раньше сырой
+// ответ в 1,8–5,7 МБ не помещался в localStorage); старые записи purgeLegacyCache() удалит.
+const CACHE_VERSION = '3';
 const CACHE_PREFIX = `dlhub_v${CACHE_VERSION}_`;
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 час
 
@@ -103,9 +105,11 @@ function purgeLegacyCache() {
 
 purgeLegacyCache();
 
-async function fetchJson(url, transform) {
+async function fetchJson(url, transform, revalidate) {
   const res = await fetch(url, {
     headers: { Accept: 'application/json' },
+    // no-cache — не «без кеша», а «сначала спроси у сервера»: если данные не менялись, ответ 304 без тела
+    ...(revalidate ? { cache: 'no-cache' } : {}),
   });
 
   if (!res.ok) {
@@ -124,10 +128,12 @@ async function fetchJson(url, transform) {
  * `transform` применяется до записи в кеш — так в localStorage попадает только нужное
  * (ответы аналитики бывают по сотням килобайт).
  * @param {string} url
- * @param {{ cache?: boolean, cacheKey?: string, ttl?: number, transform?: (data: any) => any }} options
+ * `revalidate` — перепроверять ответ у сервера, не полагаясь на HTTP-кеш браузера (у API он живёт
+ * час): для данных, которые меняются в известные моменты, например при выходе героя.
+ * @param {{ cache?: boolean, cacheKey?: string, ttl?: number, revalidate?: boolean, transform?: (data: any) => any }} options
  * @returns {Promise<any>}
  */
-export function httpGet(url, { cache = true, cacheKey, ttl = CACHE_TTL_MS, transform } = {}) {
+export function httpGet(url, { cache = true, cacheKey, ttl = CACHE_TTL_MS, revalidate = false, transform } = {}) {
   const key = cacheKey || url;
 
   if (cache) {
@@ -137,7 +143,7 @@ export function httpGet(url, { cache = true, cacheKey, ttl = CACHE_TTL_MS, trans
 
   if (inflight.has(key)) return inflight.get(key);
 
-  const request = fetchJson(url, transform)
+  const request = fetchJson(url, transform, revalidate)
     .then((data) => {
       if (cache) writeCache(key, data);
       return data;

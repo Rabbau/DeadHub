@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useHeroStore } from '../store/heroStore.js';
-import { fetchItemsBySlot } from '../api/itemApi.js';
-import { pickUniqueRandom } from '../services/itemService.js';
+import { fetchAllItems } from '../api/itemApi.js';
+import { isAvailableItem, pickUniqueRandom } from '../services/itemService.js';
 
 const TOTAL_ITEMS = 12;
 
@@ -35,7 +35,8 @@ function distributeBalanced(totalItems, poolSizes) {
 }
 
 export function useRandomBuild() {
-  const { heroes } = useHeroStore();
+  const heroes = useHeroStore(state => state.heroes);
+  const language = useHeroStore(state => state.language);
   const [build, setBuild] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -76,9 +77,9 @@ export function useRandomBuild() {
         ? availableHeroes.find(h => h.id === Number(options.heroId)) || availableHeroes[0]
         : availableHeroes[Math.floor(Math.random() * availableHeroes.length)];
 
-      const slotPools = await Promise.all(
-        enabledSlots.map(slot => fetchItemsBySlot(slot)),
-      );
+      // Один общий запрос вместо трёх (по слоту): справочник и так лежит в кеше
+      const allItems = (await fetchAllItems(language)).filter(isAvailableItem);
+      const slotPools = enabledSlots.map(slot => allItems.filter(item => item.item_slot_type === slot));
 
       let items = [];
 
@@ -114,7 +115,7 @@ export function useRandomBuild() {
     } finally {
       setLoading(false);
     }
-  }, [heroes, options]);
+  }, [heroes, language, options]);
 
   return { build, loading, error, options, updateOptions, generate };
 }

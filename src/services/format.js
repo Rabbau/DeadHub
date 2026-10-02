@@ -25,6 +25,12 @@ export function formatDuration(totalSeconds) {
   return `${minutes}:${seconds}`;
 }
 
+/** «29 сент.» / «Sep 29». */
+export function formatShortDate(unixSeconds, language) {
+  if (!unixSeconds) return '—';
+  return new Date(unixSeconds * 1000).toLocaleDateString(localeFor(language), { day: 'numeric', month: 'short' });
+}
+
 /** «17 сент., 21:32» / «Sep 17, 9:32 PM». */
 export function formatMatchDate(unixSeconds, language) {
   if (!unixSeconds) return '—';

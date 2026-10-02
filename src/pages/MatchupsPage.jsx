@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useHeroes } from '../hooks/useHeroes';
 import { useMatchups } from '../hooks/useMatchups';
 import { useTranslation } from '../hooks/useTranslation';
+import { usePageMeta } from '../hooks/usePageMeta';
 import StatsFilters from '../components/ui/StatsFilters';
 import HeroIcon from '../components/hero/HeroIcon';
 import MatchupPanel from '../components/matchups/MatchupPanel';
@@ -14,6 +15,7 @@ const LIMIT = 8;
 
 function MatchupsPage() {
   const t = useTranslation();
+  usePageMeta('matchups');
   const [params, setParams] = useSearchParams();
   const { allHeroes, loading: heroesLoading, error: heroesError } = useHeroes();
   const { counters, synergy, loading: matchupsLoading, error: matchupsError } = useMatchups();

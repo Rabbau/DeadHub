@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useHeroes } from '../hooks/useHeroes';
 import { useLeaderboard } from '../hooks/useLeaderboard';
 import { useTranslation } from '../hooks/useTranslation';
+import { usePageMeta } from '../hooks/usePageMeta';
 import { LEADERBOARD_REGIONS } from '../api/index.js';
 import HeroIcon from '../components/hero/HeroIcon';
 
@@ -10,6 +11,7 @@ const PAGE_SIZE = 100;
 
 function LeaderboardPage() {
   const t = useTranslation();
+  usePageMeta('leaderboard');
   const [params, setParams] = useSearchParams();
   const { allHeroes } = useHeroes();
 

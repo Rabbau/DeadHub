@@ -3,13 +3,12 @@ import { useParams } from 'react-router-dom';
 import { fetchItemById, fetchItemGlobalStats, fetchHeroesUsingItem } from '../api';
 import { useHeroStore } from '../store/heroStore';
 import { useHeroes } from '../hooks/useHeroes';
-import { filtersKey } from '../services/statsFilters';
+import { useStatsFilters } from './useStatsFilters';
 
 export function useItemDetail() {
   const { id } = useParams();
   const language = useHeroStore(state => state.language);
-  const filters = useHeroStore(state => state.filters);
-  const filterKey = filtersKey(filters);
+  const { filters, ready, key: filterKey } = useStatsFilters();
   const { allHeroes } = useHeroes();
   const [item, setItem] = useState(null);
   const [stats, setStats] = useState(null);
@@ -47,7 +46,7 @@ export function useItemDetail() {
   // Статистика предмета — зависит ещё и от фильтров, поэтому карточка предмета не перезагружается
   const itemId = item?.id;
   useEffect(() => {
-    if (!itemId) return;
+    if (!itemId || !ready) return;
     let cancelled = false;
     setStatsLoading(true);
 
@@ -67,7 +66,7 @@ export function useItemDetail() {
       });
 
     return () => { cancelled = true; };
-  }, [itemId, allHeroes, filterKey]);
+  }, [itemId, allHeroes, ready, filterKey]);
 
   return { item, stats, heroUsage, loading, statsLoading, error };
 }

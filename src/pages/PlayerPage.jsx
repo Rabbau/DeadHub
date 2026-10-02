@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useHeroes } from '../hooks/useHeroes';
 import { usePlayerProfile } from '../hooks/usePlayers';
 import { useTranslation } from '../hooks/useTranslation';
+import { usePageMeta } from '../hooks/usePageMeta';
 import { useHeroStore } from '../store/heroStore';
 import { usePlayerStore } from '../store/playerStore';
 import Avatar from '../components/ui/Avatar';
@@ -31,6 +32,13 @@ function PlayerPage() {
   const { steam, rank, history, heroStats, loading, error } = usePlayerProfile(accountId);
   const remember = usePlayerStore((state) => state.remember);
   const [shown, setShown] = useState(MATCHES_STEP);
+
+  usePageMeta(steam?.name
+    ? {
+      title: t('seo.player.title', { name: steam.name }),
+      description: t('seo.player.description', { name: steam.name }),
+    }
+    : undefined);
 
   const heroMap = useMemo(() => Object.fromEntries(allHeroes.map((h) => [h.id, h])), [allHeroes]);
   const summary = useMemo(() => summarizeHeroStats(heroStats), [heroStats]);

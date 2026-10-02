@@ -1,40 +1,61 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { fetchAllItems } from '../api/index.js';
 import ItemCard from '../components/ui/ItemCard';
 import { useHeroStore } from '../store/heroStore';
 import { useTranslation } from '../hooks/useTranslation';
+import { usePageMeta } from '../hooks/usePageMeta';
 import SkeletonGrid from '../components/ui/SkeletonGrid';
-import { filterItems, groupItemsByPrice } from '../services/itemService';
+import { filterItems, groupItemsByPrice, isAvailableItem } from '../services/itemService';
 
 function ItemsPage() {
   const language = useHeroStore(state => state.language);
   const t = useTranslation();
+  usePageMeta('items');
+  const [params] = useSearchParams();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
   const [slot, setSlot] = useState('all');
   const [priceTier, setPriceTier] = useState('all');
+  // Ссылка со страницы обновления (?corruptible=1) сразу открывает список предметов, которые меняет Broker
+  const [corruptibleOnly, setCorruptibleOnly] = useState(params.get('corruptible') === '1');
+  const [showDisabled, setShowDisabled] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
     setLoading(true);
+    setError(null);
     fetchAllItems(language)
       .then(data => {
+        if (cancelled) return;
         setItems(data);
         setLoading(false);
       })
       .catch(err => {
+        if (cancelled) return;
         setError(err.message);
         setLoading(false);
       });
+    return () => { cancelled = true; };
   }, [language]);
 
+  const stats = useMemo(() => {
+    const available = items.filter(isAvailableItem);
+    return {
+      available: available.length,
+      corruptible: available.filter(item => item.corruptible).length,
+      disabled: items.length - available.length,
+    };
+  }, [items]);
+
   const filtered = useMemo(
-    () => filterItems(items, { search, slot, priceTier }),
-    [items, search, slot, priceTier],
+    () => filterItems(items, { search, slot, priceTier, corruptible: corruptibleOnly }),
+    [items, search, slot, priceTier, corruptibleOnly],
   );
 
+  // Подписи групп зависят только от языка, поэтому в зависимостях он, а не функция t
   const groups = useMemo(
     () => groupItemsByPrice(filtered, {
       t1: t('itemsPage.t1'),
@@ -44,8 +65,14 @@ function ItemsPage() {
       t5: t('itemsPage.t5'),
       indev: t('itemsPage.indev'),
     }),
-    [filtered, t],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [filtered, language],
   );
+
+  const visibleGroups = Object.entries(groups).filter(
+    ([key, group]) => group.items.length > 0 && (key !== 'indev' || showDisabled),
+  );
+  const shownCount = filtered.filter(isAvailableItem).length;
 
   if (loading) {
     return (
@@ -70,7 +97,7 @@ function ItemsPage() {
     <div className="page">
       <div className="page-header">
         <h1 className="page-title">{t('itemsPage.title')}</h1>
-        <span className="count-badge">{filtered.length} / {items.length} {t('itemsPage.count')}</span>
+        <span className="count-badge">{shownCount} / {stats.available} {t('itemsPage.count')}</span>
       </div>
 
       <div className="filters">
@@ -100,27 +127,47 @@ function ItemsPage() {
           <option value="t4">{t('itemsPage.t4')}</option>
           <option value="t5">{t('itemsPage.t5')}</option>
         </select>
+
+        <div className="chip-group">
+          <button
+            type="button"
+            className={`chip ${corruptibleOnly ? 'active' : ''}`}
+            aria-pressed={corruptibleOnly}
+            title={t('itemsPage.corruptibleHint')}
+            onClick={() => setCorruptibleOnly(value => !value)}
+          >
+            {t('itemsPage.corruptible')} ({stats.corruptible})
+          </button>
+          {stats.disabled > 0 && (
+            <button
+              type="button"
+              className={`chip ${showDisabled ? 'active' : ''}`}
+              aria-pressed={showDisabled}
+              onClick={() => setShowDisabled(value => !value)}
+            >
+              {t('itemsPage.showDisabled')} ({stats.disabled})
+            </button>
+          )}
+        </div>
       </div>
 
-      {filtered.length === 0 && (
+      {visibleGroups.length === 0 && (
         <p className="state-center" style={{ color: 'var(--muted)', marginTop: '2rem' }}>
           {t('itemsPage.noResults')}
         </p>
       )}
 
-      {Object.entries(groups).map(([key, group]) => (
-        group.items.length > 0 && (
-          <div className="section" key={key}>
-            <h2 className="section__title">{group.label} ({group.items.length})</h2>
-            <div className="items-grid">
-              {group.items.map(item => (
-                <Link to={`/items/${item.id}`} key={item.id} className="item-card-link">
-                  <ItemCard item={item} />
-                </Link>
-              ))}
-            </div>
+      {visibleGroups.map(([key, group]) => (
+        <div className="section" key={key}>
+          <h2 className="section__title">{group.label} ({group.items.length})</h2>
+          <div className="items-grid">
+            {group.items.map(item => (
+              <Link to={`/items/${item.id}`} key={item.id} className="item-card-link">
+                <ItemCard item={item} />
+              </Link>
+            ))}
           </div>
-        )
+        </div>
       ))}
     </div>
   );

@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { useHeroes } from '../hooks/useHeroes';
 import { useTierStore } from '../store/tierStore';
 import { useTranslation } from '../hooks/useTranslation';
+import { usePageMeta } from '../hooks/usePageMeta';
 
 const TIER_ORDER = ['S', 'A', 'B', 'C', 'D'];
 const TIER_COLORS = {
@@ -25,6 +26,7 @@ function TierListPage() {
     reset,
   } = useTierStore();
   const t = useTranslation();
+  usePageMeta('tierlist');
 
   const activeHeroIds = useMemo(
     () => heroes.filter(h => h.released).map(h => h.id),

@@ -2,6 +2,7 @@ import { useRandomBuild } from '../hooks/useRandomBuild';
 import { useHeroes } from '../hooks/useHeroes';
 import ItemCard from '../components/ui/ItemCard';
 import { useTranslation } from '../hooks/useTranslation';
+import { usePageMeta } from '../hooks/usePageMeta';
 
 const SLOT_LABEL_KEYS = {
   weapon: 'itemCard.slotWeapon',
@@ -18,6 +19,7 @@ function BuildPage() {
   const { build, loading, error, options, updateOptions, generate } = useRandomBuild();
   const { allHeroes } = useHeroes();
   const t = useTranslation();
+  usePageMeta('build');
 
   const activeHeroes = allHeroes.filter(h => h.released);
 

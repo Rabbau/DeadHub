@@ -1,8 +1,10 @@
 export { fetchHeroes, fetchHeroDetail, fetchHeroStats } from './heroApi.js';
-export { fetchItems, fetchItemsByHero, fetchBuyableItems, fetchItemsBySlot, fetchAllItems, fetchItemById } from './itemApi.js';
+export { fetchAllItems, fetchItemById } from './itemApi.js';
 export { fetchHeroItemStats, fetchHeroItemPermutations, fetchItemGlobalStats, fetchHeroesUsingItem } from './analyticsApi.js';
 export { fetchCounterStats, fetchSynergyStats } from './matchupApi.js';
 export { fetchRanks } from './ranksApi.js';
+export { fetchPatches } from './patchApi.js';
+export { fetchMap, fetchHeat } from './mapApi.js';
 export {
   searchPlayers,
   fetchSteamProfile,

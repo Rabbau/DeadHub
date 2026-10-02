@@ -107,6 +107,11 @@ function ItemCard({ item, compact = false }) {
               {t('itemCard.tier')} {item.item_tier}
             </span>
           )}
+          {item.corruptible && (
+            <span className="item-tooltip__badge item-tooltip__badge--corrupt">
+              {t('itemCard.corruptible')}
+            </span>
+          )}
         </div>
 
         {quipText && (

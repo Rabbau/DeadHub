@@ -1,12 +1,14 @@
 import { useHeroes } from '../hooks/useHeroes';
 import { useCompareStore } from '../store/compareStore';
 import { useTranslation } from '../hooks/useTranslation';
+import { usePageMeta } from '../hooks/usePageMeta';
 import { formatWinrate, formatPickrate, winrateColor } from '../services/heroService';
 
 function ComparePage() {
   const { allHeroes, loading } = useHeroes();
   const { selectedIds, addHero, removeHero, replace, search, setSearch, history, applyHistory } = useCompareStore();
   const t = useTranslation();
+  usePageMeta('compare');
 
   // Только герои, доступные игрокам (а не заготовки в разработке)
   const activeHeroes = allHeroes.filter(h => h.released);
