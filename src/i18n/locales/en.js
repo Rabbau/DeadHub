@@ -1,5 +1,6 @@
 export default {
   nav: {
+    home: 'Home',
     heroes: 'Heroes',
     meta: 'Meta',
     items: 'Items',
@@ -246,6 +247,10 @@ export default {
       description: 'Community hub for Deadlock: hero stats, tier list, item builds and random draft generator. Updated regularly.',
     },
     home: {
+      title: 'Deadlock stats, builds and matchups',
+      description: 'Win rates, builds, counters, a tier list and an interactive map for every Deadlock hero, from real match data filtered by rank and patch.',
+    },
+    heroes: {
       title: 'Deadlock hero stats and builds',
       description: 'Win rates, pick rates and popular builds for every Deadlock hero, filtered by rank and patch. Matchups, items, an interactive map and the latest update.',
     },
@@ -333,13 +338,13 @@ export default {
   notFound: {
     title: 'Page not found',
     text: 'The page you are looking for does not exist or has moved. Check the address or pick a section below.',
-    home: 'Back to heroes',
+    home: 'Back to home',
   },
   errorPage: {
     title: 'Something went wrong',
     text: 'This page crashed. Reloading usually helps; if it keeps happening, the data may be temporarily unavailable.',
     reload: 'Reload page',
-    home: 'Back to heroes',
+    home: 'Back to home',
     details: 'Technical details',
   },
   footer: {
@@ -403,7 +408,37 @@ export default {
     perLevel: '/lvl',
   },
   home: {
-    title: 'Meta Hub',
+    eyebrow: 'Unofficial Deadlock fan stats',
+    title: 'Deadlock',
+    titleAccent: 'stats hub',
+    lead: 'Hero win rates, builds, counters and the map — from real match data, filtered by rank and patch.',
+    nowTitle: 'Right now',
+    nowCaption: 'Stats: {filters}',
+    customRanks: 'custom range',
+    metaLink: 'Full meta',
+    latestUpdate: 'Latest update',
+    patchNotes: 'Patch notes',
+    sectionsTitle: 'Everything on Dead Hub',
+    sections: {
+      heroes: 'Every hero with win rate, pick rate and KDA',
+      meta: 'The strongest heroes right now, plus the winners and losers of the patch',
+      tierlist: 'Hero tiers calculated from match data, and a builder for your own',
+      matchups: 'Who counters whom: the win rate of every pair of heroes',
+      draft: 'Pick against the enemy team and with your allies',
+      compare: 'Up to three heroes side by side',
+      items: 'Every item by tier and slot, with stats',
+      build: 'A random hero with a 12-item build',
+      map: 'The city map with objectives, ziplines and a kills heatmap',
+      update: 'Patch notes straight from Valve',
+      players: 'Find a player by name, Account ID or SteamID64',
+      leaderboard: 'Top players by region and by hero',
+      ranks: 'How many players are on each rank',
+      me: 'Remember your Account ID to open your profile in one click',
+    },
+  },
+  heroesPage: {
+    title: 'Deadlock',
+    titleAccent: 'heroes',
     subtitle: 'Current hero statistics and builds',
     heroCount: 'heroes',
     searchPlaceholder: 'Search hero...',

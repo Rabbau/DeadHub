@@ -7,7 +7,8 @@ import { toAccountId } from './playerService.js';
 
 /** Разделы сайта, которые можно найти по названию (key — ключ перевода пункта меню). */
 export const SEARCH_PAGES = [
-  { to: '/', key: 'nav.heroes' },
+  { to: '/', key: 'nav.home' },
+  { to: '/heroes', key: 'nav.heroes' },
   { to: '/meta', key: 'nav.meta' },
   { to: '/matchups', key: 'nav.matchups' },
   { to: '/items', key: 'nav.items' },

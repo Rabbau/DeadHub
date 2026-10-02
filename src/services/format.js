@@ -39,6 +39,18 @@ export function formatShortDate(unixSeconds, language) {
   return new Date(unixSeconds * 1000).toLocaleDateString(localeFor(language), { day: 'numeric', month: 'short' });
 }
 
+/**
+ * «3 дня назад» / «3 days ago»: до двух месяцев считаем в днях («вчера», «сегодня»), дальше — в месяцах.
+ * @param {number} unixSeconds
+ * @param {string} language
+ * @param {number} [nowMs]
+ */
+export function formatAge(unixSeconds, language, nowMs = Date.now()) {
+  const days = Math.max(0, Math.round((nowMs / 1000 - unixSeconds) / 86400));
+  const rtf = new Intl.RelativeTimeFormat(localeFor(language), { numeric: 'auto' });
+  return days < 60 ? rtf.format(-days, 'day') : rtf.format(-Math.round(days / 30), 'month');
+}
+
 /** «17 сент., 21:32» / «Sep 17, 9:32 PM». */
 export function formatMatchDate(unixSeconds, language) {
   if (!unixSeconds) return '—';

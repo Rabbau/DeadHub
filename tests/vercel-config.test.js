@@ -188,8 +188,8 @@ describe('the pages of the site', () => {
   const pages = appPaths()
 
   it('knows the routes of the app (the extraction must not rot)', () => {
-    expect(pages.length).toBeGreaterThanOrEqual(17)
-    for (const expected of ['/', '/meta', '/items', '/items/123', '/hero/123', '/player/123', '/match/123', '/draft', '/map', '/me']) expect(pages).toContain(expected)
+    expect(pages.length).toBeGreaterThanOrEqual(19)
+    for (const expected of ['/', '/heroes', '/meta', '/items', '/items/123', '/hero/123', '/player/123', '/match/123', '/draft', '/map', '/me']) expect(pages).toContain(expected)
   })
 
   it.each(pages)('opens %s with the app (a new route in App.jsx must be added to vercel.json too)', (pathname) => {
@@ -199,14 +199,14 @@ describe('the pages of the site', () => {
   })
 
   it('also opens them with a trailing slash', () => {
-    for (const pathname of ['/meta/', '/matchups/', '/items/', '/hero/123/', '/match/109064028/', '/player/1042703572/']) {
+    for (const pathname of ['/heroes/', '/meta/', '/matchups/', '/items/', '/hero/123/', '/match/109064028/', '/player/1042703572/']) {
       expect(resolve(pathname), pathname).toMatchObject({ kind: 'rewrite', file: '/index.html' })
     }
   })
 
   it('answers an address that is not a page with a real 404 instead of the app', () => {
     for (const pathname of [
-      '/nonexistent', '/nonexistent/page', '/hero', '/hero/', '/hero/abc', '/hero/12/34', '/hero/-1', '/items/abc', '/items/12/extra', '/meta/extra',
+      '/nonexistent', '/nonexistent/page', '/heroes/extra', '/Heroes', '/hero', '/hero/', '/hero/abc', '/hero/12/34', '/hero/-1', '/items/abc', '/items/12/extra', '/meta/extra',
       '/player', '/player/abc', '/match', '/match/abc', '/wp-admin', '/wp-login.php', '/.env', '/.git/config', '/admin', '/api/v1', '/404x',
       '/Meta', '/hero/1234567890123', '/static/x.js', '/assets', '/assets/missing.js',
     ]) {
@@ -234,7 +234,7 @@ describe('headers', () => {
   const SECURITY = [
     'content-security-policy', 'x-content-type-options', 'x-frame-options', 'referrer-policy', 'permissions-policy', 'cross-origin-opener-policy',
   ]
-  const everywhere = ['/', '/meta', '/hero/25', '/hero/26', '/match/109064028', '/assets/index-abc123.js', '/favicon.ico', '/api/v1/assets/heroes', '/api/v1/matches/109064028/metadata', '/api/ping', '/definitely-missing', '/api/v1/sql']
+  const everywhere = ['/', '/heroes', '/meta', '/hero/25', '/hero/26', '/match/109064028', '/assets/index-abc123.js', '/favicon.ico', '/api/v1/assets/heroes', '/api/v1/matches/109064028/metadata', '/api/ping', '/definitely-missing', '/api/v1/sql']
 
   it.each(everywhere)('puts the security headers on %s, once each', (pathname) => {
     const { headers } = resolve(pathname)

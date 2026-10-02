@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════
    DEAD HUB — pixel / acid стиль
    Референс: https://stonkfly-three.vercel.app/
-   Шрифты подключаются в index.html:
+   Шрифты подключаются в src/fonts.css (пакеты @fontsource):
      Silkscreen — пиксельный (латиница), Tiny5 — пиксельный (кириллица,
      подхватывается как fallback), IBM Plex Mono — основной текст.
    ═══════════════════════════════════════════════════════════════ */
@@ -2435,7 +2435,7 @@ a.tag:hover { border-color: var(--acid); }
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   Новые герои обновления (полоса на главной и страница героя до релиза)
+   Новые герои обновления (полоса на главной и в списке героев, страница героя до релиза)
    ═══════════════════════════════════════════════════════════════ */
 
 .new-heroes {
@@ -3756,4 +3756,136 @@ a.chip { display: inline-flex; align-items: center; }
   .match-table th, .match-table td { padding-left: 4px; padding-right: 4px; }
   .match-details > td { padding: 10px 8px 12px; }
   .kill-feed { grid-template-columns: 1fr; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Главная: баннер с поиском, «сейчас» (герой периода, обновление, рейтинги), плитки разделов
+   ═══════════════════════════════════════════════════════════════ */
+
+.home-hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 28px 28px 30px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--acid);
+  box-shadow: 5px 5px 0 var(--shadow);
+}
+/* акцентный «пиксельный» блок в углу, как на линии шапки */
+.home-hero::after {
+  content: '';
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 56px;
+  height: 8px;
+  background: var(--acid);
+}
+.home-hero__title {
+  font: 700 clamp(28px, 5vw, 56px)/1.08 var(--font-pixel);
+  letter-spacing: -1.5px;
+  text-transform: uppercase;
+  overflow-wrap: anywhere; /* на очень узком экране длинное слово переносится, а не вылезает за рамку */
+  color: var(--ink);
+}
+.home-hero__title em { color: var(--acid); font-style: normal; }
+.home-hero__lead { max-width: 62ch; font: 13px/1.75 var(--font-mono); color: var(--soft); }
+
+/* Большая кнопка поиска: выглядит полем ввода, но открывает общее окно поиска */
+.home-search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(560px, 100%);
+  min-height: 52px;
+  margin-top: 4px;
+  padding: 12px 14px;
+  text-align: left;
+  font: 13px/1.3 var(--font-mono);
+  color: var(--muted);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  box-shadow: 4px 4px 0 var(--shadow);
+}
+.home-search:hover { color: var(--ink); border-color: var(--acid-line); }
+.home-search__prompt { flex: none; font: 700 14px/1 var(--font-pixel); color: var(--acid); }
+.home-search__text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.home-search__key {
+  flex: none;
+  padding: 3px 7px;
+  font: 12px/1 var(--font-mono);
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line);
+}
+
+.home-now__caption { margin: -6px 0 16px; font: 12px/1.6 var(--font-mono); color: var(--muted); }
+.home-now__caption a { color: var(--acid); }
+.home-now__caption a:hover { text-decoration: underline; }
+
+.home-feature { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin-bottom: 24px; }
+.home-block { display: flex; flex-direction: column; min-width: 0; }
+.home-block__label { margin-bottom: 8px; font: 11px/1.3 var(--font-pixel); text-transform: uppercase; color: var(--muted); }
+.home-block > .meta-hero-week__card,
+.home-block > .home-update { flex: 1; }
+
+.home-update {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 24px;
+  color: inherit;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--acid);
+  box-shadow: 5px 5px 0 var(--shadow);
+}
+.home-update:hover { border-color: var(--acid-line); border-left-color: var(--acid); }
+/* Название обновления бывает длинным («Listen up, Crumbums! Your King is here.»), поэтому мельче, чем имя героя рядом */
+.home-update__name { font: 700 clamp(16px, 1.8vw, 22px)/1.25 var(--font-pixel); letter-spacing: -0.5px; text-transform: uppercase; color: var(--ink); }
+.home-update__meta { font-size: 12px; color: var(--muted); }
+.home-update__go { font: 11px/1 var(--font-pixel); text-transform: uppercase; color: var(--acid); }
+
+/* Серые строки на месте рейтингов, пока статистика грузится: высота как у настоящей строки */
+.home-skeleton-row { height: 46px; margin: 4px 0; }
+
+.home-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+.home-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 14px 44px 16px 16px;
+  color: inherit;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: 3px 3px 0 var(--shadow);
+}
+.home-tile:hover { border-color: var(--acid-line); transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--shadow); }
+.home-tile__num { font: 11px/1 var(--font-pixel); color: var(--acid); }
+.home-tile__name { font: 700 14px/1.25 var(--font-pixel); letter-spacing: -0.3px; text-transform: uppercase; color: var(--ink); }
+.home-tile:hover .home-tile__name { color: var(--acid); }
+.home-tile__text { font: 12px/1.55 var(--font-mono); color: var(--muted); }
+.home-tile__go { position: absolute; top: 12px; right: 14px; font: 700 14px/1 var(--font-pixel); color: var(--dim); }
+.home-tile:hover .home-tile__go { color: var(--acid); }
+
+@media (max-width: 768px) {
+  .home-feature { grid-template-columns: 1fr; gap: 16px; }
+  /* На странице меты карточка героя на телефоне центрируется; на главной она рядом с карточкой обновления
+     и остаётся строкой, как та */
+  .home-block .meta-hero-week__card { flex-direction: row; padding: 16px; text-align: left; }
+  .home-block .meta-hero-week__stats { justify-content: flex-start; }
+  .home-update { padding: 16px; }
+}
+
+@media (max-width: 640px) {
+  .home-hero { padding: 20px 16px 22px; }
+  .home-hero::after { display: none; }
 }

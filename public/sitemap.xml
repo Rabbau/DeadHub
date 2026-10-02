@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://dead-hub.vercel.app/</loc></url>
+  <url><loc>https://dead-hub.vercel.app/heroes</loc></url>
   <url><loc>https://dead-hub.vercel.app/meta</loc></url>
   <url><loc>https://dead-hub.vercel.app/matchups</loc></url>
   <url><loc>https://dead-hub.vercel.app/items</loc></url>

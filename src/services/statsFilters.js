@@ -52,6 +52,20 @@ export function activeRankPreset(filters) {
   return preset ? preset.id : null;
 }
 
+/**
+ * Фильтры в виде для подписи под цифрами (главная, где самих фильтров нет): период — число дней или 'patch',
+ * id готового диапазона рангов (null, если диапазон свой) и признак Street Brawl, где рангов нет.
+ * @param {{ period: number|'patch', rankMin: number, rankMax: number, mode?: string }} filters
+ * @returns {{ period: number|'patch', rankPreset: string|null, streetBrawl: boolean }}
+ */
+export function describeFilters(filters) {
+  return {
+    period: filters.period === PATCH_PERIOD ? PATCH_PERIOD : Number(filters.period),
+    rankPreset: activeRankPreset(filters),
+    streetBrawl: isStreetBrawl(filters),
+  };
+}
+
 const DAY_S = 24 * 60 * 60;
 
 /** Целое число или NaN. */

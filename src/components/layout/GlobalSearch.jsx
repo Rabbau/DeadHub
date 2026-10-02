@@ -1,5 +1,6 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
+import { OPEN_SEARCH_EVENT } from './searchEvents';
 
 // Окно поиска нужно только после открытия, поэтому его код грузится отдельным файлом. Чтобы первые символы,
 // набранные сразу после «/», не потерялись, файл подгружается заранее — в паузе после загрузки страницы
@@ -14,12 +15,15 @@ function isTypingTarget(target) {
 
 /**
  * Кнопка поиска в шапке и окно поиска. Открывается кнопкой, клавишей `/` (когда посетитель не печатает
- * в поле) или Ctrl/⌘+K; закрывается Esc, щелчком снаружи и после выбора.
+ * в поле), Ctrl/⌘+K или командой requestSearch (большая кнопка на главной); закрывается Esc, щелчком
+ * снаружи и после выбора.
  */
 function GlobalSearch() {
   const t = useTranslation();
   const [open, setOpen] = useState(false);
   const triggerRef = useRef(null);
+  // Откуда окно открыли командой requestSearch: после закрытия фокус возвращается туда
+  const originRef = useRef(null);
 
   useEffect(() => {
     const onKeyDown = (event) => {
@@ -30,8 +34,16 @@ function GlobalSearch() {
         setOpen(true);
       }
     };
+    const onRequest = (event) => {
+      originRef.current = event.detail?.origin ?? null;
+      setOpen(true);
+    };
     document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
+    window.addEventListener(OPEN_SEARCH_EVENT, onRequest);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener(OPEN_SEARCH_EVENT, onRequest);
+    };
   }, []);
 
   // Подгрузка файла окна, пока браузер свободен
@@ -44,15 +56,18 @@ function GlobalSearch() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Пока окно открыто, страница под ним не прокручивается; после закрытия фокус возвращается на кнопку
+  // Пока окно открыто, страница под ним не прокручивается; после закрытия фокус возвращается туда, откуда его
+  // открыли (кнопка на главной), а если этого элемента уже нет на странице — на кнопку в шапке
   useEffect(() => {
     if (!open) return undefined;
     const previous = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+    const origin = originRef.current;
+    originRef.current = null;
     const trigger = triggerRef.current;
     return () => {
       document.body.style.overflow = previous;
-      trigger?.focus({ preventScroll: true });
+      (origin?.isConnected ? origin : trigger)?.focus({ preventScroll: true });
     };
   }, [open]);
 

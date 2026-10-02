@@ -27,7 +27,7 @@ function UpcomingHero({ hero }) {
       />
 
       <div className="page" style={{ position: 'relative', zIndex: 1 }}>
-        <Link to="/" className="back-link">{t('heroPage.back')}</Link>
+        <Link to="/heroes" className="back-link">{t('heroPage.back')}</Link>
 
         <div className="hero-detail">
           <div

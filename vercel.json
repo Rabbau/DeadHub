@@ -12,7 +12,7 @@
     { "source": "/api/(v1/leaderboard/(?:Europe|Asia|NAmerica|SAmerica|Oceania)(?:/\\d{1,10})?)", "destination": "https://api.deadlock-api.com/$1" },
     { "source": "/api/(v2/patches)", "destination": "https://api.deadlock-api.com/$1" },
     { "source": "/(hero|items|player|match)/(\\d{1,12}){/}?", "destination": "/index.html" },
-    { "source": "/(meta|items|build|tierlist|compare|matchups|leaderboard|players|update|map|ranks|me|draft){/}?", "destination": "/index.html" }
+    { "source": "/(heroes|meta|items|build|tierlist|compare|matchups|leaderboard|players|update|map|ranks|me|draft){/}?", "destination": "/index.html" }
   ],
   "headers": [
     {

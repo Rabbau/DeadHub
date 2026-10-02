@@ -126,7 +126,7 @@ function DataTierList() {
             <thead>
               <tr>
                 <th scope="col" className="num">#</th>
-                <th scope="col" className="hero-table__hero">{t('home.colHero')}</th>
+                <th scope="col" className="hero-table__hero">{t('heroesPage.colHero')}</th>
                 <th scope="col">{t('tierList.colTier')}</th>
                 <th scope="col" className="num">{t('tierList.colScore')}</th>
                 <th scope="col" className="num">WR</th>

@@ -8,10 +8,14 @@ import { formatWinrate, formatPickrate, winrateColor } from '../services/heroSer
 const MIN_SHARE = 0.004;
 const MIN_GAMES_FLOOR = 30;
 
-export function useMetaDashboard() {
+/**
+ * Рейтинги героев для страницы меты и главной. `withDeltas: false` — без победителей и проигравших: это ещё один
+ * запрос к API, а главной он не нужен.
+ */
+export function useMetaDashboard({ withDeltas = true } = {}) {
   const { allHeroes, loading, refreshing, error } = useHeroes();
   // Победители и проигравшие: изменение к прошлому периоду (ещё один запрос к API, кешируется)
-  const { deltas, window: deltaWindow, loading: deltaLoading } = useHeroDeltas();
+  const { deltas, window: deltaWindow, loading: deltaLoading } = useHeroDeltas({ enabled: withDeltas });
 
   const activeHeroes = useMemo(() => {
     const released = allHeroes.filter(h => h.released);
