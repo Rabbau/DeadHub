@@ -1,0 +1,26 @@
+# Dependabot: раз в неделю смотрит npm-зависимости и версии GitHub Actions и сам открывает pull request.
+# CI (.github/workflows/ci.yml) проверяет каждый такой PR линтером, тестами и сборкой, поэтому безопасные
+# обновления можно вливать, не запуская проект вручную.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'chore(deps)'
+    groups:
+      # Мелкие обновления (minor и patch) одним PR; мажорные — отдельными, по одному пакету:
+      # React, Vite, ESLint и роутер при смене мажорной версии требуют ручной проверки интерфейса
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: 'chore(ci)'

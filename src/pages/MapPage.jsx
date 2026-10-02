@@ -65,7 +65,8 @@ function MapPage() {
         </div>
       </div>
 
-      {heatOn && <StatsFilters />}
+      {/* Тепловая карта строится только по обычным матчам: у Street Brawl другая арена */}
+      {heatOn && <StatsFilters modes={false} />}
 
       <div className="map-presets" role="group" aria-label={t('map.presetsLabel')}>
         <span className="map-presets__label">{t('map.presetsLabel')}</span>

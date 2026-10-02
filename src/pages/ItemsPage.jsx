@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { Suspense, lazy, useState, useEffect, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { fetchAllItems } from '../api/index.js';
 import ItemCard from '../components/ui/ItemCard';
@@ -6,13 +6,24 @@ import { useHeroStore } from '../store/heroStore';
 import { useTranslation } from '../hooks/useTranslation';
 import { usePageMeta } from '../hooks/usePageMeta';
 import SkeletonGrid from '../components/ui/SkeletonGrid';
+import { useStoredChoice } from '../hooks/useStoredChoice';
 import { filterItems, groupItemsByPrice, isAvailableItem } from '../services/itemService';
+
+// Таблица со статистикой нужна только тем, кто её открыл, — её код грузится отдельным файлом
+const ItemsTable = lazy(() => import('../components/ui/ItemsTable'));
+
+const VIEWS = [
+  { id: 'catalog', key: 'itemsPage.viewCatalog' },
+  { id: 'table', key: 'itemsPage.viewTable' },
+];
 
 function ItemsPage() {
   const language = useHeroStore(state => state.language);
   const t = useTranslation();
   usePageMeta('items');
   const [params] = useSearchParams();
+  // Каталог не требует статистики; таблица со статистикой — отдельный вид, и запросы к API идут только в нём
+  const [view, setView] = useStoredChoice('dlhub_items_view', ['catalog', 'table'], 'catalog');
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -97,7 +108,22 @@ function ItemsPage() {
     <div className="page">
       <div className="page-header">
         <h1 className="page-title">{t('itemsPage.title')}</h1>
-        <span className="count-badge">{shownCount} / {stats.available} {t('itemsPage.count')}</span>
+        <div className="page-header__side">
+          <span className="count-badge">{shownCount} / {stats.available} {t('itemsPage.count')}</span>
+          <div className="chip-group" role="group" aria-label={t('itemsPage.viewLabel')}>
+            {VIEWS.map(({ id, key }) => (
+              <button
+                key={id}
+                type="button"
+                className={`chip ${view === id ? 'active' : ''}`}
+                aria-pressed={view === id}
+                onClick={() => setView(id)}
+              >
+                {t(key)}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className="filters">
@@ -107,19 +133,20 @@ function ItemsPage() {
             type="text"
             className="input"
             placeholder={t('itemsPage.searchPlaceholder')}
+            aria-label={t('itemsPage.searchPlaceholder')}
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
         </div>
 
-        <select className="select" value={slot} onChange={e => setSlot(e.target.value)}>
+        <select className="select" aria-label={t('itemsPage.slotFilter')} value={slot} onChange={e => setSlot(e.target.value)}>
           <option value="all">{t('itemsPage.allSlots')}</option>
           <option value="weapon">{t('itemCard.slotWeapon')}</option>
           <option value="spirit">{t('itemCard.slotSpirit')}</option>
           <option value="vitality">{t('itemCard.slotVitality')}</option>
         </select>
 
-        <select className="select" value={priceTier} onChange={e => setPriceTier(e.target.value)}>
+        <select className="select" aria-label={t('itemsPage.priceFilter')} value={priceTier} onChange={e => setPriceTier(e.target.value)}>
           <option value="all">{t('itemsPage.allPrices')}</option>
           <option value="t1">{t('itemsPage.t1')}</option>
           <option value="t2">{t('itemsPage.t2')}</option>
@@ -138,7 +165,7 @@ function ItemsPage() {
           >
             {t('itemsPage.corruptible')} ({stats.corruptible})
           </button>
-          {stats.disabled > 0 && (
+          {stats.disabled > 0 && view === 'catalog' && (
             <button
               type="button"
               className={`chip ${showDisabled ? 'active' : ''}`}
@@ -151,24 +178,33 @@ function ItemsPage() {
         </div>
       </div>
 
-      {visibleGroups.length === 0 && (
-        <p className="state-center" style={{ color: 'var(--muted)', marginTop: '2rem' }}>
-          {t('itemsPage.noResults')}
-        </p>
-      )}
+      {view === 'table' ? (
+        // В таблице только то, что продаётся: у отключённых предметов статистики нет
+        <Suspense fallback={<SkeletonGrid type="item" count={12} />}>
+          <ItemsTable items={filtered.filter(isAvailableItem)} />
+        </Suspense>
+      ) : (
+        <>
+          {visibleGroups.length === 0 && (
+            <p className="state-center" style={{ color: 'var(--muted)', marginTop: '2rem' }}>
+              {t('itemsPage.noResults')}
+            </p>
+          )}
 
-      {visibleGroups.map(([key, group]) => (
-        <div className="section" key={key}>
-          <h2 className="section__title">{group.label} ({group.items.length})</h2>
-          <div className="items-grid">
-            {group.items.map(item => (
-              <Link to={`/items/${item.id}`} key={item.id} className="item-card-link">
-                <ItemCard item={item} />
-              </Link>
-            ))}
-          </div>
-        </div>
-      ))}
+          {visibleGroups.map(([key, group]) => (
+            <div className="section" key={key}>
+              <h2 className="section__title">{group.label} ({group.items.length})</h2>
+              <div className="items-grid">
+                {group.items.map(item => (
+                  <Link to={`/items/${item.id}`} key={item.id} className="item-card-link">
+                    <ItemCard item={item} />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))}
+        </>
+      )}
     </div>
   );
 }

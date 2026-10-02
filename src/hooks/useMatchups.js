@@ -32,6 +32,7 @@ export function useMatchups() {
       });
 
     return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- вместо объекта фильтров следим за его ключом
   }, [ready, filterKey]);
 
   return state;

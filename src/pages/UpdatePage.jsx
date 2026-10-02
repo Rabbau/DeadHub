@@ -1,13 +1,18 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import RichHtml from '../components/ui/RichHtml';
+import WinnersLosers from '../components/ui/WinnersLosers';
+import { useHeroDeltas } from '../hooks/useHeroDeltas';
+import { useHeroes } from '../hooks/useHeroes';
 import { usePatches } from '../hooks/usePatches';
+import { useStatsFilters } from '../hooks/useStatsFilters';
 import { useTranslation } from '../hooks/useTranslation';
 import { usePageMeta } from '../hooks/usePageMeta';
 import { useHeroStore } from '../store/heroStore';
 import { CURRENT_UPDATE, OFFICIAL_UPDATE_URL, isHighlightsActive } from '../data/updates';
 import { formatShortDate, localeFor } from '../services/format';
 import { patchName } from '../services/patchService';
+import { PATCH_PERIOD, normalizeFilters } from '../services/statsFilters';
 
 /** «3 дня назад» / «3 days ago». */
 function relativeAge(unixSeconds, language) {
@@ -55,6 +60,18 @@ function Highlights() {
       </div>
     </section>
   );
+}
+
+/**
+ * Что обновление сделало с метой: сравниваем период «с этого обновления» с периодом между ним и предыдущим.
+ * Ранги и режим — те же, что выбраны в фильтрах сайта; период здесь всегда «с патча».
+ */
+function PatchBalance({ patchAt }) {
+  const { filters: shared } = useStatsFilters();
+  const filters = useMemo(() => normalizeFilters({ ...shared, period: PATCH_PERIOD, since: patchAt }), [shared, patchAt]);
+  const { allHeroes } = useHeroes(); // здесь нужны только имена и иконки героев
+  const { deltas, window, loading } = useHeroDeltas({ filters });
+  return <WinnersLosers heroes={allHeroes} deltas={deltas} window={window} loading={loading} />;
 }
 
 function UpdatePage() {
@@ -106,6 +123,8 @@ function UpdatePage() {
       )}
 
       {isHighlightsActive() && <Highlights />}
+
+      {latest && <PatchBalance patchAt={latest.at} />}
 
       {latest && (
         <section className="section">

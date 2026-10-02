@@ -41,6 +41,7 @@ export function useHeroDetail(id, language = 'english') {
       });
 
     return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- вместо объекта фильтров следим за его ключом
   }, [id, language, ready, filterKey]);
 
   return { hero, loading, refreshing, error };

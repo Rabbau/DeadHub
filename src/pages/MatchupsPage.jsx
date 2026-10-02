@@ -1,5 +1,5 @@
 import { useMemo, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useHeroes } from '../hooks/useHeroes';
 import { useMatchups } from '../hooks/useMatchups';
 import { useTranslation } from '../hooks/useTranslation';
@@ -68,6 +68,9 @@ function MatchupsPage() {
         <div>
           <h1 className="page-title">{t('matchups.title')}</h1>
           <div className="page-subtitle">{t('matchups.subtitle')}</div>
+        </div>
+        <div className="page-header__side">
+          <Link to="/draft" className="btn btn-secondary">{t('draft.title')} →</Link>
         </div>
       </div>
       <StatsFilters />

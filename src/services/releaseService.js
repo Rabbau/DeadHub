@@ -6,18 +6,30 @@
 
 const MINUTE_MS = 60 * 1000;
 
+// Создание Intl.DateTimeFormat на порядок дороже самого форматирования, а часовой пояс расписания один
+const formatters = new Map();
+
+function formatterFor(timeZone) {
+  let formatter = formatters.get(timeZone);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      hourCycle: 'h23',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+    formatters.set(timeZone, formatter);
+  }
+  return formatter;
+}
+
 /** Дата и время «на стенных часах» часового пояса в момент utcMs. */
 function zonedParts(utcMs, timeZone) {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone,
-    hourCycle: 'h23',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  }).formatToParts(new Date(utcMs));
+  const parts = formatterFor(timeZone).formatToParts(new Date(utcMs));
   const get = (type) => Number(parts.find((part) => part.type === type).value);
   return { year: get('year'), month: get('month'), day: get('day'), hour: get('hour'), minute: get('minute'), second: get('second') };
 }

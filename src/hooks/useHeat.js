@@ -12,7 +12,7 @@ const REQUEST_DELAY_MS = 300;
  * При смене фильтров прежняя картинка остаётся на экране, пока грузится новая.
  */
 export function useHeat(enabled, phase) {
-  const { filters, ready, key: filterKey } = useStatsFilters();
+  const { filters, ready, key: filterKey } = useStatsFilters({ normalOnly: true });
   const [state, setState] = useState({ heat: null, loading: false, error: null });
 
   useEffect(() => {
@@ -27,6 +27,7 @@ export function useHeat(enabled, phase) {
     }, REQUEST_DELAY_MS);
 
     return () => { cancelled = true; clearTimeout(timer); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- вместо объекта фильтров следим за его ключом
   }, [enabled, ready, filterKey, phase]);
 
   return state;

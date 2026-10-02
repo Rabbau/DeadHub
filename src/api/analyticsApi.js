@@ -82,14 +82,22 @@ function slimItemStatsByHero(rows) {
   return byItem;
 }
 
-export async function fetchItemGlobalStats(itemId, minMatches = 20, filters = DEFAULT_FILTERS) {
+/**
+ * Статистика всех предметов одним запросом: { [itemId]: { matches, wins, players, avgBuyTimeS } }.
+ * Тот же запрос и ключ кеша, что у страницы предмета и таблицы предметов, — на набор фильтров он один.
+ */
+export function fetchItemStatsMap(filters = DEFAULT_FILTERS, minMatches = 20) {
   const query = toQueryString({ min_matches: minMatches, ...toStatsParams(filters) });
   const url = `${ANALYTICS_API_BASE}/v1/analytics/item-stats?${query}`;
-  const byItem = await httpGet(url, {
+  return httpGet(url, {
     cacheKey: `item_stats_all_${minMatches}_${filtersKey(filters)}`,
     ttl: STATS_TTL_MS,
     transform: slimItemStats,
   });
+}
+
+export async function fetchItemGlobalStats(itemId, minMatches = 20, filters = DEFAULT_FILTERS) {
+  const byItem = await fetchItemStatsMap(filters, minMatches);
   const raw = byItem[itemId];
   if (!raw) return null;
   return {

@@ -66,6 +66,7 @@ export function useItemDetail() {
       });
 
     return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- вместо объекта фильтров следим за его ключом
   }, [itemId, allHeroes, ready, filterKey]);
 
   return { item, stats, heroUsage, loading, statsLoading, error };

@@ -6,6 +6,7 @@ import { useTranslation } from '../hooks/useTranslation';
 import { usePageMeta } from '../hooks/usePageMeta';
 import { useHeroStore } from '../store/heroStore';
 import { usePlayerStore } from '../store/playerStore';
+import { useProfileStore } from '../store/profileStore';
 import Avatar from '../components/ui/Avatar';
 import RankBadge from '../components/ui/RankBadge';
 import HeroIcon from '../components/hero/HeroIcon';
@@ -31,6 +32,10 @@ function PlayerPage() {
   const { allHeroes } = useHeroes();
   const { steam, rank, history, heroStats, loading, error } = usePlayerProfile(accountId);
   const remember = usePlayerStore((state) => state.remember);
+  const me = useProfileStore((state) => state.me);
+  const setMe = useProfileStore((state) => state.setMe);
+  const clearMe = useProfileStore((state) => state.clearMe);
+  const isMe = accountId != null && me?.id === accountId;
   const [shown, setShown] = useState(MATCHES_STEP);
 
   usePageMeta(steam?.name
@@ -38,7 +43,7 @@ function PlayerPage() {
       title: t('seo.player.title', { name: steam.name }),
       description: t('seo.player.description', { name: steam.name }),
     }
-    : undefined);
+    : undefined, { noindex: Boolean(error) });
 
   const heroMap = useMemo(() => Object.fromEntries(allHeroes.map((h) => [h.id, h])), [allHeroes]);
   const summary = useMemo(() => summarizeHeroStats(heroStats), [heroStats]);
@@ -48,6 +53,13 @@ function PlayerPage() {
   useEffect(() => {
     if (steam) remember({ id: steam.id, name: steam.name, avatar: steam.avatar });
   }, [steam, remember]);
+
+  // Профиль запомнен как «мой» (например, только по Account ID) — имя и аватар подтягиваются, как только загрузились
+  useEffect(() => {
+    if (isMe && steam && (me.name !== steam.name || me.avatar !== steam.avatar)) {
+      setMe({ id: steam.id, name: steam.name, avatar: steam.avatar });
+    }
+  }, [isMe, steam, me, setMe]);
 
   // Другой игрок — список матчей снова с начала
   useEffect(() => { setShown(MATCHES_STEP); }, [accountId]);
@@ -71,6 +83,12 @@ function PlayerPage() {
       <div className="page player-page">
         {back}
         <div className="state-center state-error">{t('player.notFound')}</div>
+        {/* Если «мой профиль» указан неверно, его нужно уметь сбросить */}
+        {isMe && (
+          <p className="player-search__hint">
+            <button type="button" className="btn btn-secondary" onClick={clearMe}>{t('player.forgetMe')}</button>
+          </p>
+        )}
       </div>
     );
   }
@@ -99,6 +117,16 @@ function PlayerPage() {
                 {t('player.steamProfile')} ↗
               </a>
             )}
+            {/* «Мой профиль» хранится только в этом браузере: ни входа, ни аккаунта на сайте нет */}
+            <button
+              type="button"
+              className={`tag player-head__me${isMe ? ' tag--role' : ''}`}
+              aria-pressed={isMe}
+              title={t(isMe ? 'player.forgetMeHint' : 'player.setMeHint')}
+              onClick={() => (isMe ? clearMe() : setMe({ id: accountId, name, avatar: steam?.avatar }))}
+            >
+              {isMe ? `✓ ${t('player.isMe')}` : t('player.setMe')}
+            </button>
           </div>
           {lastMatch && (
             <div className="page-subtitle">{t('player.lastMatch', { date: formatMatchDate(lastMatch.at, language) })}</div>
@@ -107,6 +135,7 @@ function PlayerPage() {
         <div className="player-head__rank">
           <div className="stat-card__label">{t('player.rank')}</div>
           <RankBadge badge={badge} size="lg" />
+          {badge && <Link to="/ranks" className="player-head__rank-link">{t('player.rankDistribution')} →</Link>}
         </div>
       </div>
 
@@ -197,7 +226,10 @@ function PlayerPage() {
                     </span>
                     <span className="match-row__date">
                       {match.abandoned && <span className="tag match-row__abandon">{t('player.abandoned')}</span>}
-                      {formatMatchDate(match.at, language)}
+                      {/* Строка целиком — ссылка на матч (растянутый ::after); ссылка на героя лежит поверх неё */}
+                      <Link to={`/match/${match.id}?p=${accountId}`} className="match-row__open" title={t('player.openMatch')}>
+                        {formatMatchDate(match.at, language)}
+                      </Link>
                     </span>
                   </div>
                 );

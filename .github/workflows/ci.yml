@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Токену workflow нужно только читать код: ни одна из проверок ничего не публикует и не пишет в репозиторий.
+# Явное разрешение защищает от лишних прав, если настройки репозитория выдают токену запись по умолчанию
+permissions:
+  contents: read
+
+# Лишний запуск на ту же ветку не нужен: новый коммит отменяет предыдущую проверку
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Линтер
+        run: npm run lint
+
+      - name: Тесты
+        run: npm test
+
+      # Сборка в CI не ходит в Deadlock API: пререндер страниц героев и предметов выполняется только на деплое
+      - name: Сборка
+        run: npm run build
+        env:
+          SKIP_PRERENDER: '1'

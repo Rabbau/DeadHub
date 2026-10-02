@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { fetchHeroes, fetchPatches } from '../api/index.js'
 import {
   DEFAULT_FILTERS,
+  MODE_NORMAL,
   PATCH_PERIOD,
   defaultFiltersFor,
   filtersKey,
@@ -16,8 +17,15 @@ const SEEN_UPDATE_STORAGE_KEY = 'dlhub_seen_update'
 // Если успели — по умолчанию берём «с патча» без лишнего перезапроса; если нет — остаёмся на 30 днях.
 const PATCH_WAIT_MS = 1500
 
+// Доступ к localStorage бывает запрещён (Chrome «блокировать все cookie», страница во встроенном sandbox-окне):
+// чтение бросает SecurityError. Этот код выполняется при загрузке модуля — без try/catch упал бы весь бандл
+// и вместо сайта остался бы белый экран.
 const getSavedLanguage = () => {
-  return localStorage.getItem('dlhub_language') || 'english'
+  try {
+    return localStorage.getItem('dlhub_language') || 'english'
+  } catch {
+    return 'english'
+  }
 }
 
 /** Сохранённые фильтры или null, если посетитель их ещё не выбирал. */
@@ -61,6 +69,7 @@ export const useHeroStore = create((set, get) => ({
   filtersChosen: savedFilters !== null,      // посетитель уже выбирал фильтры сам
   filtersReady: savedFilters !== null,       // можно запрашивать статистику
   patch: null,                               // последнее обновление игры: { id, title, at, link }
+  patches: [],                               // все обновления из ленты (новые сверху): с предыдущим сравниваем статистику
   seenUpdate: readSeenUpdate(),              // id обновления, которое посетитель уже открывал (значок NEW в меню)
 
   search: '',
@@ -74,7 +83,11 @@ export const useHeroStore = create((set, get) => ({
   setDir: (dir) => set({ dir }),
 
   setLanguage: (lang) => {
-    localStorage.setItem('dlhub_language', lang)
+    try {
+      localStorage.setItem('dlhub_language', lang)
+    } catch {
+      // не критично: язык переключится, но после перезагрузки вернётся прежний
+    }
     set({ language: lang, heroes: [], lastFetched: null })
     get().loadHeroes()
   },
@@ -95,7 +108,7 @@ export const useHeroStore = create((set, get) => ({
       patchPromise = fetchPatches()
         .then((patches) => {
           const patch = latestPatch(patches)
-          set({ patch, defaultFilters: defaultFiltersFor(patch) })
+          set({ patch, patches, defaultFilters: defaultFiltersFor(patch) })
 
           // Выбран период «с патча», а вышло новое обновление — подтягиваем его время
           const { filters } = get()
@@ -129,6 +142,14 @@ export const useHeroStore = create((set, get) => ({
     return resolvePromise
   },
 
+  /**
+   * Возвращает фильтры по умолчанию (кнопка «Сброс»). Через setFilters это не сделать: он дополняет текущие
+   * фильтры, а в значениях по умолчанию нет поля режима — Street Brawl остался бы выбранным.
+   */
+  resetFilters: () => {
+    get().setFilters({ ...get().defaultFilters, mode: MODE_NORMAL })
+  },
+
   setFilters: (change) => {
     const { filters: current, patch } = get()
     const merged = { ...current, ...change }
@@ -136,7 +157,7 @@ export const useHeroStore = create((set, get) => ({
     if (merged.period === PATCH_PERIOD) merged.since = patch?.at ?? merged.since
     const filters = normalizeFilters(merged)
 
-    if (filtersKey(filters) === filtersKey(current)) {
+    if (JSON.stringify(filters) === JSON.stringify(current)) {
       // Тот же выбор, но осознанный: перестаём подменять фильтры значениями по умолчанию
       if (!get().filtersChosen) set({ filtersChosen: true })
       return
@@ -149,7 +170,10 @@ export const useHeroStore = create((set, get) => ({
     }
     // Старый список остаётся на экране, пока грузится новый
     set({ filters, filtersChosen: true, filtersReady: true })
-    get().loadHeroes()
+
+    // Ключ описывает то, что уходит в запрос: в Street Brawl диапазон рангов в него не входит, поэтому смена
+    // диапазона запоминается (он нужен картам убийств и возврату к обычным матчам), а список не перезапрашивается
+    if (filtersKey(filters) !== filtersKey(current)) get().loadHeroes()
   },
 
   /**
