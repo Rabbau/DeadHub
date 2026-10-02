@@ -9,6 +9,7 @@ import {
   playerAction,
   searchEntries,
 } from '../src/services/searchService.js'
+import { appRoutes } from './helpers/appRoutes.js'
 
 describe('normalizeQuery', () => {
   it('lowercases, drops accents and turns punctuation into spaces', () => {
@@ -140,5 +141,15 @@ describe('matchAction', () => {
 describe('SEARCH_PAGES', () => {
   it('lists unique addresses', () => {
     expect(new Set(SEARCH_PAGES.map((p) => p.to)).size).toBe(SEARCH_PAGES.length)
+  })
+
+  it('finds the home page and the hero list separately', () => {
+    expect(SEARCH_PAGES).toContainEqual({ to: '/', key: 'nav.home' })
+    expect(SEARCH_PAGES).toContainEqual({ to: '/heroes', key: 'nav.heroes' })
+  })
+
+  it('only points to pages that exist in the app', () => {
+    const { fixed } = appRoutes()
+    for (const { to } of SEARCH_PAGES) expect(fixed, to).toContain(to)
   })
 })

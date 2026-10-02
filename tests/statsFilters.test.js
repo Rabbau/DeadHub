@@ -9,6 +9,7 @@ import {
   filtersKey,
   isDefaultFilters,
   isRankFiltered,
+  describeFilters,
   isStreetBrawl,
   normalizeFilters,
   toStatsParams,
@@ -156,5 +157,24 @@ describe('rank presets', () => {
   it('gives distinct cache keys', () => {
     const keys = RANK_PRESETS.map((p) => filtersKey({ period: 30, rankMin: p.min, rankMax: p.max }))
     expect(new Set(keys).size).toBe(RANK_PRESETS.length)
+  })
+})
+
+describe('describeFilters', () => {
+  it('names the period, the rank preset and the mode for a caption', () => {
+    expect(describeFilters(DEFAULT_FILTERS)).toEqual({ period: 30, rankPreset: 'all', streetBrawl: false })
+    expect(describeFilters({ period: 'patch', since: PATCH.at, rankMin: 5, rankMax: 8 })).toEqual({ period: 'patch', rankPreset: 'mid', streetBrawl: false })
+  })
+
+  it('has no preset for a custom range', () => {
+    expect(describeFilters({ period: 7, rankMin: 3, rankMax: 9 }).rankPreset).toBeNull()
+  })
+
+  it('flags Street Brawl, where ranks do not apply', () => {
+    expect(describeFilters({ ...DEFAULT_FILTERS, mode: 'street_brawl' }).streetBrawl).toBe(true)
+  })
+
+  it('reads whatever normalizeFilters produced from saved garbage', () => {
+    expect(describeFilters(normalizeFilters({ period: 'abc', rankMin: 99, rankMax: -4 }))).toEqual({ period: 30, rankPreset: 'all', streetBrawl: false })
   })
 })

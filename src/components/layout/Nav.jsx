@@ -1,15 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useHeroStore } from '../../store/heroStore';
 import { useProfileStore } from '../../store/profileStore';
 import { useTranslation } from '../../hooks/useTranslation';
 import { isFreshPatch } from '../../services/patchService';
 import GlobalSearch from './GlobalSearch';
 
-// Основное меню. also — префикс адреса, на котором пункт тоже считается активным (профиль → «Игроки»);
-// badge — пункт, у которого может гореть значок NEW.
+// Основное меню. also — префикс адреса, на котором пункт тоже считается активным (профиль → «Игроки»,
+// страница героя → «Герои»); badge — пункт, у которого может гореть значок NEW. Главная в меню не нужна:
+// на неё ведёт логотип.
 const MAIN_LINKS = [
-  { to: '/', key: 'nav.heroes', end: true },
+  { to: '/heroes', key: 'nav.heroes', also: '/hero/' },
   { to: '/meta', key: 'nav.meta' },
   { to: '/matchups', key: 'nav.matchups' },
   { to: '/items', key: 'nav.items' },
@@ -128,9 +129,9 @@ function Nav() {
     <>
       <nav className="nav">
         <div className="nav__inner">
-          <div className="nav__logo">
+          <Link to="/" className="nav__logo" aria-label={`DeadHub — ${t('nav.home')}`}>
             Dead<span>Hub</span>
-          </div>
+          </Link>
 
           <div className="nav__links">
             {MAIN_LINKS.map((link) => renderLink(link))}
@@ -157,9 +158,9 @@ function Nav() {
 
       <div className={`nav__drawer ${drawerOpen ? 'open' : ''}`}>
         <div className="nav__drawer-header">
-          <div className="nav__logo">
+          <Link to="/" className="nav__logo" aria-label={`DeadHub — ${t('nav.home')}`} onClick={closeDrawer}>
             Dead<span>Hub</span>
-          </div>
+          </Link>
           <button className="nav__drawer-close" onClick={closeDrawer} aria-label="Close menu">
             ✕
           </button>

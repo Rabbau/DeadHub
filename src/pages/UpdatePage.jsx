@@ -10,16 +10,9 @@ import { useTranslation } from '../hooks/useTranslation';
 import { usePageMeta } from '../hooks/usePageMeta';
 import { useHeroStore } from '../store/heroStore';
 import { CURRENT_UPDATE, OFFICIAL_UPDATE_URL, isHighlightsActive } from '../data/updates';
-import { formatShortDate, localeFor } from '../services/format';
+import { formatAge, formatShortDate } from '../services/format';
 import { patchName } from '../services/patchService';
 import { PATCH_PERIOD, normalizeFilters } from '../services/statsFilters';
-
-/** «3 дня назад» / «3 days ago». */
-function relativeAge(unixSeconds, language) {
-  const days = Math.max(0, Math.round((Date.now() / 1000 - unixSeconds) / 86400));
-  const rtf = new Intl.RelativeTimeFormat(localeFor(language), { numeric: 'auto' });
-  return days < 60 ? rtf.format(-days, 'day') : rtf.format(-Math.round(days / 30), 'month');
-}
 
 function OfficialLinks({ post }) {
   const t = useTranslation();
@@ -105,7 +98,7 @@ function UpdatePage() {
             <span className="tag tag--role">{t('update.latest')}</span>
             <h2 className="update-hero__title">{patchName(latest.title)}</h2>
             <p className="update-hero__meta">
-              {formatShortDate(latest.at, language)} · {relativeAge(latest.at, language)}
+              {formatShortDate(latest.at, language)} · {formatAge(latest.at, language)}
             </p>
           </>
         ) : (

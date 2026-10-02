@@ -24,7 +24,7 @@ export const CURRENT_UPDATE = {
 
   // Карточки «что нового»; тексты лежат в локалях (update.highlights.<key>), `to` — раздел сайта.
   highlights: [
-    { key: 'heroes', to: '/' },
+    { key: 'heroes', to: '/heroes' },
     { key: 'map', to: '/map' },
     { key: 'broker', to: '/items?corruptible=1' },
     { key: 'objectives', to: '/map?preset=new' },

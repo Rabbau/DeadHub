@@ -3,7 +3,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 
 // Разделы сайта: с неверного адреса человеку нужно не «ошибка», а следующий шаг
 const SECTIONS = [
-  { to: '/', key: 'nav.heroes' },
+  { to: '/heroes', key: 'nav.heroes' },
   { to: '/meta', key: 'nav.meta' },
   { to: '/matchups', key: 'nav.matchups' },
   { to: '/items', key: 'nav.items' },

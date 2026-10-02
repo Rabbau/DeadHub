@@ -7,6 +7,7 @@ import { hasTranslation } from '../src/i18n/index.js'
 import { HEAT_PHASES, LAYERS, PRESETS, SHOP_KINDS } from '../src/services/mapService.js'
 import { MODES, RANK_PRESETS } from '../src/services/statsFilters.js'
 import { GROUP_ORDER, SEARCH_PAGES } from '../src/services/searchService.js'
+import { HOME_SECTIONS } from '../src/services/homeService.js'
 
 const SRC = path.resolve(import.meta.dirname, '../src')
 
@@ -60,6 +61,7 @@ describe('locales', () => {
     ;['bellTower', 'sunkenPlaza'].forEach((k) => need.push(`map.landmark.${k}.name`, `map.landmark.${k}.hint`))
     RANK_PRESETS.forEach((p) => need.push(`filters.presets.${p.id}`))
     SEARCH_PAGES.forEach((page) => need.push(page.key))
+    HOME_SECTIONS.forEach((section) => need.push(section.nameKey, `home.sections.${section.id}`))
     GROUP_ORDER.concat('player', 'match').forEach((type) => need.push(`search.groups.${type}`))
     MODES.forEach((mode) => need.push(`filters.modes.${mode}`, `filters.modeTitle.${mode}`))
     // Страница матча: режим игры из данных, режим матча (как в истории игрока) и подписи строк сравнения команд
@@ -67,7 +69,7 @@ describe('locales', () => {
     ;['ranked', 'unranked', 'private', 'bots', 'other'].forEach((k) => need.push(`player.modes.${k}`))
     ;['kills', 'souls', 'damage', 'healing', 'objectives', 'midBoss'].forEach((k) => need.push(`match.${k}`))
     // Подпись кнопки направления сортировки собирается из двух ключей
-    ;['dirAsc', 'dirDesc'].forEach((k) => need.push(`home.${k}`))
+    ;['dirAsc', 'dirDesc'].forEach((k) => need.push(`heroesPage.${k}`))
 
     // usePageMeta('ключ') берёт seo.<ключ>.title и seo.<ключ>.description
     for (const file of sourceFiles(SRC)) {

@@ -1,9 +1,10 @@
-import { Link } from 'react-router-dom';
 import { useMetaDashboard } from '../hooks/useMetaDashboard';
 import { useTranslation } from '../hooks/useTranslation';
 import { usePageMeta } from '../hooks/usePageMeta';
 import StatsFilters from '../components/ui/StatsFilters';
 import WinnersLosers from '../components/ui/WinnersLosers';
+import HeroOfWeekCard from '../components/hero/HeroOfWeekCard';
+import HeroRankRow from '../components/hero/HeroRankRow';
 
 function MetaPage() {
   const {
@@ -45,19 +46,6 @@ function MetaPage() {
     );
   }
 
-  const renderHeroRow = (hero, rank, value, valueClass) => (
-    <Link to={`/hero/${hero.id}`} key={hero.id} className="meta-row">
-      <span className="meta-row__rank">#{rank}</span>
-      {hero.image_url ? (
-        <img src={hero.image_url} alt={hero.name} className="meta-row__img" />
-      ) : (
-        <div className="meta-row__placeholder">{hero.name.slice(0, 2)}</div>
-      )}
-      <span className="meta-row__name">{hero.name}</span>
-      <span className={`meta-row__value ${valueClass || ''}`}>{value}</span>
-    </Link>
-  );
-
   return (
     <div className="page meta-page">
       <div className="page-header">
@@ -73,23 +61,7 @@ function MetaPage() {
         {heroOfWeek && (
           <div className="meta-hero-week">
             <h2 className="section__title">{t('meta.heroOfWeek')}</h2>
-            <Link to={`/hero/${heroOfWeek.id}`} className="meta-hero-week__card">
-              {heroOfWeek.image_url ? (
-                <img src={heroOfWeek.image_url} alt={heroOfWeek.name} className="meta-hero-week__img" />
-              ) : (
-                <div className="meta-hero-week__placeholder">{heroOfWeek.name.slice(0, 2)}</div>
-              )}
-              <div>
-                <div className="meta-hero-week__name">{heroOfWeek.name}</div>
-                <div className="meta-hero-week__stats">
-                  <span className={`winrate-${winrateColor(heroOfWeek.stats.winrate)}`}>
-                    WR {formatWinrate(heroOfWeek.stats.winrate)}
-                  </span>
-                  <span>PR {formatPickrate(heroOfWeek.stats.pickrate)}</span>
-                  <span>{heroOfWeek.stats.games_played.toLocaleString()} {t('meta.matches')}</span>
-                </div>
-              </div>
-            </Link>
+            <HeroOfWeekCard hero={heroOfWeek} />
           </div>
         )}
 
@@ -97,23 +69,24 @@ function MetaPage() {
           <div className="meta-panel">
             <h2 className="section__title">{t('meta.topWinrate')}</h2>
             <div className="meta-list">
-              {topWinrate.map((hero, i) =>
-                renderHeroRow(
-                  hero,
-                  i + 1,
-                  formatWinrate(hero.stats.winrate),
-                  `winrate-${winrateColor(hero.stats.winrate)}`,
-                ),
-              )}
+              {topWinrate.map((hero, i) => (
+                <HeroRankRow
+                  key={hero.id}
+                  hero={hero}
+                  rank={i + 1}
+                  value={formatWinrate(hero.stats.winrate)}
+                  valueClass={`winrate-${winrateColor(hero.stats.winrate)}`}
+                />
+              ))}
             </div>
           </div>
 
           <div className="meta-panel">
             <h2 className="section__title">{t('meta.topPickrate')}</h2>
             <div className="meta-list">
-              {topPickrate.map((hero, i) =>
-                renderHeroRow(hero, i + 1, formatPickrate(hero.stats.pickrate)),
-              )}
+              {topPickrate.map((hero, i) => (
+                <HeroRankRow key={hero.id} hero={hero} rank={i + 1} value={formatPickrate(hero.stats.pickrate)} />
+              ))}
             </div>
           </div>
         </div>

@@ -12,10 +12,29 @@ updates:
     commit-message:
       prefix: 'chore(deps)'
     groups:
-      # Мелкие обновления (minor и patch) одним PR; мажорные — отдельными, по одному пакету:
-      # React, Vite, ESLint и роутер при смене мажорной версии требуют ручной проверки интерфейса
+      # Мелкие обновления (minor и patch) — одним PR
       minor-and-patch:
         update-types: [minor, patch]
+
+      # Мажорные версии связанных пакетов поодиночке не устанавливаются: react-dom и @types/react-dom жёстко требуют
+      # ту же мажорную версию react и @types/react, а плагин Vite — ту же мажорную версию самого Vite. PR на один из
+      # них даёт npm ERESOLVE, и сборка на Vercel падает (так упал PR «bump react and @types/react»). Поэтому такие
+      # пакеты обновляются одним PR; остальные мажорные обновления приходят по одному пакету. Перед слиянием такого
+      # PR интерфейс стоит проверить вручную (превью на Vercel): CI видит только линтер, тесты и сборку.
+      react:
+        patterns: [react, react-dom, '@types/react', '@types/react-dom']
+        update-types: [major]
+      vite:
+        patterns: [vite, '@vitejs/plugin-react']
+        update-types: [major]
+
+    ignore:
+      # ESLint 10: eslint-plugin-react объявляет peer-зависимость eslint ^9.7 и не ставится рядом с десятой версией
+      # (npm ERESOLVE). Снять правила, когда у плагина появится поддержка: npm view eslint-plugin-react peerDependencies
+      - dependency-name: eslint
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@eslint/js'
+        update-types: ['version-update:semver-major']
 
   - package-ecosystem: github-actions
     directory: /

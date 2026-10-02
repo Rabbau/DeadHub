@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import { Analytics } from "@vercel/analytics/react";   // ← правильный импорт
 import Layout from './components/layout/Layout';
 import HomePage from './pages/HomePage';
+import HeroesPage from './pages/HeroesPage';
 import HeroPage from './pages/HeroPage';
 import ItemsPage from './pages/ItemsPage';
 import ItemPage from './pages/ItemPage';
@@ -10,7 +11,7 @@ import MetaPage from './pages/MetaPage';
 import NotFoundPage from './pages/NotFoundPage';
 import ErrorBoundary from './components/layout/ErrorBoundary';
 
-// Главные страницы (список героев, герой, предметы, мета) лежат в основном файле — с них начинают почти все.
+// Главные страницы (главная, список героев, герой, предметы, мета) лежат в основном файле — с них начинают почти все.
 // Остальное скачивается при первом заходе: карта, лидерборд, тир-лист и прочее не тянут за собой первую загрузку.
 const BuildPage = lazy(() => import('./pages/BuildPage'));
 const TierListPage = lazy(() => import('./pages/TierListPage'));
@@ -34,6 +35,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<HomePage />} />
+            <Route path="heroes" element={<HeroesPage />} />
             <Route path="hero/:id" element={<HeroPage />} />
             <Route path="items" element={<ItemsPage />} />
             <Route path="items/:id" element={<ItemPage />} />

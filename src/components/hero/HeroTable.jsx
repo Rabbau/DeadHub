@@ -38,7 +38,7 @@ function HeroTable({ heroes, sort, dir, onSort, showHeader = true, showDelta = f
               {columns.map((column) => {
                 const active = sort === column.id;
                 const text = column.id === 'name'
-                  ? t('home.colHero')
+                  ? t('heroesPage.colHero')
                   : column.label ?? t(column.titleKey);
                 return (
                   <th
