@@ -7,12 +7,15 @@
  * набора (латиница, кириллица…) задан unicode-range, и браузер скачивает только нужные. У отдельных его нет, и при
  * подключении двух наборов подряд один перекрыл бы другой.
  *
- * Названия семейств те же, что в переменных --font-pixel и --font-mono (index.css). Нужны начертания, которые
- * используются в стилях: IBM Plex Mono 400/500/600, Silkscreen 400/700, Tiny5 400 (кириллица пиксельного шрифта).
+ * Названия семейств те же, что в переменных --font-display, --font-caps и --font-ui (index.css). Нужны начертания,
+ * которые используются в стилях: Alegreya 900 (заголовки), Oswald 500/600/700 (подписи заглавными и числа),
+ * Jost 400/500/600/700 (текст; тот же шрифт, что на официальной странице обновлений игры).
  */
-@import '@fontsource/ibm-plex-mono/400.css';
-@import '@fontsource/ibm-plex-mono/500.css';
-@import '@fontsource/ibm-plex-mono/600.css';
-@import '@fontsource/silkscreen/400.css';
-@import '@fontsource/silkscreen/700.css';
-@import '@fontsource/tiny5/400.css';
+@import '@fontsource/alegreya/900.css';
+@import '@fontsource/oswald/500.css';
+@import '@fontsource/oswald/600.css';
+@import '@fontsource/oswald/700.css';
+@import '@fontsource/jost/400.css';
+@import '@fontsource/jost/500.css';
+@import '@fontsource/jost/600.css';
+@import '@fontsource/jost/700.css';

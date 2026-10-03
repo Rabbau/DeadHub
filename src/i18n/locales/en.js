@@ -348,7 +348,7 @@ export default {
     details: 'Technical details',
   },
   footer: {
-    text: 'Dead Hub · unofficial fan project',
+    text: 'Dead Hub · unofficial fan project · the game and its art belong to Valve',
     data: 'Data:',
   },
   tierList: {
@@ -412,6 +412,9 @@ export default {
     title: 'Deadlock',
     titleAccent: 'stats hub',
     lead: 'Hero win rates, builds, counters and the map — from real match data, filtered by rank and patch.',
+    updateKicker: 'Update · {date}',
+    ctaMeta: 'What’s strong right now',
+    toolsTitle: 'Tools',
     nowTitle: 'Right now',
     nowCaption: 'Stats: {filters}',
     customRanks: 'custom range',

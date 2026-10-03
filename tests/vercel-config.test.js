@@ -20,7 +20,8 @@ const routes = transformed.routes ?? []
 // Что лежит в dist/ после сборки (для проверки «сначала файлы, потом переписывание»)
 const FILES = new Set([
   '/index.html', '/404.html', '/favicon.ico', '/favicon.svg', '/robots.txt', '/sitemap.xml', '/og-image.png',
-  '/assets/index-abc123.js', '/assets/index-abc123.css', '/assets/ibm-plex-mono-latin-400-normal-abc123.woff2',
+  '/art/city.webp', '/art/title.webp',
+  '/assets/index-abc123.js', '/assets/index-abc123.css', '/assets/jost-latin-400-normal-abc123.woff2',
   '/hero/25.html', '/hero/25/index.html', '/items/1.html', '/items/1/index.html',
 ])
 const FUNCTIONS = new Set(['/api/ping'])
@@ -390,6 +391,20 @@ describe('headers', () => {
       for (const pathname of ['/', '/meta', '/hero/25', '/assets/index-abc123.js', '/api/ping', '/favicon.ico']) {
         expect(resolve(pathname).headers['cache-control'], pathname).toBeUndefined()
       }
+    })
+  })
+
+  describe('Cache-Control of the art', () => {
+    // Картинки из public/art лежат без хеша в имени, поэтому кеш у них короткий: сутки свежим и неделя «устаревшим»
+    // (браузер показывает старую копию и обновляет её в фоне). Замена картинки доходит до посетителей не позже чем за сутки.
+    it.each(['/art/city.webp', '/art/title.webp'])('keeps %s for a day, as a file (not as the app)', (pathname) => {
+      const result = resolve(pathname)
+      expect(result).toMatchObject({ kind: 'static', file: pathname })
+      expect(result.headers['cache-control']).toEqual(['public, max-age=86400, stale-while-revalidate=604800'])
+    })
+
+    it('does not leak into the pages next to it', () => {
+      expect(resolve('/artist').headers['cache-control']).toBeUndefined()
     })
   })
 })

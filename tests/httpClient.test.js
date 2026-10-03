@@ -49,11 +49,14 @@ async function setup({ quota, storageOverride } = {}) {
 beforeEach(() => {
   vi.useFakeTimers()
   vi.setSystemTime(NOW)
+  // Откат на старый кеш пишет предупреждение в консоль; тесты его не печатают, а нужный проверяют сами
+  vi.spyOn(console, 'warn').mockImplementation(() => {})
 })
 
 afterEach(() => {
   vi.useRealTimers()
   vi.unstubAllGlobals()
+  vi.restoreAllMocks()
 })
 
 describe('httpGet and the cache', () => {
@@ -191,6 +194,27 @@ describe('stale-if-error: an outdated entry is a fallback, not garbage', () => {
     const results = await Promise.all([http.httpGet('/x', { cacheKey: 'a', ttl: HOUR }), http.httpGet('/x', { cacheKey: 'a', ttl: HOUR })])
     expect(results).toEqual([{ n: 'stale' }, { n: 'stale' }])
     expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('leaves a note in the console, so that old data on screen is never a mystery', async () => {
+    await setup()
+    storage.setItem(KEY('a'), expired())
+    fetchMock.mockResolvedValue(failure(503))
+    await http.httpGet('/x', { cacheKey: 'a', ttl: HOUR })
+    expect(console.warn).toHaveBeenCalledTimes(1)
+    const [message] = console.warn.mock.calls[0]
+    expect(message).toContain('HTTP 503') // причина
+    expect(message).toContain(new Date(NOW - 3 * HOUR).toISOString()) // когда сохранены данные
+    expect(message).toContain('— a') // чей это кеш
+  })
+
+  it('stays quiet when the answer is fine or there is nothing to fall back to', async () => {
+    await setup()
+    storage.setItem(KEY('a'), expired())
+    fetchMock.mockResolvedValueOnce(ok({ n: 'fresh' })).mockResolvedValueOnce(failure(503))
+    await http.httpGet('/x', { cacheKey: 'a', ttl: HOUR })
+    await expect(http.httpGet('/y', { cacheKey: 'b', ttl: HOUR })).rejects.toMatchObject({ status: 503 })
+    expect(console.warn).not.toHaveBeenCalled()
   })
 
   it('replaces the old entry as soon as the API answers again', async () => {

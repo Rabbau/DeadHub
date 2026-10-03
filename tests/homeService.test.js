@@ -1,12 +1,17 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { HOME_SECTIONS, HOME_TOP_COUNT, summarizeFilters, tileNumber } from '../src/services/homeService.js'
+import { CURRENT_UPDATE } from '../src/data/updates.js'
+import {
+  HOME_SECTIONS, HOME_TIER_HEROES, HOME_TOP_COUNT, bannerArt, summarizeFilters, tierPreview, tileNumber, updateDate,
+} from '../src/services/homeService.js'
 import { SEARCH_PAGES } from '../src/services/searchService.js'
 import { DEFAULT_FILTERS } from '../src/services/statsFilters.js'
+import { buildTierList } from '../src/services/tierService.js'
 import { appRoutes } from './helpers/appRoutes.js'
 
 const SRC = path.resolve(import.meta.dirname, '../src')
+const PUBLIC = path.resolve(import.meta.dirname, '../public')
 
 describe('home sections', () => {
   const { fixed } = appRoutes()
@@ -49,6 +54,78 @@ describe('home sections', () => {
   it('shows a short top, not the whole table', () => {
     expect(HOME_TOP_COUNT).toBeGreaterThanOrEqual(3)
     expect(HOME_TOP_COUNT).toBeLessThanOrEqual(10) // useMetaDashboard отдаёт десять
+  })
+})
+
+describe('home tiles', () => {
+  const source = fs.readFileSync(path.join(SRC, 'components/home/HomeTiles.jsx'), 'utf8')
+  const ids = HOME_SECTIONS.map((section) => section.id)
+
+  it('only name sections that exist, so a removed section cannot break the page', () => {
+    const named = [
+      ...[...source.matchAll(/\bid="([a-z]+)"/g)].map((match) => match[1]),
+      ...[...source.matchAll(/\bSECTION\.([a-z]+)\b/g)].map((match) => match[1]),
+      ...[...source.matchAll(/QUICK_SECTIONS = \[([^\]]+)\]/g)].flatMap((match) => [...match[1].matchAll(/'([a-z]+)'/g)].map((m) => m[1])),
+    ]
+    expect(named.length).toBeGreaterThanOrEqual(10)
+    for (const id of named) expect(ids, id).toContain(id)
+  })
+
+  it('give every tile a place in the grid', () => {
+    const css = fs.readFileSync(path.join(SRC, 'index.css'), 'utf8')
+    const areas = css.match(/\.home-tiles \{[^}]*grid-template-areas:([^;]+);/)?.[1] ?? ''
+    for (const tile of [...source.matchAll(/\bid="([a-z]+)"/g)].map((match) => match[1]).concat('search', 'update', 'hero', 'map')) {
+      expect(areas, tile).toContain(tile === 'heroes' ? 'hero' : tile)
+      expect(css, tile).toMatch(new RegExp(`\\.t-${tile === 'heroes' ? 'heroes' : tile}\\b[^{]*\\{[^}]*grid-area`))
+    }
+  })
+})
+
+describe('tierPreview', () => {
+  const hero = (id, winrate, games = 1000) => ({ id, name: `Hero ${id}`, released: true, stats: { winrate, pickrate: 3, games_played: games } })
+  const heroes = Array.from({ length: 30 }, (_, i) => hero(i + 1, 0.55 - i * 0.003))
+
+  it('takes the first heroes of every tier, S to D', () => {
+    const rows = tierPreview(buildTierList(heroes).tiers)
+    expect(rows.map((row) => row.tier)).toEqual(['S', 'A', 'B', 'C', 'D'])
+    for (const row of rows) expect(row.heroes.length).toBeLessThanOrEqual(HOME_TIER_HEROES)
+    expect(rows[0].heroes[0].id).toBe(1) // самый сильный герой — первый в S
+  })
+
+  it('returns plain heroes, not tier entries', () => {
+    const [first] = tierPreview(buildTierList(heroes).tiers)[0].heroes
+    expect(first).toHaveProperty('stats')
+    expect(first).not.toHaveProperty('tier')
+  })
+
+  it('respects the requested size and skips empty tiers', () => {
+    expect(tierPreview(buildTierList(heroes).tiers, 2)[0].heroes).toHaveLength(2)
+    expect(tierPreview({ S: [], A: [{ hero: heroes[0] }] })).toEqual([{ tier: 'A', heroes: [heroes[0]] }])
+  })
+
+  it('copes with no data at all', () => {
+    expect(tierPreview(buildTierList([]).tiers)).toEqual([])
+    expect(tierPreview(undefined)).toEqual([])
+  })
+})
+
+describe('update banner', () => {
+  it('shows the art of the update while it is fresh and hides it afterwards', () => {
+    expect(bannerArt(CURRENT_UPDATE, Date.UTC(2026, 9, 3))).toBe(CURRENT_UPDATE.art)
+    expect(bannerArt(CURRENT_UPDATE, Date.UTC(2027, 0, 5))).toBeNull()
+  })
+
+  it('has no banner for an update without art', () => {
+    const { art: _art, ...plain } = CURRENT_UPDATE
+    expect(bannerArt(plain, Date.UTC(2026, 9, 3))).toBeNull()
+  })
+
+  it('points to pictures that are shipped with the site', () => {
+    for (const file of Object.values(CURRENT_UPDATE.art)) expect(fs.existsSync(path.join(PUBLIC, file)), file).toBe(true)
+  })
+
+  it('dates the update at noon UTC of its day', () => {
+    expect(new Date(updateDate() * 1000).toISOString()).toBe('2026-09-29T12:00:00.000Z')
   })
 })
 
