@@ -1,0 +1,204 @@
+{
+ "player": [
+  {
+   "game_time": 0,
+   "net_worth_avg": 1810.303738317757,
+   "net_worth_std": 231.30896577862384,
+   "kills_avg": 0.2616822429906542,
+   "deaths_avg": 0.29439252336448596,
+   "assists_avg": 0.3130841121495327,
+   "gold_lane_creep_avg": 629.9626168224299
+  },
+  {
+   "game_time": 10,
+   "net_worth_avg": 3500.7804054054054,
+   "net_worth_std": 1137.319737315027,
+   "kills_avg": 0.6587837837837838,
+   "deaths_avg": 0.581081081081081,
+   "assists_avg": 0.6587837837837838,
+   "gold_lane_creep_avg": 1311.7364864864865
+  },
+  {
+   "game_time": 20,
+   "net_worth_avg": 6374.239616613419,
+   "net_worth_std": 2169.6166347870994,
+   "kills_avg": 1.220447284345048,
+   "deaths_avg": 1.156549520766773,
+   "assists_avg": 1.6421725239616614,
+   "gold_lane_creep_avg": 2198.1214057507987
+  },
+  {
+   "game_time": 30,
+   "net_worth_avg": 9681.680921052632,
+   "net_worth_std": 2872.244683152735,
+   "kills_avg": 1.7796052631578947,
+   "deaths_avg": 1.7335526315789473,
+   "assists_avg": 2.9407894736842106,
+   "gold_lane_creep_avg": 2998.5
+  },
+  {
+   "game_time": 40,
+   "net_worth_avg": 13156.484848484848,
+   "net_worth_std": 4323.739714133043,
+   "kills_avg": 2.3333333333333335,
+   "deaths_avg": 2.2164502164502164,
+   "assists_avg": 4.45021645021645,
+   "gold_lane_creep_avg": 3719.7619047619046
+  },
+  {
+   "game_time": 50,
+   "net_worth_avg": 18395.711627906978,
+   "net_worth_std": 5993.993490432997,
+   "kills_avg": 2.986046511627907,
+   "deaths_avg": 2.883720930232558,
+   "assists_avg": 6.4186046511627906,
+   "gold_lane_creep_avg": 4846.827906976744
+  },
+  {
+   "game_time": 60,
+   "net_worth_avg": 23683.936842105264,
+   "net_worth_std": 7393.138528478569,
+   "kills_avg": 3.768421052631579,
+   "deaths_avg": 3.6789473684210527,
+   "assists_avg": 8.48421052631579,
+   "gold_lane_creep_avg": 5819.815789473684
+  },
+  {
+   "game_time": 70,
+   "net_worth_avg": 28930.68085106383,
+   "net_worth_std": 9170.23999571413,
+   "kills_avg": 4.345744680851064,
+   "deaths_avg": 4.48936170212766,
+   "assists_avg": 10.24468085106383,
+   "gold_lane_creep_avg": 6737.36170212766
+  },
+  {
+   "game_time": 80,
+   "net_worth_avg": 34227.41293532338,
+   "net_worth_std": 10158.236222782116,
+   "kills_avg": 4.895522388059701,
+   "deaths_avg": 4.691542288557214,
+   "assists_avg": 12.109452736318408,
+   "gold_lane_creep_avg": 7767.482587064676
+  },
+  {
+   "game_time": 90,
+   "net_worth_avg": 40697.1746031746,
+   "net_worth_std": 12800.075829644371,
+   "kills_avg": 5.587301587301587,
+   "deaths_avg": 5.444444444444445,
+   "assists_avg": 14.042328042328043,
+   "gold_lane_creep_avg": 8956.253968253968
+  },
+  {
+   "game_time": 100,
+   "net_worth_avg": 41404.04761904762,
+   "net_worth_std": 12874.910387024953,
+   "kills_avg": 5.695970695970696,
+   "deaths_avg": 5.728937728937729,
+   "assists_avg": 15.139194139194139,
+   "gold_lane_creep_avg": 9122.868131868132
+  }
+ ],
+ "band": [
+  {
+   "game_time": 0,
+   "net_worth_avg": 1816.2799425101914,
+   "net_worth_std": 239.63833006403664,
+   "kills_avg": 0.2163057991347374,
+   "deaths_avg": 0.23394790537662877,
+   "assists_avg": 0.21785454117088995,
+   "gold_lane_creep_avg": 635.7660517006417
+  },
+  {
+   "game_time": 10,
+   "net_worth_avg": 3503.20216701849,
+   "net_worth_std": 1163.9911169691497,
+   "kills_avg": 0.5971071552579545,
+   "deaths_avg": 0.638369128267562,
+   "assists_avg": 0.6324968510240164,
+   "gold_lane_creep_avg": 1331.079953916716
+  },
+  {
+   "game_time": 20,
+   "net_worth_avg": 6438.005129875989,
+   "net_worth_std": 2093.7881131379,
+   "kills_avg": 1.3267599705413062,
+   "deaths_avg": 1.4024483351677477,
+   "assists_avg": 1.564355520830463,
+   "gold_lane_creep_avg": 2251.739330273995
+  },
+  {
+   "game_time": 30,
+   "net_worth_avg": 9798.58244438244,
+   "net_worth_std": 2860.2741885931155,
+   "kills_avg": 2.020535067069161,
+   "deaths_avg": 2.1174542461712322,
+   "assists_avg": 2.6871137757126493,
+   "gold_lane_creep_avg": 3120.850541558764
+  },
+  {
+   "game_time": 40,
+   "net_worth_avg": 13330.458026148388,
+   "net_worth_std": 4144.977995683538,
+   "kills_avg": 2.657178005090442,
+   "deaths_avg": 2.768151151174908,
+   "assists_avg": 3.9224157088825264,
+   "gold_lane_creep_avg": 3949.290888410866
+  },
+  {
+   "game_time": 50,
+   "net_worth_avg": 18220.14057803339,
+   "net_worth_std": 5598.6010181039655,
+   "kills_avg": 3.447652255084911,
+   "deaths_avg": 3.572402876757897,
+   "assists_avg": 5.5808832440972225,
+   "gold_lane_creep_avg": 5045.930434083753
+  },
+  {
+   "game_time": 60,
+   "net_worth_avg": 23014.15472815982,
+   "net_worth_std": 6834.098116015952,
+   "kills_avg": 4.181707472899428,
+   "deaths_avg": 4.317376353507406,
+   "assists_avg": 7.206058219615676,
+   "gold_lane_creep_avg": 6071.0762784055105
+  },
+  {
+   "game_time": 70,
+   "net_worth_avg": 28163.074495082914,
+   "net_worth_std": 8166.925595780942,
+   "kills_avg": 4.918878060692166,
+   "deaths_avg": 5.065864985459631,
+   "assists_avg": 8.92605145736675,
+   "gold_lane_creep_avg": 7128.4237156747395
+  },
+  {
+   "game_time": 80,
+   "net_worth_avg": 33284.262978049126,
+   "net_worth_std": 9599.483836806528,
+   "kills_avg": 5.617649221966643,
+   "deaths_avg": 5.776354550503135,
+   "assists_avg": 10.64812316765911,
+   "gold_lane_creep_avg": 8156.325736426529
+  },
+  {
+   "game_time": 90,
+   "net_worth_avg": 38946.90853754437,
+   "net_worth_std": 11112.88350659637,
+   "kills_avg": 6.374274154347767,
+   "deaths_avg": 6.548765377368452,
+   "assists_avg": 12.653850317961943,
+   "gold_lane_creep_avg": 9317.221906827104
+  },
+  {
+   "game_time": 100,
+   "net_worth_avg": 39681.88740018253,
+   "net_worth_std": 11720.437732436414,
+   "kills_avg": 6.6850257197435905,
+   "deaths_avg": 6.875021040618818,
+   "assists_avg": 13.774714812750075,
+   "gold_lane_creep_avg": 9432.338281880977
+  }
+ ]
+}

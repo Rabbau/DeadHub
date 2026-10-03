@@ -1,0 +1,328 @@
+[
+ {
+  "id": 1548066885,
+  "class_name": "upgrade_clip_size",
+  "name": "Extended Magazine",
+  "type": "upgrade",
+  "shopable": true,
+  "cost": 800,
+  "item_slot_type": "weapon",
+  "item_tier": 1,
+  "shop_image": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/basic_magazine.png",
+  "shop_image_webp": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/basic_magazine.webp",
+  "image": "https://assets-bucket.deadlock-api.com/assets-api-res/images/upgrades/mods_weapon/clip_size.png",
+  "properties": {
+   "BaseAttackDamagePercent": {
+    "value": "8",
+    "provided_property_type": "MODIFIER_VALUE_WEAPON_DAMAGE_INCREASE",
+    "tooltip_section": "innate"
+   },
+   "BonusClipSizePercent": {
+    "value": "30",
+    "provided_property_type": "MODIFIER_VALUE_AMMO_CLIP_SIZE_PERCENT",
+    "tooltip_section": "innate"
+   }
+  }
+ },
+ {
+  "id": 2678489038,
+  "class_name": "upgrade_hollow_point_rounds",
+  "name": "Hollow Point",
+  "type": "upgrade",
+  "shopable": true,
+  "cost": 3200,
+  "item_slot_type": "weapon",
+  "item_tier": 3,
+  "shop_image": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/hollow_point.png",
+  "shop_image_webp": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/hollow_point.webp",
+  "image": "https://assets-bucket.deadlock-api.com/assets-api-res/images/upgrades/mods_weapon/hollow_point.png",
+  "properties": {
+   "BonusHealth": {
+    "value": "125",
+    "provided_property_type": "MODIFIER_VALUE_HEALTH_MAX",
+    "tooltip_section": "innate"
+   },
+   "BaseAttackDamagePercent": {
+    "value": "35",
+    "provided_property_type": "MODIFIER_VALUE_WEAPON_DAMAGE_INCREASE",
+    "tooltip_section": "passive",
+    "usage_flags": [
+     "ConditionallyApplied"
+    ]
+   }
+  }
+ },
+ {
+  "id": 339443430,
+  "class_name": "upgrade_fervor",
+  "name": "Frenzy",
+  "type": "upgrade",
+  "shopable": true,
+  "cost": 6400,
+  "item_slot_type": "weapon",
+  "item_tier": 4,
+  "shop_image": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/frenzy.png",
+  "shop_image_webp": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/frenzy.webp",
+  "image": "https://assets-bucket.deadlock-api.com/assets-api-res/images/upgrades/mods_weapon/fervor.png",
+  "properties": {
+   "BonusHealth": {
+    "value": "160",
+    "provided_property_type": "MODIFIER_VALUE_HEALTH_MAX",
+    "tooltip_section": "innate"
+   },
+   "BonusFireRate": {
+    "value": "15",
+    "provided_property_type": "MODIFIER_VALUE_FIRE_RATE",
+    "tooltip_section": "innate"
+   }
+  }
+ },
+ {
+  "id": 2407781327,
+  "class_name": "upgrade_colossus",
+  "name": "Colossus",
+  "type": "upgrade",
+  "shopable": true,
+  "cost": 6400,
+  "item_slot_type": "vitality",
+  "item_tier": 4,
+  "shop_image": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/colossus.png",
+  "shop_image_webp": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/colossus.webp",
+  "image": "https://assets-bucket.deadlock-api.com/assets-api-res/images/upgrades/mods_armor/colossus.png",
+  "properties": {
+   "BonusHealth": {
+    "value": "0",
+    "provided_property_type": "MODIFIER_VALUE_HEALTH_MAX"
+   },
+   "BaseAttackDamagePercent": {
+    "value": "15",
+    "provided_property_type": "MODIFIER_VALUE_WEAPON_DAMAGE_INCREASE",
+    "tooltip_section": "innate"
+   },
+   "BonusBaseHealth": {
+    "value": "25",
+    "provided_property_type": "MODIFIER_VALUE_BASE_HEALTH_PERCENT",
+    "tooltip_section": "innate"
+   }
+  }
+ },
+ {
+  "id": 365620721,
+  "class_name": "upgrade_glass_cannon",
+  "name": "Glass Cannon",
+  "type": "upgrade",
+  "shopable": true,
+  "cost": 6400,
+  "item_slot_type": "weapon",
+  "item_tier": 4,
+  "shop_image": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/glass_cannon.png",
+  "shop_image_webp": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/glass_cannon.webp",
+  "image": "https://assets-bucket.deadlock-api.com/assets-api-res/images/upgrades/mods_weapon/glass_cannon.png",
+  "properties": {
+   "BaseAttackDamagePercent": {
+    "value": "80",
+    "provided_property_type": "MODIFIER_VALUE_WEAPON_DAMAGE_INCREASE",
+    "tooltip_section": "innate"
+   },
+   "BonusFireRate": {
+    "provided_property_type": "MODIFIER_VALUE_FIRE_RATE"
+   },
+   "MaxHealthLossPercent": {
+    "value": "-13",
+    "provided_property_type": "MODIFIER_VALUE_HEALTH_MAX_PERCENT",
+    "tooltip_section": "innate"
+   }
+  }
+ },
+ {
+  "id": 3633614685,
+  "class_name": "upgrade_health",
+  "name": "Extra Health",
+  "type": "upgrade",
+  "shopable": true,
+  "cost": 800,
+  "item_slot_type": "vitality",
+  "item_tier": 1,
+  "shop_image": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/extra_health.png",
+  "shop_image_webp": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/extra_health.webp",
+  "image": "https://assets-bucket.deadlock-api.com/assets-api-res/images/upgrades/mods_armor/health.png",
+  "properties": {
+   "BonusHealth": {
+    "value": "210",
+    "provided_property_type": "MODIFIER_VALUE_HEALTH_MAX",
+    "tooltip_section": "innate"
+   },
+   "BaseAttackDamagePercent": {
+    "provided_property_type": "MODIFIER_VALUE_WEAPON_DAMAGE_INCREASE"
+   }
+  }
+ },
+ {
+  "id": 2108215830,
+  "class_name": "upgrade_dps_aura",
+  "name": "Heroic Aura",
+  "type": "upgrade",
+  "shopable": true,
+  "cost": 3200,
+  "item_slot_type": "weapon",
+  "item_tier": 3,
+  "shop_image": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/heroic_aura.png",
+  "shop_image_webp": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/heroic_aura.webp",
+  "image": "https://assets-bucket.deadlock-api.com/assets-api-res/images/upgrades/mods_weapon/bullet_damage_aura.png",
+  "properties": {
+   "BonusFireRate": {
+    "value": "26",
+    "provided_property_type": "MODIFIER_VALUE_FIRE_RATE",
+    "tooltip_section": "active",
+    "usage_flags": [
+     "ConditionallyApplied"
+    ]
+   }
+  }
+ },
+ {
+  "id": 1558545403,
+  "class_name": "upgrade_unstable_concoction",
+  "name": "Unstable Concoction",
+  "type": "upgrade",
+  "shopable": true,
+  "cost": 9999,
+  "item_slot_type": "spirit",
+  "item_tier": 5,
+  "shop_image": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/brawl/unstable_concoction.png",
+  "shop_image_webp": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/brawl/unstable_concoction.webp",
+  "properties": {
+   "BonusHealth": {
+    "value": "3000",
+    "provided_property_type": "MODIFIER_VALUE_HEALTH_MAX",
+    "tooltip_section": "active",
+    "usage_flags": [
+     "ConditionallyApplied"
+    ]
+   },
+   "BaseAttackDamagePercent": {
+    "value": "150",
+    "provided_property_type": "MODIFIER_VALUE_WEAPON_DAMAGE_INCREASE",
+    "tooltip_section": "active",
+    "usage_flags": [
+     "ConditionallyApplied"
+    ]
+   }
+  }
+ },
+ {
+  "id": 1998374645,
+  "class_name": "upgrade_magic_burst",
+  "name": "Mystic Burst",
+  "type": "upgrade",
+  "shopable": true,
+  "cost": 800,
+  "item_slot_type": "spirit",
+  "item_tier": 1,
+  "shop_image": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/mystic_burst.png",
+  "shop_image_webp": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/spirit/mystic_burst.webp",
+  "image": "https://assets-bucket.deadlock-api.com/assets-api-res/images/upgrades/mods_tech/magic_burst.png",
+  "properties": {}
+ },
+ {
+  "id": 2356412290,
+  "class_name": "upgrade_titan_round",
+  "name": "Titanic Magazine",
+  "type": "upgrade",
+  "shopable": true,
+  "cost": 1600,
+  "item_slot_type": "weapon",
+  "item_tier": 2,
+  "shop_image": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/titanic_magazine.png",
+  "shop_image_webp": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/titanic_magazine.webp",
+  "image": "https://assets-bucket.deadlock-api.com/assets-api-res/images/upgrades/mods_weapon/titanic_magazine.png",
+  "properties": {
+   "BaseAttackDamagePercent": {
+    "value": "14",
+    "provided_property_type": "MODIFIER_VALUE_WEAPON_DAMAGE_INCREASE",
+    "tooltip_section": "innate"
+   },
+   "BonusClipSizePercent": {
+    "value": "100",
+    "provided_property_type": "MODIFIER_VALUE_AMMO_CLIP_SIZE_PERCENT",
+    "tooltip_section": "innate"
+   }
+  }
+ },
+ {
+  "id": 3977876567,
+  "class_name": "upgrade_kinetic_sash",
+  "name": "Kinetic Dash",
+  "type": "upgrade",
+  "shopable": true,
+  "disabled": false,
+  "cost": 1600,
+  "item_slot_type": "weapon",
+  "item_tier": 2,
+  "shop_image": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/kinetic_dash.png",
+  "shop_image_webp": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/weapon/kinetic_dash.webp",
+  "image": "https://assets-bucket.deadlock-api.com/assets-api-res/images/upgrades/mods_weapon/kinetic_sash.png",
+  "properties": {
+   "BonusFireRate": {
+    "value": "25",
+    "provided_property_type": "MODIFIER_VALUE_FIRE_RATE",
+    "tooltip_section": "passive",
+    "usage_flags": [
+     "ConditionallyApplied"
+    ]
+   },
+   "BonusClipSize": {
+    "value": "6",
+    "provided_property_type": "MODIFIER_VALUE_AMMO_CLIP_SIZE",
+    "tooltip_section": "passive",
+    "usage_flags": [
+     "ConditionallyApplied"
+    ]
+   }
+  }
+ },
+ {
+  "id": 2566692615,
+  "class_name": "upgrade_healing_booster",
+  "name": "Healing Booster",
+  "type": "upgrade",
+  "shopable": true,
+  "cost": 1600,
+  "item_slot_type": "vitality",
+  "item_tier": 2,
+  "shop_image": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/healing_booster.png",
+  "shop_image_webp": "https://assets-bucket.deadlock-api.com/assets-api-res/images/items/vitality/healing_booster.webp",
+  "image": "https://assets-bucket.deadlock-api.com/assets-api-res/images/upgrades/mods_armor/healing_booster.png",
+  "properties": {
+   "BonusHealthRegen": {
+    "value": "3",
+    "provided_property_type": "MODIFIER_VALUE_HEALTH_REGEN_PER_SECOND",
+    "tooltip_section": "innate"
+   }
+  }
+ },
+ {
+  "id": 1248737459,
+  "class_name": "upgrade_ammo_scavenger",
+  "name": "Ammo Scavenger",
+  "type": "upgrade",
+  "shopable": false,
+  "disabled": true,
+  "cost": 800,
+  "item_slot_type": "spirit",
+  "item_tier": 1,
+  "image": "https://assets-bucket.deadlock-api.com/assets-api-res/images/upgrades/mods_weapon/ammo_scavenger.png",
+  "properties": {
+   "BonusClipSizePercent": {
+    "provided_property_type": "MODIFIER_VALUE_AMMO_CLIP_SIZE_PERCENT"
+   }
+  }
+ },
+ {
+  "id": 2521299219,
+  "class_name": "ability_golden_idol",
+  "name": "Soul Urn",
+  "type": "ability",
+  "properties": {}
+ }
+]

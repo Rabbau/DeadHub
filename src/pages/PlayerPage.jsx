@@ -7,9 +7,16 @@ import { usePageMeta } from '../hooks/usePageMeta';
 import { useHeroStore } from '../store/heroStore';
 import { usePlayerStore } from '../store/playerStore';
 import { useProfileStore } from '../store/profileStore';
+import { useFavoritesStore } from '../store/favoritesStore';
 import Avatar from '../components/ui/Avatar';
+import FavoriteButton from '../components/ui/FavoriteButton';
 import RankBadge from '../components/ui/RankBadge';
 import HeroIcon from '../components/hero/HeroIcon';
+import HeroAnchors from '../components/hero/HeroAnchors';
+import PlayerAdvice from '../components/player/PlayerAdvice';
+import PlayerCircle from '../components/player/PlayerCircle';
+import PlayerForm from '../components/player/PlayerForm';
+import PlayerShare from '../components/player/PlayerShare';
 import { formatDuration, formatMatchDate, formatNumber } from '../services/format';
 import { formatWinrate, winrateColor } from '../services/heroService';
 import { matchModeKey, summarizeHeroStats, topHeroes } from '../services/playerService';
@@ -36,6 +43,9 @@ function PlayerPage() {
   const setMe = useProfileStore((state) => state.setMe);
   const clearMe = useProfileStore((state) => state.clearMe);
   const isMe = accountId != null && me?.id === accountId;
+  const isFavorite = useFavoritesStore((state) => state.players.some((p) => p.id === accountId));
+  const toggleFavorite = useFavoritesStore((state) => state.togglePlayer);
+  const refreshFavorite = useFavoritesStore((state) => state.refreshPlayer);
   const [shown, setShown] = useState(MATCHES_STEP);
 
   usePageMeta(steam?.name
@@ -60,6 +70,11 @@ function PlayerPage() {
       setMe({ id: steam.id, name: steam.name, avatar: steam.avatar });
     }
   }, [isMe, steam, me, setMe]);
+
+  // Игрок в избранном: имя и аватар обновляются, если в Steam они изменились
+  useEffect(() => {
+    if (steam) refreshFavorite({ id: steam.id, name: steam.name, avatar: steam.avatar });
+  }, [steam, refreshFavorite]);
 
   // Другой игрок — список матчей снова с начала
   useEffect(() => { setShown(MATCHES_STEP); }, [accountId]);
@@ -127,6 +142,21 @@ function PlayerPage() {
             >
               {isMe ? `✓ ${t('player.isMe')}` : t('player.setMe')}
             </button>
+            <FavoriteButton
+              kind="player"
+              active={isFavorite}
+              label={t('player.favorite')}
+              activeLabel={t('player.favoriteOn')}
+              hint={t('player.favoriteHint')}
+              onToggle={() => toggleFavorite({ id: accountId, name: steam?.name ?? null, avatar: steam?.avatar ?? null })}
+            />
+            <Link
+              className="tag tag--cyan"
+              to={me && !isMe ? `/versus?a=${me.id}&b=${accountId}` : `/versus?a=${accountId}`}
+              title={t('player.compareHint')}
+            >
+              ⇄ {me && !isMe ? t('player.compareMe') : t('player.compare')}
+            </Link>
           </div>
           {lastMatch && (
             <div className="page-subtitle">{t('player.lastMatch', { date: formatMatchDate(lastMatch.at, language) })}</div>
@@ -160,8 +190,20 @@ function PlayerPage() {
         </div>
       </div>
 
+      <HeroAnchors
+        label={t('player.sectionsLabel')}
+        items={[
+          ...(favourites.length > 0 ? [{ id: 'top', label: t('player.sections.heroes') }] : []),
+          { id: 'advice', label: t('player.sections.advice') },
+          { id: 'form', label: t('player.sections.form') },
+          { id: 'circle', label: t('player.sections.circle') },
+          { id: 'share', label: t('player.sections.share') },
+          { id: 'matches', label: t('player.sections.matches') },
+        ]}
+      />
+
       {favourites.length > 0 && (
-        <div className="section">
+        <div id="top" className="section player-section">
           <h2 className="section__title">{t('player.topHeroes')}</h2>
           <div className="compare-table-wrapper">
             <table className="lb-table player-heroes">
@@ -197,7 +239,12 @@ function PlayerPage() {
         </div>
       )}
 
-      <div className="section">
+      <PlayerAdvice history={history} badge={badge} heroes={allHeroes} language={language} />
+      <PlayerForm history={history} accountId={accountId} badge={badge} language={language} />
+      <PlayerCircle accountId={accountId} history={history} heroStats={heroStats} language={language} />
+      <PlayerShare accountId={accountId} steam={steam} rank={rank} history={history} heroStats={heroStats} heroes={allHeroes} language={language} name={name} />
+
+      <div id="matches" className="section player-section">
         <h2 className="section__title">{t('player.recentMatches')}</h2>
         {history.length === 0 ? (
           <p className="matchup-panel__empty">{t('player.noMatches')}</p>

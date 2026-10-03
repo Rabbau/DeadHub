@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useHeroStore } from '../../store/heroStore';
 import { useProfileStore } from '../../store/profileStore';
+import { useFavoritesStore } from '../../store/favoritesStore';
 import { useTranslation } from '../../hooks/useTranslation';
 import { isFreshPatch } from '../../services/patchService';
 import GlobalSearch from './GlobalSearch';
@@ -26,11 +27,16 @@ const MORE_LINKS = [
   { to: '/tierlist', key: 'nav.tierlist' },
   { to: '/compare', key: 'nav.compare' },
   { to: '/draft', key: 'nav.draft' },
+  { to: '/calculator', key: 'nav.calculator' },
+  { to: '/crosshair', key: 'nav.crosshair' },
+  { to: '/live', key: 'nav.live' },
+  { to: '/versus', key: 'nav.versus' },
   { to: '/ranks', key: 'nav.ranks' },
 ];
 
-// «Мой профиль» появляется в меню, только когда посетитель его выбрал
+// «Мой профиль» появляется в меню, только когда посетитель его выбрал; «Избранное» — когда в нём что-то есть
 const MY_PROFILE_LINK = { to: '/me', key: 'nav.myProfile' };
+const FAVORITES_LINK = { to: '/favorites', key: 'nav.favorites' };
 
 function LangToggle({ language, onToggle }) {
   return (
@@ -89,6 +95,7 @@ function Nav() {
   const patch = useHeroStore(state => state.patch);
   const seenUpdate = useHeroStore(state => state.seenUpdate);
   const me = useProfileStore(state => state.me);
+  const hasFavorites = useFavoritesStore(state => state.players.length + state.heroes.length > 0);
   const t = useTranslation();
   const { pathname } = useLocation();
 
@@ -122,7 +129,7 @@ function Nav() {
     </NavLink>
   );
 
-  const moreLinks = me ? [MY_PROFILE_LINK, ...MORE_LINKS] : MORE_LINKS;
+  const moreLinks = [...(me ? [MY_PROFILE_LINK] : []), ...(hasFavorites ? [FAVORITES_LINK] : []), ...MORE_LINKS];
   const moreActive = moreLinks.some((link) => pathname.startsWith(link.to));
 
   return (

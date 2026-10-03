@@ -13,6 +13,14 @@ export {
   fetchPlayerRank,
   fetchMatchHistory,
   fetchPlayerHeroStats,
+  fetchPlayerCard,
+  fetchPlayerMates,
+  fetchPlayerEnemies,
+  fetchPlayerCurve,
+  fetchRankCurve,
 } from './playerApi.js';
 export { fetchLeaderboard, LEADERBOARD_REGIONS } from './leaderboardApi.js';
+export { fetchActiveMatches, fetchBroadcastUrls } from './liveApi.js';
+export { fetchCalcItems, fetchHeroCalcBase } from './calculatorApi.js';
+export { crosshairImageUrl, fetchCrosshairCode, decodeCrosshairCode, PREVIEW_SCALE } from './crosshairApi.js';
 export { clearAppCache } from './httpClient.js';

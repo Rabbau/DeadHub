@@ -26,6 +26,11 @@ const RanksPage = lazy(() => import('./pages/RanksPage'));
 const MePage = lazy(() => import('./pages/MePage'));
 const DraftPage = lazy(() => import('./pages/DraftPage'));
 const MatchPage = lazy(() => import('./pages/MatchPage'));
+const LivePage = lazy(() => import('./pages/LivePage'));
+const CrosshairPage = lazy(() => import('./pages/CrosshairPage'));
+const CalculatorPage = lazy(() => import('./pages/CalculatorPage'));
+const VersusPage = lazy(() => import('./pages/VersusPage'));
+const FavoritesPage = lazy(() => import('./pages/FavoritesPage'));
 
 function App() {
   return (
@@ -53,6 +58,11 @@ function App() {
             <Route path="ranks" element={<RanksPage />} />
             <Route path="me" element={<MePage />} />
             <Route path="draft" element={<DraftPage />} />
+            <Route path="live" element={<LivePage />} />
+            <Route path="crosshair" element={<CrosshairPage />} />
+            <Route path="calculator" element={<CalculatorPage />} />
+            <Route path="versus" element={<VersusPage />} />
+            <Route path="favorites" element={<FavoritesPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>

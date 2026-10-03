@@ -19,12 +19,17 @@ export const HOME_SECTIONS = [
   { id: 'compare', to: '/compare', nameKey: 'nav.compare' },
   { id: 'items', to: '/items', nameKey: 'nav.items' },
   { id: 'build', to: '/build', nameKey: 'nav.randomBuild' },
+  { id: 'calculator', to: '/calculator', nameKey: 'nav.calculator' },
+  { id: 'crosshair', to: '/crosshair', nameKey: 'nav.crosshair' },
   { id: 'map', to: '/map', nameKey: 'nav.map' },
   { id: 'update', to: '/update', nameKey: 'nav.update' },
+  { id: 'live', to: '/live', nameKey: 'nav.live' },
   { id: 'players', to: '/players', nameKey: 'nav.players' },
+  { id: 'versus', to: '/versus', nameKey: 'nav.versus' },
   { id: 'leaderboard', to: '/leaderboard', nameKey: 'nav.leaderboard' },
   { id: 'ranks', to: '/ranks', nameKey: 'nav.ranks' },
   { id: 'me', to: '/me', nameKey: 'nav.myProfile' },
+  { id: 'favorites', to: '/favorites', nameKey: 'nav.favorites' },
 ];
 
 /** Сколько героев показываем в каждом из рейтингов на главной. */

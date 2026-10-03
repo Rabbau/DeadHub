@@ -8,6 +8,9 @@ import { HEAT_PHASES, LAYERS, PRESETS, SHOP_KINDS } from '../src/services/mapSer
 import { MODES, RANK_PRESETS } from '../src/services/statsFilters.js'
 import { GROUP_ORDER, SEARCH_PAGES } from '../src/services/searchService.js'
 import { HOME_SECTIONS } from '../src/services/homeService.js'
+import { MODIFIER_KEYS, UNCOUNTED_KEYS } from '../src/services/calculatorService.js'
+import { CROSSHAIR_PRESETS, SLIDER } from '../src/services/crosshairService.js'
+import { LIVE_REGIONS } from '../src/services/liveService.js'
 
 const SRC = path.resolve(import.meta.dirname, '../src')
 
@@ -70,6 +73,27 @@ describe('locales', () => {
     ;['kills', 'souls', 'damage', 'healing', 'objectives', 'midBoss'].forEach((k) => need.push(`match.${k}`))
     // Подпись кнопки направления сортировки собирается из двух ключей
     ;['dirAsc', 'dirDesc'].forEach((k) => need.push(`heroesPage.${k}`))
+
+    // Эфир, прицел, калькулятор, сравнение игроков и разделы профиля: подписи собираются из списков сервисов и из данных
+    LIVE_REGIONS.forEach((k) => need.push(`live.regions.${k}`))
+    ;['ranked', 'unranked', 'streetBrawl'].forEach((k) => need.push(`live.modes.${k}`))
+    ;['spectators', 'newest', 'longest'].forEach((k) => need.push(`live.sorts.${k}`))
+    CROSSHAIR_PRESETS.forEach((p) => need.push(`crosshair.presetNames.${p.id}`))
+    Object.keys(SLIDER).forEach((k) => need.push(`crosshair.fields.${k}`))
+    ;['pips', 'dot', 'colors'].forEach((k) => need.push(`crosshair.groups.${k}`))
+    ;['dark', 'light', 'green', 'city'].forEach((k) => need.push(`crosshair.backgrounds.${k}`))
+    ;['all', 'weapon', 'vitality', 'spirit'].forEach((k) => need.push(`calculator.slots.${k}`))
+    Object.values(MODIFIER_KEYS).forEach((k) => need.push(`calculator.stats.${k}`))
+    Object.values(UNCOUNTED_KEYS).forEach((k) => need.push(`calculator.effects.${k}`))
+    ;['health', 'damage', 'rate', 'dps'].forEach((k) => need.push(`calculator.formulas.${k}`))
+    ;['rank', 'matches', 'winrate', 'kda', 'accuracy', 'recentWinrate', 'recentKda', 'lastMatch'].forEach((k) => need.push(`versus.rows.${k}`))
+    ;['me', 'favorites', 'recent'].forEach((k) => need.push(`versus.${k}`))
+    ;['strong', 'weak', 'even'].forEach((k) => need.push(`player.advice.verdict.${k}`))
+    ;['suggestBoth', 'suggestRole', 'suggestGun', 'whyStrong', 'whyPlayed'].forEach((k) => need.push(`player.advice.${k}`))
+    ;['Up', 'Down', 'Steady'].forEach((k) => need.push(`player.form.trend${k}`))
+    ;['Full', 'Partial', 'Low'].forEach((k) => need.push(`player.circle.coverage${k}`))
+    ;['souls', 'kills', 'deaths', 'assists'].forEach((k) => need.push(`player.curve.rows.${k}`))
+    ;['heroes', 'advice', 'form', 'circle', 'share', 'matches'].forEach((k) => need.push(`player.sections.${k}`))
 
     // usePageMeta('ключ') берёт seo.<ключ>.title и seo.<ключ>.description
     for (const file of sourceFiles(SRC)) {

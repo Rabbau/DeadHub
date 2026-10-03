@@ -13,7 +13,7 @@ const STATS_TTL_MS = 10 * 60 * 1000; // на стороне API ответы т�
 // и с лимитом запросов, лишние проверки ему ни к чему.
 const HEROES_NEAR_RELEASE_TTL_MS = 4 * 60 * 1000;
 const HEROES_IDLE_TTL_MS = 30 * 60 * 1000;
-const heroesTtl = () => (isReleaseWindow(CURRENT_UPDATE.releases) ? HEROES_NEAR_RELEASE_TTL_MS : HEROES_IDLE_TTL_MS);
+export const heroesTtl = () => (isReleaseWindow(CURRENT_UPDATE.releases) ? HEROES_NEAR_RELEASE_TTL_MS : HEROES_IDLE_TTL_MS);
 const EMPTY_STATS = { total: 0, byHero: {} };
 
 // Поля героя, которые сайт реально читает. Сырой список — 1,8 МБ на 65 героев, с этими полями — ~150 КБ.
@@ -45,7 +45,7 @@ function pick(source, keys, map = (value) => value) {
   return result;
 }
 
-function slimHero(raw) {
+export function slimHero(raw) {
   const slim = pick(raw, HERO_FIELDS);
   // Лор приходит строкой или объектом { lore }: хранить достаточно текста
   slim.description = typeof raw.description === 'string' ? raw.description : raw.description?.lore ?? null;
