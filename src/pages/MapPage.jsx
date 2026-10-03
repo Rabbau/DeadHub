@@ -63,6 +63,11 @@ function MapPage() {
           <h1 className="page-title">{t('map.title')}</h1>
           <div className="page-subtitle">{t('map.subtitle')}</div>
         </div>
+        {/* Украшение: постеры Патронов — главных целей на карте */}
+        <div className="map-patrons" aria-hidden="true">
+          <img src="/art/patron-hidden-king.webp" alt="" width="520" height="390" loading="lazy" decoding="async" />
+          <img src="/art/patron-archmother.webp" alt="" width="520" height="390" loading="lazy" decoding="async" />
+        </div>
       </div>
 
       {/* Тепловая карта строится только по обычным матчам: у Street Brawl другая арена */}

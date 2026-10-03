@@ -9,7 +9,7 @@ function ErrorScreen({ error }) {
 
   return (
     <div className="page not-found" role="alert">
-      <div className="not-found__code" aria-hidden="true">[!]</div>
+      <div className="not-found__code" aria-hidden="true">!</div>
       <h1 className="page-title">{t('errorPage.title')}</h1>
       <p className="not-found__text">{t('errorPage.text')}</p>
       <div className="not-found__actions">
@@ -25,6 +25,7 @@ function ErrorScreen({ error }) {
           <pre>{String(error.message)}</pre>
         </details>
       )}
+      <img className="not-found__troopers" src="/art/troopers.webp" alt="" width="820" height="465" loading="lazy" decoding="async" />
     </div>
   );
 }

@@ -34,6 +34,7 @@ function NotFoundView() {
       <div className="not-found__actions">
         <Link to="/" className="btn btn-primary">{t('notFound.home')}</Link>
       </div>
+      <img className="not-found__troopers" src="/art/troopers.webp" alt="" width="820" height="465" loading="lazy" decoding="async" />
     </div>
   );
 }

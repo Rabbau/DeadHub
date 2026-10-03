@@ -36,6 +36,20 @@ updates:
       - dependency-name: '@eslint/js'
         update-types: ['version-update:semver-major']
 
+      # React 19 пока не нужен: сайт работает на 18, а переход надо делать осознанно (проверить интерфейс, роутер,
+      # хранилище). Старый PR «bump react and @types/react» остался открытым после появления группы react выше и
+      # падает на Vercel (ERESOLVE): правило ниже гарантирует, что таких PR больше не будет, а его самого можно закрыть.
+      # Когда будете готовы: снимите эти четыре правила — группа react выше пришлёт один PR на все четыре пакета
+      # (по отдельности они не ставятся), и проверьте превью на Vercel перед слиянием.
+      - dependency-name: react
+        update-types: ['version-update:semver-major']
+      - dependency-name: react-dom
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@types/react'
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@types/react-dom'
+        update-types: ['version-update:semver-major']
+
   - package-ecosystem: github-actions
     directory: /
     schedule:

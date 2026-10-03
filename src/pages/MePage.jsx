@@ -4,6 +4,7 @@ import { useTranslation } from '../hooks/useTranslation';
 import { usePageMeta } from '../hooks/usePageMeta';
 import { useProfileStore } from '../store/profileStore';
 import { toAccountId } from '../services/playerService';
+import PosterAside from '../components/ui/PosterAside';
 
 /**
  * «Мой профиль»: если профиль уже запомнен — открывает его; иначе предлагает указать Account ID, SteamID64 или
@@ -60,6 +61,7 @@ function MePage() {
       </form>
       <p className="player-search__hint">{t('me.hint')}</p>
       <p className="player-search__hint">{t('me.privacy')}</p>
+      <PosterAside />
     </div>
   );
 }

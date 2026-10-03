@@ -876,6 +876,20 @@ h1, h2, h3, h4 {
   margin-top: 20px;
 }
 
+/* Постер героя дня на почти пустых страницах (поиск игрока, «Мой профиль»): справа от формы, только на широком экране */
+.players-page, .me-page { position: relative; }
+.poster-aside { display: none; margin: 0; padding: 9px; background: var(--frame); box-shadow: var(--elev-3); transform: rotate(2deg); }
+.poster-aside img { display: block; width: 100%; height: auto; aspect-ratio: 1; }
+@media (min-width: 1100px) { .poster-aside { display: block; position: absolute; top: 150px; right: 28px; width: 300px; } }
+
+/* Левая колонка страницы героя: портрет и под ним постер (постер есть не у всех героев). На высоком экране колонка
+   «прилипает», пока читаешь длинную страницу */
+.hero-detail__side { display: flex; flex-direction: column; gap: 26px; align-self: start; min-width: 0; }
+.hero-poster { margin: 0; padding: 9px; background: var(--frame); box-shadow: var(--elev-3); transform: rotate(1.2deg); }
+.hero-poster img { display: block; width: 100%; height: auto; aspect-ratio: 1; }
+@media (min-width: 1001px) and (min-height: 900px) { .hero-detail__side { position: sticky; top: 96px; } }
+@media (max-width: 1000px) { .hero-poster { display: none; } }
+
 .hero-detail__portrait {
   position: relative;
   aspect-ratio: 3 / 4;
@@ -2606,6 +2620,13 @@ a.tag:hover { filter: brightness(1.12); }
    Интерактивная карта
    ═══════════════════════════════════════════════════════════════ */
 
+/* Постеры Патронов у заголовка страницы карты: небрежно наклонены, как наклеенные */
+.map-patrons { display: flex; gap: 16px; padding-right: 8px; }
+.map-patrons img { width: 150px; height: auto; padding: 5px; background: var(--frame); box-shadow: var(--elev-2); }
+.map-patrons img:nth-child(1) { transform: rotate(-3deg); }
+.map-patrons img:nth-child(2) { transform: rotate(3deg) translateY(6px); }
+@media (max-width: 800px) { .map-patrons { display: none; } }
+
 .map-presets { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 16px 0; }
 .map-presets__label { font: 600 12px/1 var(--font-caps); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 
@@ -2890,6 +2911,8 @@ a.tag:hover { filter: brightness(1.12); }
 }
 .not-found__text { max-width: 56ch; font-size: 13px; line-height: 1.75; color: var(--soft); }
 .not-found__actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+/* Мелкие крипы идут по странице; картинка с прозрачным фоном, поэтому просто лежит на странице */
+.not-found__troopers { align-self: center; width: min(640px, 100%); height: auto; margin-top: 28px; filter: drop-shadow(0 10px 14px #0009); pointer-events: none; }
 .not-found__details { max-width: 100%; font-size: 12px; color: var(--muted); }
 .not-found__details summary { cursor: pointer; }
 .not-found__details pre {

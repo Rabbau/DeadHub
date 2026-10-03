@@ -8,6 +8,7 @@ import { toAccountId } from '../services/playerService';
 import { formatNumber } from '../services/format';
 import { useHeroStore } from '../store/heroStore';
 import Avatar from '../components/ui/Avatar';
+import PosterAside from '../components/ui/PosterAside';
 
 function PlayersPage() {
   const t = useTranslation();
@@ -68,6 +69,9 @@ function PlayersPage() {
         <button type="submit" className="btn btn-primary">{t('players.search')}</button>
       </form>
       <p className="player-search__hint">{t('players.hint')}</p>
+
+      {/* Пока искать нечего и показывать нечего, справа не пустота, а постер */}
+      {!query && !showRecent && <PosterAside />}
 
       {query && (
         <div className="section">

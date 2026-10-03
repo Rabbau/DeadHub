@@ -8,6 +8,7 @@ import { useHeroStore } from '../store/heroStore';
 import { useTranslation } from '../hooks/useTranslation';
 import { usePageMeta } from '../hooks/usePageMeta';
 import { CURRENT_UPDATE } from '../data/updates';
+import { heroPoster } from '../data/heroArt';
 import { humanizeKey, splitAbilityProps } from '../services/abilityService';
 import ItemCard from '../components/ui/ItemCard';
 import TooltipHtml from '../components/ui/TooltipHtml';
@@ -103,6 +104,7 @@ function HeroPage() {
   const ls = hero.levelScaling || {};
   const hasStats = s.games_played > 0;
   const delta = deltas?.[hero.id];
+  const poster = heroPoster(hero.id);
   const hasBuilds = buildsLoading || popularItems.length > 0 || combinations.length > 0;
   const hasAbilities = Boolean(hero.abilities && hero.abilities.length > 0);
 
@@ -166,11 +168,19 @@ function HeroPage() {
         <Link to="/heroes" className="back-link">{t('heroPage.back')}</Link>
 
         <div className="hero-detail">
-          <div className="hero-detail__portrait">
-            {hero.image_url ? (
-              <img src={hero.image_url} alt={hero.name} />
-            ) : (
-              <div className="hero-detail__portrait-placeholder">{hero.name.slice(0, 2)}</div>
+          <div className="hero-detail__side">
+            <div className="hero-detail__portrait">
+              {hero.image_url ? (
+                <img src={hero.image_url} alt={hero.name} />
+              ) : (
+                <div className="hero-detail__portrait-placeholder">{hero.name.slice(0, 2)}</div>
+              )}
+            </div>
+            {/* Постер — украшение (есть не у всех героев): имя героя уже названо в заголовке, поэтому у картинки пустой alt */}
+            {poster && (
+              <figure className="hero-poster">
+                <img src={poster} alt="" width="640" height="640" loading="lazy" decoding="async" />
+              </figure>
             )}
           </div>
 

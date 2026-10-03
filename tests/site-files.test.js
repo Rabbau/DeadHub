@@ -65,7 +65,13 @@ describe('art', () => {
     for (const name of referenced) expect(files, name).toContain(name)
   })
 
-  it('stays light: only WebP, every file under 120 KB, the folder under 400 KB', () => {
+  it('has no picture that nothing asks for', () => {
+    const referenced = new Set()
+    for (const file of walk('src')) for (const [, name] of read(file).matchAll(/\/art\/([\w-]+\.\w+)/g)) referenced.add(name)
+    expect(files.filter((name) => !referenced.has(name))).toEqual([])
+  })
+
+  it('stays light: only WebP, every file under 120 KB, the folder under 900 KB', () => {
     let total = 0
     for (const name of files) {
       expect(name, name).toMatch(/\.webp$/)
@@ -73,7 +79,7 @@ describe('art', () => {
       expect(size, name).toBeLessThan(120 * 1024)
       total += size
     }
-    expect(total).toBeLessThan(400 * 1024)
+    expect(total).toBeLessThan(900 * 1024)
   })
 })
 
