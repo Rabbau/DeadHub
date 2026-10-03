@@ -16,10 +16,10 @@ describe('fonts', () => {
   it('come from the site itself: every @import is a @fontsource package, and the CSS names no other server', () => {
     const imports = [...fonts.matchAll(/@import\s+'([^']+)'/g)].map((match) => match[1])
     expect(imports.length).toBeGreaterThanOrEqual(6)
-    for (const source of imports) expect(source, source).toMatch(/^@fontsource\/(ibm-plex-mono|silkscreen|tiny5)\/\d{3}\.css$/)
+    for (const source of imports) expect(source, source).toMatch(/^@fontsource\/(alegreya|oswald|jost)\/\d{3}\.css$/)
     expect(fonts.replace(/\/\*[\s\S]*?\*\//g, '')).not.toMatch(/https?:|\/\//)
     expect(read('src/index.css')).not.toMatch(/@import\s+(?:url\()?['"]?https?:/)
-    for (const name of ['@fontsource/ibm-plex-mono', '@fontsource/silkscreen', '@fontsource/tiny5']) expect(pkg.dependencies, name).toHaveProperty([name])
+    for (const name of ['@fontsource/alegreya', '@fontsource/oswald', '@fontsource/jost']) expect(pkg.dependencies, name).toHaveProperty([name])
   })
 
   it('are loaded before the site styles, with whole weights (they carry unicode-range for every script)', () => {
@@ -31,13 +31,49 @@ describe('fonts', () => {
 
   it('cover every family and weight the styles use', () => {
     const css = read('src/index.css')
-    expect(css).toMatch(/--font-pixel:\s*'Silkscreen',\s*'Tiny5'/)
-    expect(css).toMatch(/--font-mono:\s*'IBM Plex Mono'/)
-    const weights = new Set([...css.matchAll(/font:\s*(\d{3})\s/g)].map((match) => match[1]))
-    for (const weight of weights) expect(['400', '500', '600', '700'], `насыщенность ${weight}`).toContain(weight)
-    for (const weight of ['400', '500', '600']) expect(fonts).toContain(`ibm-plex-mono/${weight}.css`)
-    for (const weight of ['400', '700']) expect(fonts).toContain(`silkscreen/${weight}.css`)
-    expect(fonts).toContain('tiny5/400.css')
+    expect(css).toMatch(/--font-display:\s*'Alegreya'/)
+    expect(css).toMatch(/--font-caps:\s*'Oswald'/)
+    expect(css).toMatch(/--font-ui:\s*'Jost'/)
+    expect(css).toMatch(/--font-num:\s*'Oswald'/)
+    // Какие начертания подключены у каждой переменной (числа — тот же Oswald, что и подписи)
+    const loaded = { display: ['900'], caps: ['500', '600', '700'], num: ['500', '600', '700'], ui: ['400', '500', '600', '700'] }
+    for (const [pack, weights] of Object.entries({ alegreya: loaded.display, oswald: loaded.caps, jost: loaded.ui })) {
+      for (const weight of weights) expect(fonts, `${pack} ${weight}`).toContain(`${pack}/${weight}.css`)
+    }
+    // Правило без насыщенности (font: 14px var(--font-caps)) — это 400, поэтому проверяется и оно
+    const declarations = [...css.matchAll(/font:\s*(?:(\d{3})\s+)?[^;]*?var\(--font-(display|caps|num|ui)\)/g)]
+    expect(declarations.length).toBeGreaterThan(100)
+    for (const [text, weight = '400', family] of declarations) expect(loaded[family], `${family} ${weight}: ${text}`).toContain(weight)
+    // Прежние пиксельные шрифты больше не используются
+    expect(css).not.toMatch(/--font-pixel|--font-mono|Silkscreen|Tiny5|IBM Plex/)
+  })
+})
+
+describe('art', () => {
+  const dir = path.join(ROOT, 'public/art')
+  const files = fs.readdirSync(dir)
+  const walk = (folder) => fs.readdirSync(path.join(ROOT, folder), { withFileTypes: true }).flatMap((entry) => {
+    const relative = `${folder}/${entry.name}`
+    if (entry.isDirectory()) return walk(relative)
+    return /\.(css|jsx?)$/.test(entry.name) ? [relative] : []
+  })
+
+  it('every picture the code asks for exists in public/art', () => {
+    const referenced = new Set()
+    for (const file of walk('src')) for (const [, name] of read(file).matchAll(/\/art\/([\w-]+\.\w+)/g)) referenced.add(name)
+    expect(referenced.size).toBeGreaterThan(0)
+    for (const name of referenced) expect(files, name).toContain(name)
+  })
+
+  it('stays light: only WebP, every file under 120 KB, the folder under 400 KB', () => {
+    let total = 0
+    for (const name of files) {
+      expect(name, name).toMatch(/\.webp$/)
+      const { size } = fs.statSync(path.join(dir, name))
+      expect(size, name).toBeLessThan(120 * 1024)
+      total += size
+    }
+    expect(total).toBeLessThan(400 * 1024)
   })
 })
 

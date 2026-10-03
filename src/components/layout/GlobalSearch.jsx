@@ -84,8 +84,9 @@ function GlobalSearch() {
         onPointerEnter={loadDialog}
         onFocus={loadDialog}
       >
-        <svg className="nav__search-icon" viewBox="0 0 12 12" width="14" height="14" shapeRendering="crispEdges" aria-hidden="true" focusable="false">
-          <path fill="currentColor" d="M3 0h4v1h2v1h1v1h1v4h-1v1h-1v1H8v1H7l2 2-1 1-2-2H3v-1H2V9H1V8H0V3h1V2h1V1h1zM3 2v1H2v4h1v1h4V7h1V3H7V2z" />
+        <svg className="nav__search-icon" viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false">
+          <circle cx="6.6" cy="6.6" r="4.7" fill="none" stroke="currentColor" strokeWidth="1.8" />
+          <path d="M10.2 10.2 14.4 14.4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
         </svg>
         <span className="nav__search-label">{t('search.button')}</span>
         <kbd className="nav__search-key" aria-hidden="true">/</kbd>

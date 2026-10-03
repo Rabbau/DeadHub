@@ -148,7 +148,7 @@ function MatchupsPage() {
               <div className="matchup-hero" ref={heroCardRef}>
                 {selected.image_url && <img src={selected.image_url} alt="" className="matchup-hero__img" />}
                 <div>
-                  <div className="matchup-hero__name">{selected.name}</div>
+                  <h2 className="matchup-hero__name">{selected.name}</h2>
                   <div className="matchup-hero__stats">
                     <span className={`winrate-${winrateColor(selected.stats.winrate)}`}>
                       {t('matchups.overall')} {formatWinrate(selected.stats.winrate)}

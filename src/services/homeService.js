@@ -1,12 +1,14 @@
 /**
  * @fileoverview Главная страница: какие разделы сайта на ней показаны и как подписаны цифры. Без React и без API.
  */
+import { CURRENT_UPDATE, isHighlightsActive } from '../data/updates.js';
 import { PATCH_PERIOD, describeFilters } from './statsFilters.js';
+import { TIER_ORDER } from './tierService.js';
 
 /**
- * Разделы сайта плитками на главной: адрес, ключ названия (то же, что в меню) и id описания
+ * Разделы сайта в оглавлении главной: адрес, ключ названия (то же, что в меню) и id описания
  * (`home.sections.<id>` в локалях). Порядок — по задачам, а не по меню: герои и мета, предметы, мир игры, игроки.
- * Тест сверяет список с маршрутами App.jsx: новая страница без плитки не проходит.
+ * Тест сверяет список с маршрутами App.jsx: новая страница без строки в оглавлении не проходит.
  */
 export const HOME_SECTIONS = [
   { id: 'heroes', to: '/heroes', nameKey: 'nav.heroes' },
@@ -28,9 +30,39 @@ export const HOME_SECTIONS = [
 /** Сколько героев показываем в каждом из рейтингов на главной. */
 export const HOME_TOP_COUNT = 5;
 
-/** Порядковый номер плитки для оформления: 1 → «01». */
+/** Сколько героев каждого тира показывает витрина тир-листа и сколько имён героев — быстрые ссылки у поиска. */
+export const HOME_TIER_HEROES = 4;
+export const HOME_QUICK_HEROES = 2;
+
+/** Порядковый номер строки оглавления для оформления: 1 → «01». */
 export function tileNumber(index) {
   return String(index + 1).padStart(2, '0');
+}
+
+/**
+ * Герои тир-листа для витрины: первые `perTier` каждого тира, по порядку S → D. Тир без героев в список не попадает.
+ * @param {Record<string, Array<{ hero: object }>>} tiers — `tiers` из buildTierList
+ * @param {number} [perTier]
+ * @returns {Array<{ tier: string, heroes: object[] }>}
+ */
+export function tierPreview(tiers, perTier = HOME_TIER_HEROES) {
+  return TIER_ORDER
+    .map((tier) => ({ tier, heroes: (tiers?.[tier] ?? []).slice(0, perTier).map((entry) => entry.hero) }))
+    .filter((row) => row.heroes.length > 0);
+}
+
+/**
+ * Арты баннера: пока обновление свежее — арты этого обновления, потом `null` (баннер без привязки к нему).
+ * @param {typeof CURRENT_UPDATE} [update]
+ * @param {number} [nowMs]
+ */
+export function bannerArt(update = CURRENT_UPDATE, nowMs = Date.now()) {
+  return update.art && isHighlightsActive(nowMs, update) ? update.art : null;
+}
+
+/** Дата выхода обновления в секундах Unix. Берётся полдень по UTC: почти во всех часовых поясах это тот же календарный день. */
+export function updateDate(update = CURRENT_UPDATE) {
+  return Date.parse(`${update.date}T12:00:00Z`) / 1000;
 }
 
 /**

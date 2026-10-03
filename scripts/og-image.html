@@ -1,0 +1,107 @@
+<!doctype html>
+<!--
+  Исходник картинки для превью ссылок (Open Graph / Twitter): public/og-image.png, 1200×630.
+  Откройте файл в Chrome или Edge прямо с диска (нужен установленный node_modules: шрифты берутся оттуда), в DevTools
+  включите размер окна 1200×630 и сделайте снимок страницы («Capture screenshot» в меню DevTools, Ctrl+Shift+P).
+  Тест требует PNG не тяжелее 300 КБ: сожмите снимок (палитра на 128 цветов хватает) и положите в public/og-image.png.
+  Менять нужно только при смене названия, слогана или оформления; картинка лежит в репозитории готовой.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Dead Hub — превью ссылки</title>
+    <style>
+      @font-face { font-family: 'Alegreya'; font-weight: 900; src: url('../node_modules/@fontsource/alegreya/files/alegreya-latin-900-normal.woff2') format('woff2'); }
+      @font-face { font-family: 'Oswald'; font-weight: 600; src: url('../node_modules/@fontsource/oswald/files/oswald-latin-600-normal.woff2') format('woff2'); }
+      @font-face { font-family: 'Jost'; font-weight: 500; src: url('../node_modules/@fontsource/jost/files/jost-latin-500-normal.woff2') format('woff2'); }
+
+      * { box-sizing: border-box; margin: 0; }
+      html, body { width: 1200px; height: 630px; overflow: hidden; background: #0b0a09; }
+
+      .og {
+        position: relative;
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+        color: #f7e9d5;
+        font-family: 'Jost', sans-serif;
+        background: #0b0a09 url('../public/art/city.webp') 60% 22% / 1500px auto no-repeat;
+      }
+      .og::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(90deg, #0b0a09f2 0%, #0b0a09cc 40%, #0b0a0940 100%),
+          linear-gradient(180deg, transparent 62%, #151210 100%);
+      }
+      .og > * { position: relative; z-index: 1; }
+
+      .brand { position: absolute; left: 64px; top: 52px; display: flex; align-items: center; gap: 18px; }
+      .brand svg { width: 52px; height: 58px; }
+      .brand b {
+        font: 900 56px/1 'Alegreya', Georgia, serif;
+        letter-spacing: .03em;
+        text-transform: uppercase;
+        text-shadow: 0 3px 0 #000;
+      }
+      .brand b span { color: #e0622f; }
+
+      .copy { position: absolute; left: 64px; top: 168px; width: 600px; }
+      h1 { font: 900 84px/1.06 'Alegreya', Georgia, serif; text-shadow: 0 3px 0 #000a; }
+      h1 em {
+        display: inline-block;
+        margin: 6px 0 0 -6px;
+        padding: 0 .2em;
+        font-style: normal;
+        color: #17110c;
+        background: #e0622f;
+        text-shadow: none;
+        transform: rotate(-1.5deg);
+      }
+      p { margin-top: 26px; max-width: 520px; font: 500 28px/1.45 'Jost', sans-serif; color: #d3c6b2; text-shadow: 0 1px 10px #000c; }
+
+      .plates { position: absolute; left: 64px; bottom: 52px; display: flex; gap: 12px; }
+      .plates span {
+        padding: 9px 16px 8px;
+        font: 600 22px/1 'Oswald', sans-serif;
+        letter-spacing: .09em;
+        text-transform: uppercase;
+        color: #17110c;
+        clip-path: polygon(0 10%, 2% 0, 98% 6%, 100% 92%, 97% 100%, 2% 94%);
+      }
+      .plates span:nth-child(1) { background: #ffe14d; }
+      .plates span:nth-child(2) { background: #60cde3; }
+      .plates span:nth-child(3) { background: #97da79; }
+      .plates span:nth-child(4) { background: #dfb4b5; }
+
+      .heroes {
+        position: absolute;
+        right: 28px;
+        top: 170px;
+        width: 590px;
+        transform: rotate(-3deg);
+        filter: drop-shadow(0 16px 20px #000c);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="og">
+      <div class="brand">
+        <svg viewBox="0 0 52 58" aria-hidden="true"><path d="M26 0 52 14.5v29L26 58 0 43.5v-29z" fill="#e0622f" /></svg>
+        <b>Dead <span>Hub</span></b>
+      </div>
+
+      <div class="copy">
+        <h1>Deadlock <em>stats hub</em></h1>
+        <p>Hero win rates, tier list, draft helper and the city map — from real match data.</p>
+      </div>
+
+      <img class="heroes" src="../public/art/heroes.webp" alt="" />
+
+      <div class="plates">
+        <span>Win rates</span><span>Tier list</span><span>Matchups</span><span>Map</span>
+      </div>
+    </div>
+  </body>
+</html>

@@ -348,7 +348,7 @@ export default {
     details: 'Технические подробности',
   },
   footer: {
-    text: 'Dead Hub · неофициальный проект',
+    text: 'Dead Hub · неофициальный проект · игра и арты принадлежат Valve',
     data: 'Данные:',
   },
   tierList: {
@@ -412,6 +412,9 @@ export default {
     title: 'Статистика',
     titleAccent: 'Deadlock',
     lead: 'Винрейты героев, сборки, контрпики и карта — по реальным матчам, с фильтрами по рангу и патчу.',
+    updateKicker: 'Обновление · {date}',
+    ctaMeta: 'Что в мете сейчас',
+    toolsTitle: 'Инструменты',
     nowTitle: 'Сейчас',
     nowCaption: 'Данные: {filters}',
     customRanks: 'свой диапазон',

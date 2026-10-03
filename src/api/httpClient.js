@@ -261,7 +261,12 @@ export function httpGet(url, { cache = true, cacheKey, ttl = CACHE_TTL_MS, reval
     .catch((error) => {
       if (fallback && isRecoverable(error)) {
         const stale = entryData(fallback.raw);
-        if (stale !== undefined && stale !== null) return stale;
+        if (stale !== undefined && stale !== null) {
+          // Молчаливый откат на старый кеш сбивает с толку: на экране вчерашние данные (например, у вышедшего героя
+          // всё ещё стикер голосования), а причина — отказ API — нигде не видна. Оставляем след в консоли.
+          console.warn(`[dlhub] API не ответил (${error.message}): показаны данные из кеша, сохранённые ${new Date(fallback.ts).toISOString()} — ${key}`);
+          return stale;
+        }
       }
       throw error;
     })
