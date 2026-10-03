@@ -1,0 +1,301 @@
+[
+ {
+  "start_time": 1791038227,
+  "winning_team": null,
+  "winning_team_parsed": null,
+  "match_id": 110322274,
+  "players": [
+   {
+    "account_id": 1779852249,
+    "team": 0,
+    "team_parsed": "Team0",
+    "abandoned": null,
+    "hero_id": 63
+   },
+   {
+    "account_id": 80488228,
+    "team": 0,
+    "team_parsed": "Team0",
+    "abandoned": null,
+    "hero_id": 84
+   },
+   {
+    "account_id": 51991843,
+    "team": 0,
+    "team_parsed": "Team0",
+    "abandoned": null,
+    "hero_id": 35
+   },
+   {
+    "account_id": 379990687,
+    "team": 0,
+    "team_parsed": "Team0",
+    "abandoned": null,
+    "hero_id": 7
+   },
+   {
+    "account_id": 1441146784,
+    "team": 0,
+    "team_parsed": "Team0",
+    "abandoned": null,
+    "hero_id": 50
+   },
+   {
+    "account_id": 104584034,
+    "team": 0,
+    "team_parsed": "Team0",
+    "abandoned": null,
+    "hero_id": 72
+   },
+   {
+    "account_id": 120455971,
+    "team": 1,
+    "team_parsed": "Team1",
+    "abandoned": null,
+    "hero_id": 8
+   },
+   {
+    "account_id": 200258805,
+    "team": 1,
+    "team_parsed": "Team1",
+    "abandoned": null,
+    "hero_id": 15
+   },
+   {
+    "account_id": 378721283,
+    "team": 1,
+    "team_parsed": "Team1",
+    "abandoned": null,
+    "hero_id": 27
+   },
+   {
+    "account_id": 355039561,
+    "team": 1,
+    "team_parsed": "Team1",
+    "abandoned": null,
+    "hero_id": 65
+   },
+   {
+    "account_id": 1025424848,
+    "team": 1,
+    "team_parsed": "Team1",
+    "abandoned": null,
+    "hero_id": 60
+   },
+   {
+    "account_id": 227949867,
+    "team": 1,
+    "team_parsed": "Team1",
+    "abandoned": null,
+    "hero_id": 13
+   }
+  ],
+  "lobby_id": 102105476862565170,
+  "game_mode_version": 2,
+  "net_worth_team_0": 171347,
+  "net_worth_team_1": 220590,
+  "duration_s": null,
+  "spectators": 26,
+  "open_spectator_slots": 10,
+  "objectives_mask_team0": 8261,
+  "objectives_mask_team1": 61253,
+  "match_mode": 4,
+  "match_mode_parsed": "Ranked",
+  "game_mode": 1,
+  "game_mode_parsed": "KECitadelGameModeNormal",
+  "match_score": 2423,
+  "region_mode": 1,
+  "region_mode_parsed": "europe",
+  "compat_version": 6745
+ },
+ {
+  "start_time": 1791038946,
+  "winning_team": null,
+  "winning_team_parsed": null,
+  "match_id": 110326964,
+  "players": [
+   {
+    "account_id": 155230688,
+    "team": 0,
+    "team_parsed": "Team0",
+    "abandoned": null,
+    "hero_id": 35
+   },
+   {
+    "account_id": 856812460,
+    "team": 0,
+    "team_parsed": "Team0",
+    "abandoned": null,
+    "hero_id": 77
+   },
+   {
+    "account_id": 139153112,
+    "team": 0,
+    "team_parsed": "Team0",
+    "abandoned": null,
+    "hero_id": 58
+   },
+   {
+    "account_id": 230307735,
+    "team": 0,
+    "team_parsed": "Team0",
+    "abandoned": null,
+    "hero_id": 84
+   },
+   {
+    "account_id": 228442695,
+    "team": 0,
+    "team_parsed": "Team0",
+    "abandoned": null,
+    "hero_id": 31
+   },
+   {
+    "account_id": 203260923,
+    "team": 0,
+    "team_parsed": "Team0",
+    "abandoned": null,
+    "hero_id": 13
+   },
+   {
+    "account_id": 195563441,
+    "team": 1,
+    "team_parsed": "Team1",
+    "abandoned": null,
+    "hero_id": 64
+   },
+   {
+    "account_id": 216163638,
+    "team": 1,
+    "team_parsed": "Team1",
+    "abandoned": null,
+    "hero_id": 72
+   },
+   {
+    "account_id": 747935851,
+    "team": 1,
+    "team_parsed": "Team1",
+    "abandoned": null,
+    "hero_id": 60
+   },
+   {
+    "account_id": 40256696,
+    "team": 1,
+    "team_parsed": "Team1",
+    "abandoned": null,
+    "hero_id": 52
+   },
+   {
+    "account_id": 200629867,
+    "team": 1,
+    "team_parsed": "Team1",
+    "abandoned": null,
+    "hero_id": 81
+   },
+   {
+    "account_id": 1189626894,
+    "team": 1,
+    "team_parsed": "Team1",
+    "abandoned": null,
+    "hero_id": 20
+   }
+  ],
+  "lobby_id": 102105476862569840,
+  "game_mode_version": 2,
+  "net_worth_team_0": 102094,
+  "net_worth_team_1": 123875,
+  "duration_s": null,
+  "spectators": 7,
+  "open_spectator_slots": 10,
+  "objectives_mask_team0": 65253,
+  "objectives_mask_team1": 65381,
+  "match_mode": 1,
+  "match_mode_parsed": "Unranked",
+  "game_mode": 1,
+  "game_mode_parsed": "KECitadelGameModeNormal",
+  "match_score": 2291,
+  "region_mode": 1,
+  "region_mode_parsed": "europe",
+  "compat_version": 6745
+ },
+ {
+  "start_time": 1791039574,
+  "winning_team": null,
+  "winning_team_parsed": null,
+  "match_id": 110331126,
+  "players": [
+   {
+    "account_id": 1052187320,
+    "team": 0,
+    "team_parsed": "Team0",
+    "abandoned": null,
+    "hero_id": 84
+   },
+   {
+    "account_id": 1227485410,
+    "team": 0,
+    "team_parsed": "Team0",
+    "abandoned": null,
+    "hero_id": 67
+   },
+   {
+    "account_id": 85980287,
+    "team": 0,
+    "team_parsed": "Team0",
+    "abandoned": null,
+    "hero_id": 7
+   },
+   {
+    "account_id": 181177839,
+    "team": 0,
+    "team_parsed": "Team0",
+    "abandoned": null,
+    "hero_id": 2
+   },
+   {
+    "account_id": 99298157,
+    "team": 1,
+    "team_parsed": "Team1",
+    "abandoned": null,
+    "hero_id": 8
+   },
+   {
+    "account_id": 173298761,
+    "team": 1,
+    "team_parsed": "Team1",
+    "abandoned": null,
+    "hero_id": 13
+   },
+   {
+    "account_id": 1054509317,
+    "team": 1,
+    "team_parsed": "Team1",
+    "abandoned": null,
+    "hero_id": 15
+   },
+   {
+    "account_id": 270188360,
+    "team": 1,
+    "team_parsed": "Team1",
+    "abandoned": null,
+    "hero_id": 65
+   }
+  ],
+  "lobby_id": 102105476862574050,
+  "game_mode_version": 1,
+  "net_worth_team_0": 136000,
+  "net_worth_team_1": 136000,
+  "duration_s": null,
+  "spectators": 1,
+  "open_spectator_slots": 10,
+  "objectives_mask_team0": 65093,
+  "objectives_mask_team1": 65093,
+  "match_mode": 1,
+  "match_mode_parsed": "Unranked",
+  "game_mode": 4,
+  "game_mode_parsed": "KECitadelGameModeStreetBrawl",
+  "match_score": 2550,
+  "region_mode": 1,
+  "region_mode_parsed": "europe",
+  "compat_version": 6745
+ }
+]

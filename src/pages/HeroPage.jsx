@@ -5,6 +5,7 @@ import { useHeroBuilds } from '../hooks/useHeroBuilds';
 import { useHeroDeltas } from '../hooks/useHeroDeltas';
 import { formatWinrate, formatPickrate, winrateColor } from '../services/heroService';
 import { useHeroStore } from '../store/heroStore';
+import { useFavoritesStore } from '../store/favoritesStore';
 import { useTranslation } from '../hooks/useTranslation';
 import { usePageMeta } from '../hooks/usePageMeta';
 import { CURRENT_UPDATE } from '../data/updates';
@@ -13,6 +14,7 @@ import { humanizeKey, splitAbilityProps } from '../services/abilityService';
 import ItemCard from '../components/ui/ItemCard';
 import TooltipHtml from '../components/ui/TooltipHtml';
 import DeltaBadge from '../components/ui/DeltaBadge';
+import FavoriteButton from '../components/ui/FavoriteButton';
 import StatsFilters from '../components/ui/StatsFilters';
 import HeroMatchups from '../components/matchups/HeroMatchups';
 import HeroAnchors from '../components/hero/HeroAnchors';
@@ -48,6 +50,9 @@ function HeroPage() {
   // Изменение винрейта к прошлому периоду (один кешируемый запрос; текущая статистика уже загружена)
   const { deltas } = useHeroDeltas({ enabled: Boolean(hero && !hero.upcoming) });
   const t = useTranslation();
+  const heroNumericId = Number(id);
+  const isFavorite = useFavoritesStore((state) => state.heroes.includes(heroNumericId));
+  const toggleFavorite = useFavoritesStore((state) => state.toggleHero);
 
   // Название героя приходит из данных, поэтому до загрузки действуют общие заголовок и описание.
   // Несуществующий герой и сбой загрузки в поиске не нужны: страница закрыта от индексации
@@ -207,6 +212,13 @@ function HeroPage() {
               {getComplexityKey(hero.complexity) && (
                 <span className="tag tag--complexity">{t(getComplexityKey(hero.complexity))}</span>
               )}
+              <FavoriteButton
+                kind="hero"
+                active={isFavorite}
+                label={t('favorites.add')}
+                activeLabel={t('player.favoriteOn')}
+                onToggle={() => toggleFavorite(hero.id)}
+              />
             </div>
 
             <StatsFilters />

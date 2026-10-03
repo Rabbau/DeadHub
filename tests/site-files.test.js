@@ -85,7 +85,7 @@ describe('art', () => {
 
 describe('crawler files', () => {
   // Личные страницы не индексируются: их нет в sitemap, а сама страница отдаёт noindex
-  const PRIVATE_ROUTES = ['/me']
+  const PRIVATE_ROUTES = ['/me', '/favorites']
 
   it('sitemap lists the static routes of the app (dynamic ones come from the prerender step)', () => {
     const locs = [...read('public/sitemap.xml').matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1].replace(HOST, '') || '/')

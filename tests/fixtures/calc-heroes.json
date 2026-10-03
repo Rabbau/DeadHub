@@ -1,0 +1,154 @@
+[
+ {
+  "hero": {
+   "id": 13,
+   "name": "Haze",
+   "starting_stats": {
+    "max_health": {
+     "value": 730
+    },
+    "base_health_regen": {
+     "value": 2
+    }
+   },
+   "standard_level_up_upgrades": {
+    "MODIFIER_VALUE_BASE_HEALTH_FROM_LEVEL": 33,
+    "MODIFIER_VALUE_BASE_BULLET_DAMAGE_FROM_LEVEL": 0.143
+   },
+   "items": {
+    "weapon_primary": "citadel_weapon_haze_set"
+   }
+  },
+  "weapon": {
+   "class_name": "citadel_weapon_haze_set",
+   "weapon_info": {
+    "bullet_damage": 5.26,
+    "bullets": 1,
+    "burst_shot_count": 1,
+    "cycle_time": 0.105,
+    "clip_size": 25,
+    "reload_duration": 2.35,
+    "shots_per_second": 9.523809523809524,
+    "shots_per_second_with_reload": 4.784688995215311,
+    "damage_per_second": 50.095238095238095,
+    "damage_per_second_with_reload": 25.167464114832537,
+    "damage_per_shot": 5.26,
+    "damage_per_magazine": 131.5
+   }
+  }
+ },
+ {
+  "hero": {
+   "id": 6,
+   "name": "Abrams",
+   "starting_stats": {
+    "max_health": {
+     "value": 800
+    },
+    "base_health_regen": {
+     "value": 1.5
+    }
+   },
+   "standard_level_up_upgrades": {
+    "MODIFIER_VALUE_BASE_HEALTH_FROM_LEVEL": 49,
+    "MODIFIER_VALUE_BASE_BULLET_DAMAGE_FROM_LEVEL": 0.1
+   },
+   "items": {
+    "weapon_primary": "citadel_weapon_bull_set"
+   }
+  },
+  "weapon": {
+   "class_name": "citadel_weapon_bull_set",
+   "weapon_info": {
+    "bullet_damage": 3.6,
+    "bullets": 9,
+    "burst_shot_count": 1,
+    "cycle_time": 0.63,
+    "clip_size": 9,
+    "reload_duration": 0.3525,
+    "shots_per_second": 1.5873015873015872,
+    "shots_per_second_with_reload": 1.434834595456357,
+    "damage_per_second": 51.42857142857142,
+    "damage_per_second_with_reload": 46.488640892785966,
+    "damage_per_shot": 32.4,
+    "damage_per_magazine": 291.59999999999997
+   }
+  }
+ },
+ {
+  "hero": {
+   "id": 2,
+   "name": "Seven",
+   "starting_stats": {
+    "max_health": {
+     "value": 730
+    },
+    "base_health_regen": {
+     "value": 1
+    }
+   },
+   "standard_level_up_upgrades": {
+    "MODIFIER_VALUE_BASE_HEALTH_FROM_LEVEL": 41,
+    "MODIFIER_VALUE_BASE_BULLET_DAMAGE_FROM_LEVEL": 0.24
+   },
+   "items": {
+    "weapon_primary": "citadel_weapon_gigawatt_set"
+   }
+  },
+  "weapon": {
+   "class_name": "citadel_weapon_gigawatt_set",
+   "weapon_info": {
+    "bullet_damage": 10.8,
+    "bullets": 1,
+    "burst_shot_count": 3,
+    "cycle_time": 0.2625,
+    "clip_size": 29,
+    "reload_duration": 2.35,
+    "shots_per_second": 5.830903790087464,
+    "shots_per_second_with_reload": 3.9647275958712145,
+    "damage_per_second": 62.973760932944614,
+    "damage_per_second_with_reload": 42.81905803540912,
+    "damage_per_shot": 10.8,
+    "damage_per_magazine": 313.20000000000005
+   }
+  }
+ },
+ {
+  "hero": {
+   "id": 64,
+   "name": "Drifter",
+   "starting_stats": {
+    "max_health": {
+     "value": 755
+    },
+    "base_health_regen": {
+     "value": 3.5
+    }
+   },
+   "standard_level_up_upgrades": {
+    "MODIFIER_VALUE_BASE_HEALTH_FROM_LEVEL": 41,
+    "MODIFIER_VALUE_BASE_BULLET_DAMAGE_FROM_LEVEL": 0.49
+   },
+   "items": {
+    "weapon_primary": "citadel_weapon_drifter_set"
+   }
+  },
+  "weapon": {
+   "class_name": "citadel_weapon_drifter_set",
+   "weapon_info": {
+    "bullet_damage": 19.5,
+    "bullets": 3,
+    "burst_shot_count": 1,
+    "cycle_time": 0.441,
+    "clip_size": 12,
+    "reload_duration": 2.444,
+    "shots_per_second": 2.2675736961451247,
+    "shots_per_second_with_reload": 1.5026296018031555,
+    "damage_per_second": 132.65306122448982,
+    "damage_per_second_with_reload": 87.90383170548459,
+    "damage_per_shot": 58.5,
+    "damage_per_magazine": 702
+   }
+  }
+ }
+]

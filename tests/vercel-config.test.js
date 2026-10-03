@@ -124,12 +124,14 @@ describe('the /api allowlist', () => {
   const used = apiTemplates().flatMap(({ file, template }) => expand(pathPart(template)).map((api) => ({ file, api })))
 
   it('finds the endpoints the site really uses (the extraction itself must not rot)', () => {
-    expect(used.length).toBeGreaterThanOrEqual(22)
+    expect(used.length).toBeGreaterThanOrEqual(30)
     const paths = used.map((entry) => entry.api)
     for (const expected of [
       '/v1/assets/heroes', '/v1/assets/heroes/25', '/v1/assets/items', '/v1/assets/items/by-hero-id/25', '/v1/assets/ranks', '/v1/assets/map',
       '/v1/analytics/hero-stats', '/v1/analytics/item-stats', '/v1/analytics/kill-death-stats', '/v1/players/steam', '/v1/players/steam-search',
       '/v1/players/1042703572/match-history', '/v1/players/rank/distribution', '/v1/matches/109064028/metadata', '/v1/leaderboard/Europe/6', '/v2/patches',
+      '/v1/players/1042703572/mate-stats', '/v1/players/1042703572/enemy-stats', '/v1/matches/active', '/v1/matches/live/urls',
+      '/v1/crosshair/settings/code', '/v1/crosshair/settings/image', '/v1/crosshair/code/settings', '/v1/analytics/player-performance-curve',
     ]) {
       expect(paths, expected).toContain(expected)
     }
@@ -147,10 +149,13 @@ describe('the /api allowlist', () => {
 
   it.each([
     '/api', '/api/', '/api/proxy', '/api/anything', '/api/v1', '/api/v1/', '/api/v3/patches', '/api/v2/info', '/api/v1/info',
-    '/api/v1/sql', '/api/v1/commands', '/api/v1/matches/active', '/api/v1/matches/search', '/api/v1/matches/109064028',
+    '/api/v1/sql', '/api/v1/commands', '/api/v1/matches/active/raw', '/api/v1/matches/active/extra', '/api/v1/matches/live', '/api/v1/matches/live/urls/extra',
+    '/api/v1/matches/demo/live/query', '/api/v1/matches/search', '/api/v1/matches/109064028',
+    '/api/v1/crosshair', '/api/v1/crosshair/settings', '/api/v1/crosshair/code', '/api/v1/crosshair/code/image', '/api/v1/crosshair/settings/code/extra',
+    '/api/v1/players/1042703572/mmr-history', '/api/v1/players/1042703572/mate-stats/extra', '/api/v1/players/abc/enemy-stats',
     '/api/v1/matches/109064028/metadata/extra', '/api/v1/matches/abc/metadata', '/api/v1/players/1042703572/card',
     '/api/v1/players/1042703572', '/api/v1/players/abc/rank', '/api/v1/players/1042703572/rank/extra',
-    '/api/v1/analytics', '/api/v1/analytics/hero-stats/extra', '/api/v1/analytics/player-scoreboard', '/api/v1/analytics/sql',
+    '/api/v1/analytics', '/api/v1/analytics/hero-stats/extra', '/api/v1/analytics/player-scoreboard', '/api/v1/analytics/player-performance-curve/extra', '/api/v1/analytics/player-stats/metrics', '/api/v1/analytics/sql',
     '/api/v1/assets/heroes/abc', '/api/v1/assets/heroes/25/extra', '/api/v1/assets/items/a-b', '/api/v1/assets/items/a/b', '/api/v1/assets/sounds',
     '/api/v1/leaderboard', '/api/v1/leaderboard/Mars', '/api/v1/leaderboard/Europe/abc', '/api/v1/leaderboard/Europe/6/7',
     '/api/v1/leaderboard/europe', '/api/v2/patches/extra', '/api/v1/patches', '/api//v1/assets/heroes', '/api/v1//assets/heroes',
@@ -189,8 +194,8 @@ describe('the pages of the site', () => {
   const pages = appPaths()
 
   it('knows the routes of the app (the extraction must not rot)', () => {
-    expect(pages.length).toBeGreaterThanOrEqual(19)
-    for (const expected of ['/', '/heroes', '/meta', '/items', '/items/123', '/hero/123', '/player/123', '/match/123', '/draft', '/map', '/me']) expect(pages).toContain(expected)
+    expect(pages.length).toBeGreaterThanOrEqual(24)
+    for (const expected of ['/', '/heroes', '/meta', '/items', '/items/123', '/hero/123', '/player/123', '/match/123', '/draft', '/map', '/me', '/live', '/crosshair', '/calculator', '/versus', '/favorites']) expect(pages).toContain(expected)
   })
 
   it.each(pages)('opens %s with the app (a new route in App.jsx must be added to vercel.json too)', (pathname) => {
@@ -200,7 +205,7 @@ describe('the pages of the site', () => {
   })
 
   it('also opens them with a trailing slash', () => {
-    for (const pathname of ['/heroes/', '/meta/', '/matchups/', '/items/', '/hero/123/', '/match/109064028/', '/player/1042703572/']) {
+    for (const pathname of ['/heroes/', '/meta/', '/matchups/', '/items/', '/hero/123/', '/match/109064028/', '/player/1042703572/', '/live/', '/crosshair/', '/calculator/', '/versus/', '/favorites/']) {
       expect(resolve(pathname), pathname).toMatchObject({ kind: 'rewrite', file: '/index.html' })
     }
   })
@@ -209,6 +214,7 @@ describe('the pages of the site', () => {
     for (const pathname of [
       '/nonexistent', '/nonexistent/page', '/heroes/extra', '/Heroes', '/hero', '/hero/', '/hero/abc', '/hero/12/34', '/hero/-1', '/items/abc', '/items/12/extra', '/meta/extra',
       '/player', '/player/abc', '/match', '/match/abc', '/wp-admin', '/wp-login.php', '/.env', '/.git/config', '/admin', '/api/v1', '/404x',
+      '/live/extra', '/crosshair/extra', '/calculator/x', '/versus/1', '/favorites/x', '/Live', '/Crosshair',
       '/Meta', '/hero/1234567890123', '/static/x.js', '/assets', '/assets/missing.js',
     ]) {
       expect(resolve(pathname).kind, pathname).toBe('notFound')
@@ -235,7 +241,7 @@ describe('headers', () => {
   const SECURITY = [
     'content-security-policy', 'x-content-type-options', 'x-frame-options', 'referrer-policy', 'permissions-policy', 'cross-origin-opener-policy',
   ]
-  const everywhere = ['/', '/heroes', '/meta', '/hero/25', '/hero/26', '/match/109064028', '/assets/index-abc123.js', '/favicon.ico', '/api/v1/assets/heroes', '/api/v1/matches/109064028/metadata', '/api/ping', '/definitely-missing', '/api/v1/sql']
+  const everywhere = ['/', '/heroes', '/meta', '/hero/25', '/hero/26', '/match/109064028', '/live', '/crosshair', '/assets/index-abc123.js', '/favicon.ico', '/api/v1/assets/heroes', '/api/v1/matches/109064028/metadata', '/api/v1/crosshair/settings/image', '/api/ping', '/definitely-missing', '/api/v1/sql']
 
   it.each(everywhere)('puts the security headers on %s, once each', (pathname) => {
     const { headers } = resolve(pathname)
@@ -365,9 +371,15 @@ describe('headers', () => {
     function apiPaths() {
       return [
         '/api/v1/assets/heroes', '/api/v1/assets/items', '/api/v1/analytics/hero-stats', '/api/v1/players/steam', '/api/v1/players/1042703572/match-history',
+        '/api/v1/players/1042703572/mate-stats', '/api/v1/players/1042703572/enemy-stats', '/api/v1/analytics/player-performance-curve',
         '/api/v1/leaderboard/Europe', '/api/v1/leaderboard/Europe/6', '/api/v2/patches', '/api/v1/matches/109064028/metadata',
+        '/api/v1/matches/active', '/api/v1/matches/live/urls', '/api/v1/crosshair/settings/code', '/api/v1/crosshair/settings/image', '/api/v1/crosshair/code/settings',
       ]
     }
+
+    // Что отвечает на остальное — отдельным правилам: матч неизменен, «сейчас» живёт минуту, прицел зависит только от запроса
+    const LIVE = ['/api/v1/matches/active', '/api/v1/matches/live/urls']
+    const CROSSHAIR = ['/api/v1/crosshair/settings/code', '/api/v1/crosshair/settings/image', '/api/v1/crosshair/code/settings']
 
     it.each(allowed)('sets exactly one rule for %s (so that no rule can override another)', (pathname) => {
       expect(resolve(pathname).headers['cache-control'], pathname).toHaveLength(1)
@@ -382,8 +394,26 @@ describe('headers', () => {
     })
 
     it('keeps every other answer for ten minutes, as before', () => {
-      for (const pathname of allowed.filter((p) => !p.includes('/matches/'))) {
+      for (const pathname of allowed.filter((p) => !p.includes('/matches/') && !CROSSHAIR.includes(p))) {
         expect(last(resolve(pathname).headers['cache-control']), pathname).toBe('public, max-age=300, s-maxage=600, stale-while-revalidate=3600')
+      }
+    })
+
+    it('keeps the live matches for a minute only: they change all the time and the API itself refreshes them every two', () => {
+      for (const pathname of LIVE) {
+        const value = last(resolve(pathname).headers['cache-control'])
+        expect(value, pathname).toBe('public, max-age=60, s-maxage=60, stale-while-revalidate=60')
+        expect(Number(/s-maxage=(\d+)/.exec(value)[1])).toBeLessThanOrEqual(120)
+      }
+    })
+
+    it('keeps a crosshair for a day on the edge: the answer depends only on the request', () => {
+      for (const pathname of CROSSHAIR) {
+        const value = last(resolve(pathname).headers['cache-control'])
+        expect(value, pathname).toMatch(/s-maxage=86400/)
+        expect(value).toMatch(/^public,/)
+        // В браузере — недолго: в этом заголовке придёт и ответ-ошибка (400 на неверный код), а её нельзя запоминать надолго
+        expect(Number(/max-age=(\d+)/.exec(value)[1])).toBeLessThanOrEqual(3600)
       }
     })
 
