@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { INITIAL_VIEW, MIN_ZOOM, centerOn, clampView, panBy, zoomAt } from '../services/mapView.js';
+import { INITIAL_VIEW, MIN_ZOOM, centerOn, clampView, lerpView, panBy, zoomAt } from '../services/mapView.js';
 
 const WHEEL_SENSITIVITY = 0.0018; // множитель масштаба на пиксель прокрутки колеса
 const DRAG_THRESHOLD_PX = 5;      // сдвиг меньше этого — клик, а не перетаскивание
 const BUTTON_ZOOM = 1.6;
 const DOUBLE_CLICK_ZOOM = 2;
 const KEY_PAN_FRACTION = 0.15;
+const ANIMATION_MS = 200;       // сколько длится плавный переход (кнопки, клавиши, двойной щелчок, сброс)
+
+const easeOut = (p) => 1 - (1 - p) ** 3;
+const prefersReducedMotion = () => typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /**
  * Масштаб и перемещение карты: колесо, перетаскивание, щипок двумя пальцами, двойной клик и клавиши.
@@ -14,6 +18,9 @@ const KEY_PAN_FRACTION = 0.15;
  * перерисовываться React-ом на каждое движение пальца. В состоянии лежит одно значение — «приближено
  * ли»: от него зависят touch-action и кнопка сброса. Размер маркеров не растёт вместе с картой —
  * им задаётся обратный масштаб через переменную --inv.
+ *
+ * Колесо, перетаскивание и щипок отзываются сразу; кнопки, клавиши, двойной щелчок и сброс плавно переходят к
+ * нужному виду за 200 мс (без анимации, если в системе включено «уменьшить движение»). Любой жест прерывает переход.
  *
  * Движущихся слоёв два (картинка с линиями и слой крупных маркеров): между ними лежит canvas с мелкими
  * точками, который сам пересчитывает координаты — он подписывается на вид через onView.
@@ -33,6 +40,7 @@ export function useMapViewport({ onGesture, onView } = {}) {
   const viewListenerRef = useRef(onView);
   viewListenerRef.current = onView;
   const [zoomed, setZoomed] = useState(false);
+  const animation = useRef(null); // идущий переход: { frame, target }
 
   const sizeOf = () => viewportRef.current?.clientWidth ?? 0;
 
@@ -48,6 +56,37 @@ export function useMapViewport({ onGesture, onView } = {}) {
     setZoomed(clamped.scale > MIN_ZOOM + 0.001);
     viewListenerRef.current?.(clamped);
   }, []);
+
+  const cancelAnimation = useCallback(() => {
+    if (animation.current) cancelAnimationFrame(animation.current.frame);
+    animation.current = null;
+  }, []);
+
+  /** Плавный переход от текущего вида к `target`; быстрый повторный переход начинается с того, где остановился прежний. */
+  const animate = useCallback((target) => {
+    cancelAnimation();
+    if (prefersReducedMotion()) {
+      apply(target);
+      return;
+    }
+    const from = view.current;
+    const startedAt = performance.now();
+    const step = (now) => {
+      const progress = Math.min(1, (now - startedAt) / ANIMATION_MS);
+      apply(lerpView(from, target, easeOut(progress)));
+      animation.current = progress < 1 ? { frame: requestAnimationFrame(step), target } : null;
+    };
+    animation.current = { frame: requestAnimationFrame(step), target };
+  }, [apply, cancelAnimation]);
+
+  /**
+   * Приближение в `factor` раз вокруг точки окна (px, py) — плавно. Если прежний переход ещё идёт, отсчёт ведётся
+   * от его цели: клавиша, которую держат нажатой, приближает карту на столько нажатий, сколько их было.
+   */
+  const zoomAnimated = useCallback((factor, px, py) => {
+    const base = animation.current?.target ?? view.current;
+    animate(zoomAt(base, factor, px, py, sizeOf()));
+  }, [animate]);
 
   useEffect(() => {
     const el = viewportRef.current;
@@ -107,6 +146,7 @@ export function useMapViewport({ onGesture, onView } = {}) {
     function onPointerDown(event) {
       if (event.pointerType === 'mouse' && event.button !== 0) return;
       if (event.target.closest?.('[data-no-pan]')) return; // кнопки и карточка поверх карты
+      cancelAnimation();
       pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
       if (pointers.size === 1) {
         dragged.current = false;
@@ -127,6 +167,7 @@ export function useMapViewport({ onGesture, onView } = {}) {
       // Карта не приближена, а колесо крутят «вниз» — это прокрутка страницы, не мешаем ей
       if (view.current.scale <= MIN_ZOOM && delta > 0) return;
       event.preventDefault();
+      cancelAnimation();
       gesture();
       const [x, y] = local(event.clientX, event.clientY);
       apply(zoomAt(view.current, Math.exp(-delta * WHEEL_SENSITIVITY), x, y, sizeOf()));
@@ -136,7 +177,7 @@ export function useMapViewport({ onGesture, onView } = {}) {
       if (event.target.closest?.('[data-no-pan]')) return;
       gesture();
       const [x, y] = local(event.clientX, event.clientY);
-      apply(zoomAt(view.current, DOUBLE_CLICK_ZOOM, x, y, sizeOf()));
+      zoomAnimated(DOUBLE_CLICK_ZOOM, x, y);
     }
 
     function onKeyDown(event) {
@@ -146,19 +187,19 @@ export function useMapViewport({ onGesture, onView } = {}) {
       const isZoomed = view.current.scale > MIN_ZOOM + 0.001;
       switch (event.key) {
         case '+': case '=':
-          apply(zoomAt(view.current, BUTTON_ZOOM, size / 2, size / 2, size));
+          zoomAnimated(BUTTON_ZOOM, size / 2, size / 2);
           break;
         case '-': case '_':
-          apply(zoomAt(view.current, 1 / BUTTON_ZOOM, size / 2, size / 2, size));
+          zoomAnimated(1 / BUTTON_ZOOM, size / 2, size / 2);
           break;
         case '0':
-          apply(INITIAL_VIEW);
+          animate(INITIAL_VIEW);
           break;
         // Стрелки сдвигают карту, только пока она приближена: иначе они нужны странице для прокрутки
-        case 'ArrowLeft': if (!isZoomed) return; apply(panBy(view.current, step, 0, size)); break;
-        case 'ArrowRight': if (!isZoomed) return; apply(panBy(view.current, -step, 0, size)); break;
-        case 'ArrowUp': if (!isZoomed) return; apply(panBy(view.current, 0, step, size)); break;
-        case 'ArrowDown': if (!isZoomed) return; apply(panBy(view.current, 0, -step, size)); break;
+        case 'ArrowLeft': if (!isZoomed) return; cancelAnimation(); apply(panBy(view.current, step, 0, size)); break;
+        case 'ArrowRight': if (!isZoomed) return; cancelAnimation(); apply(panBy(view.current, -step, 0, size)); break;
+        case 'ArrowUp': if (!isZoomed) return; cancelAnimation(); apply(panBy(view.current, 0, step, size)); break;
+        case 'ArrowDown': if (!isZoomed) return; cancelAnimation(); apply(panBy(view.current, 0, -step, size)); break;
         default: return;
       }
       gesture();
@@ -183,6 +224,7 @@ export function useMapViewport({ onGesture, onView } = {}) {
     el.addEventListener('keydown', onKeyDown);
 
     return () => {
+      cancelAnimation();
       observer.disconnect();
       el.removeEventListener('pointerdown', onPointerDown);
       el.removeEventListener('wheel', onWheel);
@@ -192,24 +234,24 @@ export function useMapViewport({ onGesture, onView } = {}) {
       window.removeEventListener('pointerup', onPointerUp);
       window.removeEventListener('pointercancel', onPointerUp);
     };
-  }, [apply]);
+  }, [apply, animate, cancelAnimation, zoomAnimated]);
 
   const zoomBy = useCallback((factor) => {
     const size = sizeOf();
     gestureRef.current?.();
-    apply(zoomAt(view.current, factor, size / 2, size / 2, size));
-  }, [apply]);
+    zoomAnimated(factor, size / 2, size / 2);
+  }, [zoomAnimated]);
 
   const reset = useCallback(() => {
     gestureRef.current?.();
-    apply(INITIAL_VIEW);
-  }, [apply]);
+    animate(INITIAL_VIEW);
+  }, [animate]);
 
   /** Подводит камеру к точке карты (0..1). */
   const focusOn = useCallback((x, y, scale) => {
     gestureRef.current?.();
-    apply(centerOn(x, y, scale, sizeOf()));
-  }, [apply]);
+    animate(centerOn(x, y, scale, sizeOf()));
+  }, [animate]);
 
   const wasDragged = useCallback(() => dragged.current, []);
 

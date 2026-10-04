@@ -32,6 +32,15 @@ export function panBy(view, dx, dy, size) {
   return clampView({ ...view, x: view.x + dx, y: view.y + dy }, size);
 }
 
+/**
+ * Вид на пути от `from` к `to` при прогрессе `progress` (0..1): масштаб меняется в геометрической прогрессии
+ * (приближение «равномерно» на глаз), сдвиг — линейно.
+ */
+export function lerpView(from, to, progress) {
+  const p = Math.min(1, Math.max(0, progress));
+  return { scale: from.scale * (to.scale / from.scale) ** p, x: from.x + (to.x - from.x) * p, y: from.y + (to.y - from.y) * p };
+}
+
 /** Центрирует вид на точке мира (0..1) при заданном масштабе. */
 export function centerOn(rx, ry, scale, size) {
   return clampView({ scale, x: size / 2 - rx * size * scale, y: size / 2 - ry * size * scale }, size);

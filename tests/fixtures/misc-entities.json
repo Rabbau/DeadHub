@@ -1,0 +1,78 @@
+[
+  {
+    "class_name": "citadel_item_powerup_spawner",
+    "id": 4172910958,
+    "initial_spawn_time": 300,
+    "spawn_interval": 300
+  },
+  {
+    "class_name": "citadel_item_powerup_spawner_bounty_runes",
+    "id": 2488686909,
+    "initial_spawn_time": -1,
+    "respawn_time": 9999999
+  },
+  {
+    "class_name": "citadel_breakable_prop_wooden_crate",
+    "id": 3986897915,
+    "initial_spawn_time": 180,
+    "respawn_time": 180
+  },
+  {
+    "class_name": "citadel_breakable_prop_tough_crate",
+    "id": 202631964,
+    "initial_spawn_time": 180,
+    "respawn_time": 180
+  },
+  {
+    "class_name": "citadel_breakable_bell_chinatown",
+    "id": 1755924652,
+    "initial_spawn_time": 0,
+    "respawn_time": 5
+  },
+  {
+    "class_name": "xp_orb",
+    "id": 2222749624
+  },
+  {
+    "class_name": "neutral_camp_vaults",
+    "id": 176907887,
+    "initial_spawn_delay_in_seconds": 480,
+    "spawn_interval_in_seconds": 300,
+    "initial_spawn_delay_seconds": 480
+  },
+  {
+    "class_name": "neutral_camp_weak",
+    "id": 3966169273,
+    "initial_spawn_delay_in_seconds": 120,
+    "spawn_interval_in_seconds": 85,
+    "initial_spawn_delay_seconds": 120
+  },
+  {
+    "class_name": "neutral_camp_medium",
+    "id": 806615399,
+    "initial_spawn_delay_in_seconds": 300,
+    "spawn_interval_in_seconds": 290,
+    "initial_spawn_delay_seconds": 300
+  },
+  {
+    "class_name": "neutral_camp_strong",
+    "id": 811125052,
+    "initial_spawn_delay_in_seconds": 480,
+    "spawn_interval_in_seconds": 335,
+    "initial_spawn_delay_seconds": 480
+  },
+  {
+    "class_name": "neutral_camp_midboss",
+    "id": 911084663,
+    "initial_spawn_delay_in_seconds": 0,
+    "spawn_interval_in_seconds": 420,
+    "initial_spawn_delay_seconds": 0
+  },
+  {
+    "class_name": "neutral_camp_bug",
+    "id": 992563467,
+    "initial_spawn_delay_in_seconds": 120,
+    "spawn_interval_in_seconds": 120,
+    "initial_spawn_delay_seconds": 120
+  }
+]

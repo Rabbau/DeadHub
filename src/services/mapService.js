@@ -73,6 +73,37 @@ export const PRESETS = [
   { id: 'clear', layers: [] },
 ];
 
+// ── Уровни и время матча ──────────────────────────────────────────
+
+/** Ниже этой высоты (мировых единиц) объект считается подземным: туннели и подвалы лежат на z от −640 до −32, улицы — выше. */
+export const UNDERGROUND_Z = -20;
+
+/** Какие объекты показывать: все, только уличные или только подземные. */
+export const LEVELS = ['all', 'street', 'under'];
+
+/** Предел шкалы времени матча, секунд: в обычной игре дальше сорока минут карта уже ничем не меняется. */
+export const CLOCK_MAX = 2400;
+
+export function levelMatches(level, item) {
+  if (level === 'street') return !item.u;
+  if (level === 'under') return Boolean(item.u);
+  return true;
+}
+
+/** Уровень из адреса: `?level=under`; всё остальное — «все». */
+export function levelFromSearch(params) {
+  const value = params.get('level');
+  return value === 'street' || value === 'under' ? value : 'all';
+}
+
+/** Время матча из адреса: `?t=480` (секунды). Без параметра или с мусором — null: таймер выключен. */
+export function clockFromSearch(params) {
+  const text = params.get('t');
+  if (text === null || text.trim() === '') return null; // Number('') — это нуль, а пустое значение «таймер выключен»
+  const value = Number(text);
+  return Number.isFinite(value) && value >= 0 && value <= CLOCK_MAX ? Math.round(value) : null;
+}
+
 /** Слои в каноническом порядке, только известные и без повторов. */
 export function normalizeLayers(ids) {
   const wanted = new Set(Array.isArray(ids) ? ids : []);
@@ -104,6 +135,14 @@ export function searchForLayers(ids) {
 export function activePreset(ids) {
   const key = normalizeLayers(ids).join(',');
   return PRESETS.find((p) => normalizeLayers(p.layers).join(',') === key)?.id ?? null;
+}
+
+/** Всё состояние карты в параметры адреса: слои, уровень, время матча. Лишнего в адресе нет: значения по умолчанию опускаются. */
+export function searchForState({ layers, level = 'all', clock = null }) {
+  const params = { ...searchForLayers(layers) };
+  if (level === 'street' || level === 'under') params.level = level;
+  if (Number.isFinite(clock) && clock >= 0) params.t = String(Math.min(CLOCK_MAX, Math.round(clock)));
+  return params;
 }
 
 // ── Разбор ответа /v1/assets/map ──────────────────────────────────
@@ -197,6 +236,9 @@ export function slimMap(raw) {
   const toRel = (x, y) => [round4((x + radius) / (2 * radius)), round4((radius - y) / (2 * radius))];
   const hasXY = (list) => Array.isArray(list) && isNum(list[0]) && isNum(list[1]);
 
+  // Высота объекта: из неё видно, что он под землёй (туннели, подвалы)
+  const isUnder = (e) => Array.isArray(e?.position) && isNum(e.position[2]) && e.position[2] < UNDERGROUND_Z;
+
   // Готовые left/top из API, иначе считаем по мировым координатам
   const pointOf = (e) => {
     if (isNum(e?.left_relative) && isNum(e?.top_relative)) return [round4(e.left_relative), round4(e.top_relative)];
@@ -207,7 +249,7 @@ export function slimMap(raw) {
   const points = (rows, extra) => (Array.isArray(rows) ? rows : [])
     .map((e) => {
       const p = pointOf(e);
-      return p ? { x: p[0], y: p[1], ...(extra ? extra(e) : null) } : null;
+      return p ? { x: p[0], y: p[1], ...(isUnder(e) ? { u: 1 } : null), ...(extra ? extra(e) : null) } : null;
     })
     .filter(Boolean);
 
@@ -227,8 +269,9 @@ export function slimMap(raw) {
     if (!p || !camps[camp.kind]) return;
     const id = String(camp.name || '');
     const landmark = landmarkOf({ id });
-    if (landmark) camps.landmarks.push({ id, landmark, x: p[0], y: p[1] });
-    else camps[camp.kind].push({ id, x: p[0], y: p[1] });
+    const under = isUnder(camp) ? { u: 1 } : null;
+    if (landmark) camps.landmarks.push({ id, landmark, x: p[0], y: p[1], ...under });
+    else camps[camp.kind].push({ id, x: p[0], y: p[1], ...under });
   });
 
   const ziplines = (Array.isArray(raw?.zipline_paths) ? raw.zipline_paths : [])
@@ -291,6 +334,92 @@ const LANE_COLOR_NAMES = { '#f1cc30': 'yellow', '#29b1cc': 'blue', '#59b247': 'g
 
 export function laneColorName(color) {
   return LANE_COLOR_NAMES[String(color || '').toLowerCase()] ?? null;
+}
+
+// ── Таймеры появления ─────────────────────────────────────────────
+
+/** Откуда брать время появления: класс записи в /v1/assets/misc-entities. */
+const TIMER_CLASSES = {
+  weak: 'neutral_camp_weak',
+  medium: 'neutral_camp_medium',
+  strong: 'neutral_camp_strong',
+  vault: 'neutral_camp_vaults',
+  crates: 'citadel_breakable_prop_wooden_crate',
+  runes: 'citadel_item_powerup_spawner',
+};
+
+/** Строки таймеров в порядке показа; у `runes` на карте точек нет — только строка таблицы. */
+export const TIMER_KEYS = Object.keys(TIMER_CLASSES);
+
+/** Какой таймер управляет слоем: до первого появления слой на карте приглушён. */
+export const SPAWN_GROUP = {
+  camp_weak: 'weak',
+  camp_medium: 'medium',
+  camp_strong: 'strong',
+  camp_vault: 'vault',
+  landmarks: 'vault',
+  crates: 'crates',
+  tough_crates: 'crates',
+  statues: 'crates',
+};
+
+const firstNumber = (row, keys) => {
+  const key = keys.find((name) => isNum(row[name]) && row[name] >= 0);
+  return key ? row[key] : null;
+};
+
+/**
+ * Время появления из ответа /v1/assets/misc-entities (105 записей, 4 КБ): первое появление и интервал, секунды.
+ * Названия полей в записях разных видов разные (у лагерей — *_in_seconds, у ящиков — *_time), поэтому берём первое найденное.
+ * Чего в ответе нет, того нет и в результате: подставлять числа из головы нельзя.
+ * @param {any[]} rows
+ * @returns {Record<string, { first: number|null, every: number|null }>}
+ */
+export function slimTimers(rows) {
+  const byClass = new Map((Array.isArray(rows) ? rows : []).map((row) => [row?.class_name, row]));
+  const timers = {};
+  Object.entries(TIMER_CLASSES).forEach(([key, className]) => {
+    const row = byClass.get(className);
+    if (!row) return;
+    const first = firstNumber(row, ['initial_spawn_delay_in_seconds', 'initial_spawn_delay_seconds', 'initial_spawn_time']);
+    const every = firstNumber(row, ['spawn_interval_in_seconds', 'spawn_interval', 'respawn_time']);
+    if (first !== null || every !== null) timers[key] = { first, every };
+  });
+  return timers;
+}
+
+/** Слои, которые к моменту `clock` ещё не появились (null — таймер выключен, приглушать нечего). */
+export function pendingLayers(clock, timers) {
+  const pending = new Set();
+  if (clock === null || !timers) return pending;
+  Object.entries(SPAWN_GROUP).forEach(([layerId, key]) => {
+    const first = timers[key]?.first;
+    if (isNum(first) && clock < first) pending.add(layerId);
+  });
+  return pending;
+}
+
+/**
+ * Моменты, когда на карте появляется что-то новое, по возрастанию: для быстрых переходов по шкале времени.
+ * У усилений на карте точек нет, поэтому их момент не включается.
+ * @param {Record<string, { first: number|null }>|null} timers
+ * @returns {Array<{ at: number, keys: string[] }>}
+ */
+export function spawnTicks(timers) {
+  const onMap = new Set(Object.values(SPAWN_GROUP));
+  const byTime = new Map();
+  TIMER_KEYS.forEach((key) => {
+    const first = timers?.[key]?.first;
+    if (!onMap.has(key) || !isNum(first)) return;
+    byTime.set(first, [...(byTime.get(first) ?? []), key]);
+  });
+  return [...byTime.entries()].sort((a, b) => a[0] - b[0]).map(([at, keys]) => ({ at, keys }));
+}
+
+/** «7:05» — секунды в минуты и секунды. */
+export function formatClock(seconds) {
+  const total = Math.max(0, Math.round(Number(seconds) || 0));
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
 }
 
 // ── Тепловая карта убийств и смертей ──────────────────────────────

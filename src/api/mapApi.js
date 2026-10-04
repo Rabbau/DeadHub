@@ -1,6 +1,6 @@
 import { httpGet } from './httpClient.js';
 import { ANALYTICS_API_BASE, ASSETS_API_BASE } from './config.js';
-import { HEAT_PHASES, slimHeat, slimMap } from '../services/mapService.js';
+import { HEAT_PHASES, slimHeat, slimMap, slimTimers } from '../services/mapService.js';
 import { DEFAULT_FILTERS, filtersKey, toQueryString, toStatsParams, withNormalMode } from '../services/statsFilters.js';
 
 // Ключи с суффиксом формата меняем, когда меняется облегчённый вид данных. Карта меняется только с обновлением
@@ -8,6 +8,7 @@ import { DEFAULT_FILTERS, filtersKey, toQueryString, toStatsParams, withNormalMo
 // и с лимитом запросов, поэтому держим данные в кеше долго.
 const MAP_TTL_MS = 6 * 60 * 60 * 1000;
 const HEAT_TTL_MS = 3 * 60 * 60 * 1000;
+const TIMERS_TTL_MS = 6 * 60 * 60 * 1000;
 
 /**
  * Карта города: радиус, картинки миникарты, объекты, зиплайны, лагеря и интерактивные сущности.
@@ -15,9 +16,21 @@ const HEAT_TTL_MS = 3 * 60 * 60 * 1000;
  */
 export function fetchMap() {
   return httpGet(`${ASSETS_API_BASE}/v1/assets/map`, {
-    cacheKey: 'map_v1',
+    cacheKey: 'map_v2',
     ttl: MAP_TTL_MS,
     transform: slimMap,
+  });
+}
+
+/**
+ * Время появления лагерей, ящиков и усилений (в секундах матча) — из конфигурации игры. Ответ — 105 записей, 4 КБ,
+ * в кеш уходит несколько чисел (см. slimTimers). Нужен только странице карты, и только для таймера и подсказок.
+ */
+export function fetchSpawnTimers() {
+  return httpGet(`${ASSETS_API_BASE}/v1/assets/misc-entities`, {
+    cacheKey: 'map_timers_v1',
+    ttl: TIMERS_TTL_MS,
+    transform: slimTimers,
   });
 }
 

@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import en from '../src/i18n/locales/en.js'
 import ru from '../src/i18n/locales/ru.js'
 import { hasTranslation } from '../src/i18n/index.js'
-import { HEAT_PHASES, LAYERS, PRESETS, SHOP_KINDS } from '../src/services/mapService.js'
+import { HEAT_PHASES, LAYERS, LEVELS, PRESETS, SHOP_KINDS, TIMER_KEYS } from '../src/services/mapService.js'
 import { MODES, RANK_PRESETS } from '../src/services/statsFilters.js'
 import { GROUP_ORDER, SEARCH_PAGES } from '../src/services/searchService.js'
 import { HOME_SECTIONS } from '../src/services/homeService.js'
@@ -59,6 +59,8 @@ describe('locales', () => {
     ;['guardian', 'walker', 'patron'].forEach((k) => need.push(`map.objective.${k}`))
     ;['yellow', 'blue', 'green', 'left', 'center', 'right'].forEach((k) => need.push(`map.lane.${k}`))
     ;[0, 1].forEach((k) => need.push(`map.side.${k}`))
+    LEVELS.forEach((k) => need.push(`map.level.${k}`))
+    TIMER_KEYS.forEach((k) => need.push(`map.timers.rows.${k}`))
     SHOP_KINDS.forEach((k) => need.push(`map.shopKind.${k}`))
     ;['spawn', 'pad'].forEach((k) => need.push(`map.urnKind.${k}`))
     ;['bellTower', 'sunkenPlaza'].forEach((k) => need.push(`map.landmark.${k}.name`, `map.landmark.${k}.hint`))

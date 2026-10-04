@@ -1,16 +1,25 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BUTTON_ZOOM, useMapViewport } from '../../hooks/useMapViewport';
+import { useMapTrace } from '../../hooks/useMapTrace';
 import { useTranslation } from '../../hooks/useTranslation';
-import { LAYERS, heatColor, heatLevel, heatMax, laneColors } from '../../services/mapService';
-import { describePin, pinClass, pinColor } from './pinInfo';
+import { LAYERS, heatColor, heatLevel, heatMax, laneColors, levelMatches } from '../../services/mapService';
+import { iconOf } from '../../services/mapIcons';
+import { MapGround, MapTunnels } from './MapBase';
+import { iconImage, onIconLoaded } from './iconCache';
+import { describePin, pinClass, pinStyle } from './pinInfo';
 
 const LAYER_BY_ID = Object.fromEntries(LAYERS.map((layer) => [layer.id, layer]));
 
 const DOT_RADIUS = 3.4;       // радиус мелкой точки, CSS-пиксели
+const BADGE_RADIUS = 10;      // радиус значка, в который точка превращается при приближении
+const ICON_ZOOM = 2.2;        // с какого масштаба мелкие точки рисуются значками
 const HIT_RADIUS = 9;         // насколько близко к точке нужно навести мышь
 const HIT_RADIUS_TOUCH = 14;  // и палец
+const FADED_ALPHA = 0.28;     // прозрачность объектов, которые ещё не появились (таймер матча)
 const OUTLINE = '#060709';
+const BADGE_FILL = 'rgba(11, 10, 9, 0.92)';
 const RING = '#f3f4ed';
+const TAU = Math.PI * 2;
 
 /** Цвет слоя в виде, понятном canvas: var(--red) → #ff4b78. */
 function cssColor(styles, value) {
@@ -18,15 +27,17 @@ function cssColor(styles, value) {
   return match ? styles.getPropertyValue(match[1]).trim() || '#fff' : value;
 }
 
-/** Крупные маркеры одного слоя. Перерисовываются, только если изменился слой или выбранный в нём маркер. */
-const Pins = memo(function Pins({ layer, items, selectedIndex }) {
+/** Крупные маркеры одного слоя. Перерисовываются, только если изменился слой, выбранный в нём маркер, уровень или время матча. */
+const Pins = memo(function Pins({ layer, items, selectedIndex, level, pending }) {
   return items.map((item, index) => (
-    <span
-      key={index}
-      data-pin={`${layer.id}:${index}`}
-      className={pinClass(layer, item, index === selectedIndex)}
-      style={{ left: `${item.x * 100}%`, top: `${item.y * 100}%`, '--c': pinColor(layer, item) }}
-    />
+    levelMatches(level, item) ? (
+      <span
+        key={index}
+        data-pin={`${layer.id}:${index}`}
+        className={`${pinClass(layer, item, index === selectedIndex)}${pending ? ' is-pending' : ''}`}
+        style={{ left: `${item.x * 100}%`, top: `${item.y * 100}%`, ...pinStyle(layer, item) }}
+      />
+    ) : null
   ));
 });
 
@@ -56,35 +67,43 @@ const HeatCanvas = memo(function HeatCanvas({ heat, metric }) {
   return <canvas ref={ref} className="map-heat" width={size} height={size} aria-hidden="true" />;
 });
 
-/** Выбранный маркер → слой и сам объект (или null, если слой выключен или маркера нет). */
-function resolvePin(map, visible, key) {
+/** Выбранный маркер → слой и сам объект (или null, если слой выключен, маркера нет или он на другом уровне). */
+function resolvePin(map, visible, key, level) {
   if (!key) return null;
   const [layerId, index] = key.split(':');
   const layer = LAYER_BY_ID[layerId];
   const item = map.layers[layerId]?.[Number(index)];
-  return layer && item && visible.has(layerId) ? { layer, item, index: Number(index) } : null;
+  return layer && item && visible.has(layerId) && levelMatches(level, item) ? { layer, item, index: Number(index) } : null;
 }
 
 /**
- * Карта города: миникарта, слои и маркеры с масштабированием и перетаскиванием.
+ * Карта города: векторный контур миникарты, слои и маркеры с масштабированием и перетаскиванием.
  *
  * Слои устроены по-разному ради скорости. Крупных маркеров немного (до сотни) — это элементы DOM
  * со своей формой и цветом. Мелких точек бывает до тысячи (ящики, статуи) — их рисует один canvas,
- * иначе каждый шаг масштабирования пересчитывал бы стили у сотен элементов. Слои без данных
- * (старая версия клиента) просто пусты.
+ * иначе каждый шаг масштабирования пересчитывал бы стили у сотен элементов; при приближении точки на
+ * canvas превращаются в такие же значки, как у крупных маркеров. Слои без данных (старая версия
+ * клиента) просто пусты.
  *
- * @param {{ map: any, visible: Set<string>, heat: any, heatMetric: 'deaths'|'kills', selected: string|null, onSelect: (key: string|null) => void }} props
+ * @param {{
+ *   map: any, visible: Set<string>, level: 'all'|'street'|'under', pending: Set<string>, timers: any,
+ *   heat: any, heatMetric: 'deaths'|'kills', selected: string|null, onSelect: (key: string|null) => void, children?: any,
+ * }} props
+ *   pending — слои, которые к выбранному времени матча ещё не появились (рисуются приглушёнными);
+ *   children — то, что стоит под картой (шкала времени)
  */
-function MapCanvas({ map, visible, heat, heatMetric, selected, onSelect }) {
+function MapCanvas({ map, visible, level, pending, timers, heat, heatMetric, selected, onSelect, children }) {
   const t = useTranslation();
   const [hover, setHover] = useState(null); // { key, x, y, r } — центр маркера в координатах окна
-  const [imageState, setImageState] = useState('loading'); // loading | ready | failed
+  const [imageState, setImageState] = useState('loading'); // запасная растровая картинка: loading | ready | failed
   const canvasRef = useRef(null);
   const drawRef = useRef(() => {});
   const dotsRef = useRef([]);        // [{ layer, items }] — мелкие точки включённых слоёв
   const paletteRef = useRef({});     // id слоя → цвет
   const chosenDotRef = useRef(null); // выбранная мелкая точка
   const metricsRef = useRef({ size: 0, scale: 1 });
+  const stateRef = useRef({ level, pending }); // то, что нужно рисующей функции и поиску точки под указателем
+  stateRef.current = { level, pending };
 
   const clearHover = useCallback(() => setHover(null), []);
   const redraw = useCallback(() => drawRef.current(), []);
@@ -94,10 +113,19 @@ function MapCanvas({ map, visible, heat, heatMetric, selected, onSelect }) {
   });
   const colors = useMemo(() => laneColors(map), [map]);
 
-  const chosen = resolvePin(map, visible, selected);
-  const hovered = hover ? resolvePin(map, visible, hover.key) : null;
-  const card = chosen ? describePin(chosen.layer.id, chosen.item, t, colors) : null;
-  const tip = hovered ? describePin(hovered.layer.id, hovered.item, t, colors) : null;
+  // Векторный контур города и туннелей; не вышло (нет CORS, картинка недоступна) — остаётся растр
+  const ground = useMapTrace(map.images.base, 'ground');
+  const wantMid = visible.has('tunnels_mid') || level === 'under';
+  const wantRat = visible.has('tunnels_rat') || level === 'under';
+  const tunnelsMid = useMapTrace(map.images.tunnelsMid, 'tunnels', wantMid);
+  const tunnelsRat = useMapTrace(map.images.tunnelsRat, 'tunnels', wantRat);
+  const rawBase = ground.status === 'failed';
+  const baseLoading = ground.status === 'loading' || (rawBase && imageState === 'loading');
+
+  const chosen = resolvePin(map, visible, selected, level);
+  const hovered = hover ? resolvePin(map, visible, hover.key, level) : null;
+  const card = chosen ? describePin(chosen.layer.id, chosen.item, t, colors, timers) : null;
+  const tip = hovered ? describePin(hovered.layer.id, hovered.item, t, colors, timers) : null;
 
   const dotLayers = useMemo(
     () => LAYERS.filter((layer) => layer.kind === 'dot' && visible.has(layer.id)).map((layer) => ({ layer, items: map.layers[layer.id] })),
@@ -105,6 +133,9 @@ function MapCanvas({ map, visible, heat, heatMetric, selected, onSelect }) {
   );
   dotsRef.current = dotLayers;
   chosenDotRef.current = chosen && chosen.layer.kind === 'dot' ? chosen : null;
+
+  /** Радиус мелкой точки при текущем масштабе: точка или значок. */
+  const dotRadius = () => (viewRef.current.scale >= ICON_ZOOM ? BADGE_RADIUS : DOT_RADIUS) * metricsRef.current.scale;
 
   // ── Мелкие точки на canvas ──────────────────────────────────────
   drawRef.current = () => {
@@ -131,30 +162,67 @@ function MapCanvas({ map, visible, heat, heatMetric, selected, onSelect }) {
     context.clearRect(0, 0, size, size);
     const { scale, x, y } = viewRef.current;
     const world = size * scale;
-    const radius = DOT_RADIUS * metrics.scale;
-    context.lineWidth = 1;
-    context.strokeStyle = OUTLINE;
+    const badges = scale >= ICON_ZOOM;
+    const radius = dotRadius();
+    const { level: shownLevel, pending: faded } = stateRef.current;
+    const inside = (px, py) => px >= -radius && px <= size + radius && py >= -radius && py <= size + radius;
 
     dotsRef.current.forEach(({ layer, items }) => {
-      context.fillStyle = paletteRef.current[layer.id] ?? '#fff';
-      context.beginPath();
+      context.globalAlpha = faded.has(layer.id) ? FADED_ALPHA : 1;
+      const color = paletteRef.current[layer.id] ?? '#fff';
+
+      if (!badges) {
+        context.fillStyle = color;
+        context.lineWidth = 1;
+        context.strokeStyle = OUTLINE;
+        context.beginPath();
+        items.forEach((item) => {
+          if (!levelMatches(shownLevel, item)) return;
+          const px = item.x * world + x;
+          const py = item.y * world + y;
+          if (!inside(px, py)) return;
+          context.moveTo(px + radius, py);
+          context.arc(px, py, radius, 0, TAU);
+        });
+        context.fill();
+        context.stroke();
+        return;
+      }
+
+      // Приближено: значок на тёмной подложке в кольце цвета слоя, как у крупных маркеров
+      const spec = iconOf(layer.id);
+      const image = spec ? iconImage(spec.src) : null;
+      const side = radius * 2 * ((spec?.fit ?? 66) / 100);
+      context.lineWidth = 2;
       items.forEach((item) => {
+        if (!levelMatches(shownLevel, item)) return;
         const px = item.x * world + x;
         const py = item.y * world + y;
-        if (px < -radius || px > size + radius || py < -radius || py > size + radius) return;
-        context.moveTo(px + radius, py);
-        context.arc(px, py, radius, 0, Math.PI * 2);
+        if (!inside(px, py)) return;
+        context.beginPath();
+        context.arc(px, py, radius - 1, 0, TAU);
+        context.fillStyle = BADGE_FILL;
+        context.fill();
+        if (image) {
+          context.save();
+          context.clip();
+          context.drawImage(image, px - side / 2, py - side / 2, side, side);
+          context.restore();
+        }
+        context.strokeStyle = color;
+        context.beginPath();
+        context.arc(px, py, radius - 1, 0, TAU);
+        context.stroke();
       });
-      context.fill();
-      context.stroke();
     });
+    context.globalAlpha = 1;
 
     const picked = chosenDotRef.current;
     if (picked) {
       context.strokeStyle = RING;
       context.lineWidth = 2;
       context.beginPath();
-      context.arc(picked.item.x * world + x, picked.item.y * world + y, radius + 4, 0, Math.PI * 2);
+      context.arc(picked.item.x * world + x, picked.item.y * world + y, radius + 4, 0, TAU);
       context.stroke();
     }
   };
@@ -163,7 +231,10 @@ function MapCanvas({ map, visible, heat, heatMetric, selected, onSelect }) {
     const styles = getComputedStyle(viewportRef.current);
     paletteRef.current = Object.fromEntries(dotLayers.map(({ layer }) => [layer.id, cssColor(styles, layer.color)]));
     redraw();
-  }, [dotLayers, chosen?.layer.id, chosen?.index, redraw, viewportRef]);
+  }, [dotLayers, level, pending, chosen?.layer.id, chosen?.index, redraw, viewportRef]);
+
+  // Значки грузятся по требованию: как только очередной готов, точки на canvas перерисовываются
+  useEffect(() => onIconLoaded(redraw), [redraw]);
 
   /** Ближайшая к точке экрана мелкая точка (координаты окна), если она в пределах досягаемости. */
   const dotAt = (clientX, clientY, coarse) => {
@@ -174,16 +245,19 @@ function MapCanvas({ map, visible, heat, heatMetric, selected, onSelect }) {
     const world = rect.width * scale;
     const px = clientX - rect.left;
     const py = clientY - rect.top;
+    const radius = dotRadius();
+    const reach = Math.max(coarse ? HIT_RADIUS_TOUCH : HIT_RADIUS, radius + (coarse ? 6 : 3));
     let best = null;
-    let bestDistance = (coarse ? HIT_RADIUS_TOUCH : HIT_RADIUS) ** 2;
+    let bestDistance = reach ** 2;
     dotsRef.current.forEach(({ layer, items }) => {
       items.forEach((item, index) => {
+        if (!levelMatches(stateRef.current.level, item)) return;
         const dx = item.x * world + x - px;
         const dy = item.y * world + y - py;
         const distance = dx * dx + dy * dy;
         if (distance <= bestDistance) { // при равенстве побеждает слой, нарисованный выше
           bestDistance = distance;
-          best = { key: `${layer.id}:${index}`, x: px + dx, y: py + dy, r: DOT_RADIUS * metricsRef.current.scale };
+          best = { key: `${layer.id}:${index}`, x: px + dx, y: py + dy, r: radius };
         }
       });
     });
@@ -229,7 +303,7 @@ function MapCanvas({ map, visible, heat, heatMetric, selected, onSelect }) {
     <div className="map-stage">
       <div
         ref={viewportRef}
-        className={`map-viewport${zoomed ? ' is-zoomed' : ''}${hover ? ' has-hover' : ''}`}
+        className={`map-viewport${zoomed ? ' is-zoomed' : ''}${hover ? ' has-hover' : ''}${level === 'under' ? ' is-under' : ''}`}
         style={{ touchAction: zoomed ? 'none' : 'pan-y' }}
         tabIndex={0}
         role="application"
@@ -240,7 +314,8 @@ function MapCanvas({ map, visible, heat, heatMetric, selected, onSelect }) {
         onKeyDown={handleKeyDown}
       >
         <div ref={worldRef} className="map-world">
-          {map.images.base && (
+          {ground.status === 'ready' && <MapGround shape={ground.shape} />}
+          {rawBase && map.images.base && (
             <img
               className="map-base"
               src={map.images.base}
@@ -250,17 +325,18 @@ function MapCanvas({ map, visible, heat, heatMetric, selected, onSelect }) {
               onError={() => setImageState('failed')}
             />
           )}
-          {visible.has('tunnels_mid') && map.images.tunnelsMid && (
-            <img className="map-tunnels" src={map.images.tunnelsMid} alt="" draggable={false} />
-          )}
-          {visible.has('tunnels_rat') && map.images.tunnelsRat && (
-            <img className="map-tunnels" src={map.images.tunnelsRat} alt="" draggable={false} />
-          )}
+          {wantMid && tunnelsMid.status === 'ready' && <MapTunnels shape={tunnelsMid.shape} color={LAYER_BY_ID.tunnels_mid.color} />}
+          {wantMid && tunnelsMid.status === 'failed' && <img className="map-tunnels" src={map.images.tunnelsMid} alt="" draggable={false} />}
+          {wantRat && tunnelsRat.status === 'ready' && <MapTunnels shape={tunnelsRat.shape} color={LAYER_BY_ID.tunnels_rat.color} />}
+          {wantRat && tunnelsRat.status === 'failed' && <img className="map-tunnels" src={map.images.tunnelsRat} alt="" draggable={false} />}
           {visible.has('heat') && heat && <HeatCanvas heat={heat} metric={heatMetric} />}
 
           <svg className="map-lines" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
             {visible.has('ziplines') && map.ziplines.map((line) => (
-              <path key={line.id} className="map-zipline" d={line.d} stroke={line.color} />
+              <g key={line.id}>
+                <path className="map-zipline map-zipline--casing" d={line.d} />
+                <path className="map-zipline" d={line.d} stroke={line.color} />
+              </g>
             ))}
             {link && (
               <line
@@ -283,6 +359,8 @@ function MapCanvas({ map, visible, heat, heatMetric, selected, onSelect }) {
               layer={layer}
               items={map.layers[layer.id]}
               selectedIndex={chosen?.layer.id === layer.id ? chosen.index : -1}
+              level={level}
+              pending={pending.has(layer.id)}
             />
           ))}
           {link && (
@@ -293,8 +371,8 @@ function MapCanvas({ map, visible, heat, heatMetric, selected, onSelect }) {
           )}
         </div>
 
-        {imageState === 'loading' && <div className="map-status"><div className="spinner" /></div>}
-        {imageState === 'failed' && <div className="map-status map-status--error">{t('map.imageError')}</div>}
+        {baseLoading && <div className="map-status"><div className="spinner" /></div>}
+        {rawBase && imageState === 'failed' && <div className="map-status map-status--error">{t('map.imageError')}</div>}
 
         <div className="map-controls" data-no-pan>
           <button type="button" className="map-btn" onClick={() => zoomBy(BUTTON_ZOOM)} aria-label={t('map.zoomIn')} title={t('map.zoomIn')}>+</button>
@@ -328,6 +406,7 @@ function MapCanvas({ map, visible, heat, heatMetric, selected, onSelect }) {
           </div>
         )}
       </div>
+      {children}
       <p className="map-help">{t('map.help')}<span className="map-help__keys">{t('map.helpKeys')}</span></p>
     </div>
   );

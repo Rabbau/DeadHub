@@ -47,3 +47,29 @@ describe('panBy and centerOn', () => {
     expect(mv.centerOn(0, 0, 4, S)).toEqual({ scale: 4, x: 0, y: 0 })
   })
 })
+
+describe('lerpView', () => {
+  const from = { scale: 1, x: 0, y: 0 }
+  const to = { scale: 4, x: -300, y: -120 }
+
+  it('starts at the first view and ends at the second', () => {
+    expect(mv.lerpView(from, to, 0)).toEqual(from)
+    expect(mv.lerpView(from, to, 1)).toEqual(to)
+  })
+
+  it('changes the scale geometrically (the same ratio per step) and the shift linearly', () => {
+    const mid = mv.lerpView(from, to, 0.5)
+    expect(mid.scale).toBeCloseTo(2, 9)
+    expect(mid.x).toBeCloseTo(-150, 9)
+    expect(mid.y).toBeCloseTo(-60, 9)
+  })
+
+  it('clamps the progress to 0..1', () => {
+    expect(mv.lerpView(from, to, -1)).toEqual(from)
+    expect(mv.lerpView(from, to, 7)).toEqual(to)
+  })
+
+  it('does not change anything between equal views', () => {
+    expect(mv.lerpView(to, to, 0.37)).toEqual(to)
+  })
+})

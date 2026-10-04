@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import raw from './fixtures/map.json'
+import timerRows from './fixtures/misc-entities.json'
 import * as ms from '../src/services/mapService.js'
 
 const near = (got, want, eps = 1e-6) => expect(Math.abs(got - want)).toBeLessThanOrEqual(eps)
@@ -209,5 +210,160 @@ describe('heat map', () => {
     expect(ms.heatMax(heat, 'deaths')).toBeGreaterThan(1)
     expect(ms.heatMax(heat, 'kills')).toBeGreaterThan(1)
     expect(Object.keys(ms.HEAT_PHASES)).toEqual(['all', 'early', 'mid', 'late'])
+  })
+})
+
+describe('levels', () => {
+  const map = ms.slimMap(raw)
+  const L = map.layers
+  const under = (items) => items.filter((item) => item.u).length
+
+  it('marks the objects below street level, and only them', () => {
+    expect(ms.UNDERGROUND_Z).toBeLessThan(0)
+    expect(under(L.teleporters)).toBe(4)
+    expect(under(L.shops)).toBe(2)
+    expect(under(L.landmarks)).toBe(2)
+    expect(under(L.objectives)).toBe(0) // у построек в ответе нет высоты — они на улице
+    expect(under(L.bells) + under(L.snacks) + under(L.ropes)).toBe(0)
+    expect(under(L.crates)).toBeGreaterThan(50)
+  })
+
+  it('writes the flag as u: 1 and leaves it off the street objects (the cache stays small)', () => {
+    expect(L.teleporters.every((item) => item.u === 1)).toBe(true)
+    expect(L.bells.every((item) => !('u' in item))).toBe(true)
+    expect(ms.slimMap({ entities: { crates: [{ position: [0, 0, -100] }, { position: [0, 0, 100] }, { position: [0, 0, -20] }] } }).layers.crates.map((c) => c.u))
+      .toEqual([1, undefined, undefined])
+  })
+
+  it('filters by level', () => {
+    expect(ms.levelMatches('all', { u: 1 })).toBe(true)
+    expect(ms.levelMatches('all', {})).toBe(true)
+    expect(ms.levelMatches('street', { u: 1 })).toBe(false)
+    expect(ms.levelMatches('street', {})).toBe(true)
+    expect(ms.levelMatches('under', { u: 1 })).toBe(true)
+    expect(ms.levelMatches('under', {})).toBe(false)
+  })
+
+  it('splits every point layer exactly between street and underground', () => {
+    ms.LAYERS.filter((layer) => layer.kind === 'pin' || layer.kind === 'dot').forEach((layer) => {
+      const items = L[layer.id]
+      const street = items.filter((item) => ms.levelMatches('street', item)).length
+      const deep = items.filter((item) => ms.levelMatches('under', item)).length
+      expect(street + deep, layer.id).toBe(items.length)
+    })
+  })
+
+  it('reads the level from the address, anything unknown means all', () => {
+    expect(ms.LEVELS).toEqual(['all', 'street', 'under'])
+    expect(ms.levelFromSearch(search('level=under'))).toBe('under')
+    expect(ms.levelFromSearch(search('level=street'))).toBe('street')
+    expect(ms.levelFromSearch(search('level=all'))).toBe('all')
+    expect(ms.levelFromSearch(search('level=attic'))).toBe('all')
+    expect(ms.levelFromSearch(search(''))).toBe('all')
+  })
+})
+
+describe('match clock in the address bar', () => {
+  it('reads seconds, and treats a missing or broken value as "clock off"', () => {
+    expect(ms.clockFromSearch(search('t=480'))).toBe(480)
+    expect(ms.clockFromSearch(search('t=0'))).toBe(0)
+    expect(ms.clockFromSearch(search('t=2400'))).toBe(ms.CLOCK_MAX)
+    expect(ms.clockFromSearch(search(''))).toBeNull()
+    expect(ms.clockFromSearch(search('t='))).toBeNull() // пустое значение — не нуль
+    expect(ms.clockFromSearch(search('t=abc'))).toBeNull()
+    expect(ms.clockFromSearch(search('t=-5'))).toBeNull()
+    expect(ms.clockFromSearch(search('t=99999'))).toBeNull()
+  })
+
+  it('rounds to whole seconds', () => {
+    expect(ms.clockFromSearch(search('t=12.6'))).toBe(13)
+  })
+
+  it('writes layers, level and clock together, leaving out the defaults', () => {
+    expect(ms.searchForState({ layers: ms.layersFromSearch(search('')) })).toEqual({})
+    expect(ms.searchForState({ layers: ['crates'], level: 'under', clock: 300 })).toEqual({ layers: 'crates', level: 'under', t: '300' })
+    expect(ms.searchForState({ layers: [], level: 'all', clock: null })).toEqual({ preset: 'clear' })
+    expect(ms.searchForState({ layers: ['crates'], level: 'attic', clock: NaN })).toEqual({ layers: 'crates' })
+    expect(ms.searchForState({ layers: ['crates'], clock: 0 })).toEqual({ layers: 'crates', t: '0' })
+    expect(ms.searchForState({ layers: ['crates'], clock: 99999 }).t).toBe(String(ms.CLOCK_MAX))
+  })
+
+  it('round-trips through the address', () => {
+    const state = { layers: ['objectives', 'camp_strong'], level: 'street', clock: 485 }
+    const params = new URLSearchParams(ms.searchForState(state))
+    expect(ms.layersFromSearch(params)).toEqual(state.layers)
+    expect(ms.levelFromSearch(params)).toBe('street')
+    expect(ms.clockFromSearch(params)).toBe(485)
+  })
+})
+
+describe('spawn timers', () => {
+  const timers = ms.slimTimers(timerRows)
+
+  it('reads the first spawn and the interval of camps, crates and power-ups', () => {
+    expect(timers).toEqual({
+      weak: { first: 120, every: 85 },
+      medium: { first: 300, every: 290 },
+      strong: { first: 480, every: 335 },
+      vault: { first: 480, every: 300 },
+      crates: { first: 180, every: 180 },
+      runes: { first: 300, every: 300 },
+    })
+  })
+
+  it('keeps only the timers the map shows, nothing else from the 105 records', () => {
+    expect(Object.keys(timers).sort()).toEqual([...ms.TIMER_KEYS].sort())
+  })
+
+  it('does not invent a time the response does not have', () => {
+    expect(ms.slimTimers([])).toEqual({})
+    expect(ms.slimTimers(null)).toEqual({})
+    expect(ms.slimTimers([{ class_name: 'neutral_camp_weak' }])).toEqual({})
+    expect(ms.slimTimers([{ class_name: 'neutral_camp_weak', initial_spawn_delay_in_seconds: -1, spawn_interval_in_seconds: 'x' }])).toEqual({})
+    expect(ms.slimTimers([{ class_name: 'neutral_camp_weak', spawn_interval_in_seconds: 60 }])).toEqual({ weak: { first: null, every: 60 } })
+  })
+
+  it('reads the alternative field names of other record kinds', () => {
+    expect(ms.slimTimers([{ class_name: 'citadel_breakable_prop_wooden_crate', initial_spawn_time: 90, respawn_time: 45 }]).crates).toEqual({ first: 90, every: 45 })
+  })
+
+  it('maps every timed layer to a timer that exists', () => {
+    Object.entries(ms.SPAWN_GROUP).forEach(([layerId, key]) => {
+      expect(ms.LAYER_IDS, layerId).toContain(layerId)
+      expect(ms.TIMER_KEYS, key).toContain(key)
+    })
+  })
+
+  it('dims exactly the layers that have not spawned by the chosen time', () => {
+    expect([...ms.pendingLayers(0, timers)].sort()).toEqual(['camp_medium', 'camp_strong', 'camp_vault', 'camp_weak', 'crates', 'landmarks', 'statues', 'tough_crates'])
+    expect([...ms.pendingLayers(150, timers)].sort()).toEqual(['camp_medium', 'camp_strong', 'camp_vault', 'crates', 'landmarks', 'statues', 'tough_crates'])
+    expect([...ms.pendingLayers(300, timers)].sort()).toEqual(['camp_strong', 'camp_vault', 'landmarks'])
+    expect([...ms.pendingLayers(480, timers)]).toEqual([])
+    expect([...ms.pendingLayers(2400, timers)]).toEqual([])
+  })
+
+  it('dims nothing while the clock is off or the timers are unknown', () => {
+    expect(ms.pendingLayers(null, timers).size).toBe(0)
+    expect(ms.pendingLayers(100, null).size).toBe(0)
+    expect(ms.pendingLayers(100, {}).size).toBe(0)
+  })
+
+  it('lists the moments when something new appears, in order, without the power-ups (they have no points on the map)', () => {
+    expect(ms.spawnTicks(timers)).toEqual([
+      { at: 120, keys: ['weak'] },
+      { at: 180, keys: ['crates'] },
+      { at: 300, keys: ['medium'] },
+      { at: 480, keys: ['strong', 'vault'] },
+    ])
+    expect(ms.spawnTicks(null)).toEqual([])
+  })
+
+  it('writes minutes and seconds', () => {
+    expect(ms.formatClock(0)).toBe('0:00')
+    expect(ms.formatClock(85)).toBe('1:25')
+    expect(ms.formatClock(485)).toBe('8:05')
+    expect(ms.formatClock(2400)).toBe('40:00')
+    expect(ms.formatClock(-4)).toBe('0:00')
+    expect(ms.formatClock('abc')).toBe('0:00')
   })
 })

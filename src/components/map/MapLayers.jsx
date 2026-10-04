@@ -1,10 +1,10 @@
 import { useTranslation } from '../../hooks/useTranslation';
 import { useHeroStore } from '../../store/heroStore';
 import { formatCompact } from '../../services/format';
-import { HEAT_PHASES, LAYERS, LAYER_GROUPS, heatColor, laneColors } from '../../services/mapService';
-import { pinClass, pinColor } from './pinInfo';
+import { HEAT_PHASES, LAYERS, LAYER_GROUPS, heatColor, laneColors, levelMatches } from '../../services/mapService';
+import { pinClass, pinStyle } from './pinInfo';
 
-// Как выглядит маркер слоя в списке: берём тот же класс, что и на карте, — образец не расходится с картой
+// Как выглядит маркер слоя в списке: берём тот же класс и тот же значок, что и на карте, — образец не расходится с картой
 const SAMPLE_ITEMS = {
   objectives: { type: 'walker', team: 0 },
   sentries: { team: 0 },
@@ -34,18 +34,20 @@ function Sample({ layer, colors }) {
   return (
     <span
       className={`${pinClass(layer, item, false)} map-pin--sample`}
-      style={{ '--c': pinColor(layer, item) }}
+      style={pinStyle(layer, item)}
       aria-hidden="true"
     />
   );
 }
 
-function layerCount(map, layer) {
-  if (layer.id === 'ziplines') return map.ziplines.length;
-  if (layer.id === 'tunnels_mid') return map.images.tunnelsMid ? null : 0;
-  if (layer.id === 'tunnels_rat') return map.images.tunnelsRat ? null : 0;
+/** Сколько объектов в слое всего и сколько из них на выбранном уровне (null — у слоя нет счёта: картинка, тепловая карта). */
+function layerCount(map, layer, level) {
+  if (layer.id === 'ziplines') return { total: map.ziplines.length, shown: map.ziplines.length };
+  if (layer.id === 'tunnels_mid') return map.images.tunnelsMid ? null : { total: 0, shown: 0 };
+  if (layer.id === 'tunnels_rat') return map.images.tunnelsRat ? null : { total: 0, shown: 0 };
   if (layer.kind === 'heat') return null;
-  return map.layers[layer.id]?.length ?? 0;
+  const items = map.layers[layer.id] ?? [];
+  return { total: items.length, shown: level === 'all' ? items.length : items.filter((item) => levelMatches(level, item)).length };
 }
 
 function HeatControls({ heat }) {
@@ -106,11 +108,12 @@ function HeatControls({ heat }) {
 }
 
 /**
- * Список слоёв по группам. У слоя с данными, которых нет в ответе API (старая версия клиента),
- * строки нет — чекбокс, включающий пустоту, только путал бы.
- * @param {{ map: any, visible: Set<string>, onToggle: (id: string) => void, heat: any }} props
+ * Список слоёв по группам. У слоя с данными, которых нет в ответе API (старая версия клиента), строки нет —
+ * чекбокс, включающий пустоту, только путал бы. Слой, в котором на выбранном уровне ничего нет, остаётся в списке,
+ * но приглушён: при переключении уровней строки не должны прыгать.
+ * @param {{ map: any, visible: Set<string>, level: 'all'|'street'|'under', onToggle: (id: string) => void, onSetMany: (ids: string[], on: boolean) => void, heat: any }} props
  */
-function MapLayers({ map, visible, onToggle, heat }) {
+function MapLayers({ map, visible, level, onToggle, onSetMany, heat }) {
   const t = useTranslation();
   const colors = laneColors(map);
 
@@ -118,23 +121,33 @@ function MapLayers({ map, visible, onToggle, heat }) {
     <div className="map-layers">
       {LAYER_GROUPS.map((group) => {
         const rows = LAYERS.filter((layer) => layer.group === group)
-          .map((layer) => ({ layer, count: layerCount(map, layer) }))
-          .filter((row) => row.count !== 0);
+          .map((layer) => ({ layer, count: layerCount(map, layer, level) }))
+          .filter((row) => row.count === null || row.count.total !== 0);
         if (rows.length === 0) return null;
+        const groupName = t(`map.groups.${group}`);
 
         return (
           <section key={group} className="map-layers__group">
-            <h3 className="map-layers__title">{t(`map.groups.${group}`)}</h3>
+            <div className="map-layers__head">
+              <h3 className="map-layers__title">{groupName}</h3>
+              {rows.length > 1 && (
+                <span className="map-layers__bulk">
+                  <button type="button" onClick={() => onSetMany(rows.map((row) => row.layer.id), true)} aria-label={t('map.groupAllLabel', { group: groupName })}>{t('map.groupAll')}</button>
+                  <button type="button" onClick={() => onSetMany(rows.map((row) => row.layer.id), false)} aria-label={t('map.groupNoneLabel', { group: groupName })}>{t('map.groupNone')}</button>
+                </span>
+              )}
+            </div>
             {rows.map(({ layer, count }) => {
               const on = visible.has(layer.id);
+              const empty = count !== null && count.shown === 0;
               return (
                 <div key={layer.id}>
-                  <label className={`map-layer${on ? ' is-on' : ''}`}>
+                  <label className={`map-layer${on ? ' is-on' : ''}${empty ? ' is-empty' : ''}`}>
                     <input type="checkbox" checked={on} onChange={() => onToggle(layer.id)} />
                     <span className="map-layer__mark"><Sample layer={layer} colors={colors} /></span>
                     <span className="map-layer__name">{t(`map.layers.${layer.id}.name`)}</span>
                     {layer.isNew && <span className="map-layer__new">{t('map.new')}</span>}
-                    {count !== null && <span className="map-layer__count">{count}</span>}
+                    {count !== null && <span className="map-layer__count">{count.shown}</span>}
                   </label>
                   {layer.id === 'heat' && on && <HeatControls heat={heat} />}
                 </div>

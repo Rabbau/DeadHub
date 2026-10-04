@@ -127,7 +127,7 @@ describe('the /api allowlist', () => {
     expect(used.length).toBeGreaterThanOrEqual(30)
     const paths = used.map((entry) => entry.api)
     for (const expected of [
-      '/v1/assets/heroes', '/v1/assets/heroes/25', '/v1/assets/items', '/v1/assets/items/by-hero-id/25', '/v1/assets/ranks', '/v1/assets/map',
+      '/v1/assets/heroes', '/v1/assets/heroes/25', '/v1/assets/items', '/v1/assets/items/by-hero-id/25', '/v1/assets/ranks', '/v1/assets/map', '/v1/assets/misc-entities',
       '/v1/analytics/hero-stats', '/v1/analytics/item-stats', '/v1/analytics/kill-death-stats', '/v1/players/steam', '/v1/players/steam-search',
       '/v1/players/1042703572/match-history', '/v1/players/rank/distribution', '/v1/matches/109064028/metadata', '/v1/leaderboard/Europe/6', '/v2/patches',
       '/v1/players/1042703572/mate-stats', '/v1/players/1042703572/enemy-stats', '/v1/matches/active', '/v1/matches/live/urls',

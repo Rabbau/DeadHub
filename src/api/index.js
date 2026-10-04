@@ -4,7 +4,8 @@ export { fetchHeroItemStats, fetchHeroItemPermutations, fetchItemGlobalStats, fe
 export { fetchCounterStats, fetchSynergyStats } from './matchupApi.js';
 export { fetchRanks, fetchRankDistribution } from './ranksApi.js';
 export { fetchPatches } from './patchApi.js';
-export { fetchMap, fetchHeat } from './mapApi.js';
+export { fetchMap, fetchHeat, fetchSpawnTimers } from './mapApi.js';
+export { traceMapImage } from './mapTraceApi.js';
 export { fetchMatch } from './matchApi.js';
 export {
   searchPlayers,
