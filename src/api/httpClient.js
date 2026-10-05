@@ -136,10 +136,16 @@ function writeCache(key, data, ttl) {
   }
 }
 
+/**
+ * Записи, формат которых сменился без смены CACHE_VERSION (данные лежат под новым ключом): под старым они
+ * больше не читаются, а место занимают.
+ */
+const RETIRED_KEYS = ['items_upgrades_english', 'items_upgrades_russian'];
+
 /** Кеш прошлых версий формата больше не читается — не даём ему занимать место. */
 function purgeLegacyCache() {
   try {
-    const stale = [];
+    const stale = RETIRED_KEYS.map((key) => `${CACHE_PREFIX}${key}`);
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key && /^dlhub_v\d+_/.test(key) && !key.startsWith(CACHE_PREFIX)) stale.push(key);

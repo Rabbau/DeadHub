@@ -7,6 +7,14 @@ function nonEmptyString(value) {
   return typeof value === 'string' && value.trim() !== '' ? value : null;
 }
 
+/**
+ * Описание без картинок: в тексте предмета встречаются значки-иконки (inline SVG), на весь список их набирается около
+ * 100 КБ, а сайт показывает из описания только текст.
+ */
+function stripSvg(html) {
+  return typeof html === 'string' ? html.replace(/<svg[\s\S]*?<\/svg>/gi, '') : null;
+}
+
 /** Ключи свойств, на которые ссылается тултип предмета: остальные поля свойств сайту не нужны. */
 function referencedPropertyKeys(sections) {
   const keys = new Set();
@@ -34,7 +42,20 @@ function slimItem(raw) {
   return {
     id: raw.id,
     name: raw.name ?? `Item ${raw.id}`,
-    description: raw.description ? { desc: raw.description.desc ?? null, quip: raw.description.quip ?? null } : null,
+    description: raw.description
+      ? {
+          desc: stripSvg(raw.description.desc),
+          quip: raw.description.quip ?? null,
+          // Предметы с отдельным текстом для активной и пассивной части (их мало)
+          active: stripSvg(raw.description.active),
+          passive: stripSvg(raw.description.passive),
+        }
+      : null,
+    // class_name и component_items связывают предметы: из каких собирается и во что улучшается
+    class_name: nonEmptyString(raw.class_name),
+    component_items: Array.isArray(raw.component_items) ? raw.component_items.filter((name) => typeof name === 'string') : [],
+    // Активный предмет применяют кнопкой, пассивный работает сам
+    is_active_item: raw.is_active_item === true,
     cost: raw.cost ?? null,
     image_url: shopImage ?? nonEmptyString(raw.image),
     shop_image: shopImage,
@@ -69,7 +90,7 @@ function slimUpgrades(data) {
  */
 export function fetchAllItems(language = 'english') {
   return httpGet(`${ASSETS_API_BASE}/v1/assets/items?language=${language}`, {
-    cacheKey: `items_upgrades_${language}`,
+    cacheKey: `items_upgrades_v2_${language}`,
     ttl: ITEMS_TTL_MS,
     transform: slimUpgrades,
   });

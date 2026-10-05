@@ -1,121 +1,121 @@
-import { useRandomBuild } from '../hooks/useRandomBuild';
+import { useMemo, useState } from 'react';
+import BuildControls from '../components/build/BuildControls';
+import BuildHistory from '../components/build/BuildHistory';
+import BuildResult from '../components/build/BuildResult';
+import { HistoryIcon } from '../components/build/BuildIcons';
+import { useBuildGenerator } from '../hooks/useBuildGenerator';
+import { useCopy } from '../hooks/useCopy';
 import { useHeroes } from '../hooks/useHeroes';
-import ItemCard from '../components/ui/ItemCard';
-import { useTranslation } from '../hooks/useTranslation';
 import { usePageMeta } from '../hooks/usePageMeta';
+import { useTranslation } from '../hooks/useTranslation';
+import { formatShortDate, localeFor } from '../services/format';
+import { useBuildStore } from '../store/buildStore';
+import { useHeroStore } from '../store/heroStore';
 
-const SLOT_LABEL_KEYS = {
-  weapon: 'itemCard.slotWeapon',
-  spirit: 'itemCard.slotSpirit',
-  vitality: 'itemCard.slotVitality',
-};
-
-const MODE_LABEL_KEYS = {
-  balance: 'buildPage.modeBalance',
-  random: 'buildPage.modeRandom',
-};
+/** «5 октября» из даты билда дня («2026-10-05», местная дата посетителя). */
+function dayLabel(day, language) {
+  const [year, month, date] = day.split('-').map(Number);
+  return new Date(year, month - 1, date).toLocaleDateString(localeFor(language), { day: 'numeric', month: 'long' });
+}
 
 function BuildPage() {
-  const { build, loading, error, options, updateOptions, generate } = useRandomBuild();
-  const { allHeroes } = useHeroes();
   const t = useTranslation();
   usePageMeta('build');
+  const { allHeroes, loading: heroesLoading, error: heroesError, language } = useHeroes();
+  const patch = useHeroStore((state) => state.patch);
+  const clearHistory = useBuildStore((state) => state.clear);
+  const [shareState, copy] = useCopy();
+  const [historyOpen, setHistoryOpen] = useState(false);
 
-  const activeHeroes = allHeroes.filter(h => h.released);
+  const roster = useMemo(() => allHeroes.filter((hero) => hero.released), [allHeroes]);
+  const generator = useBuildGenerator({ heroes: roster, language });
+  const { build, error, draft, history } = generator;
 
-  const errorMessage = error
-    ? (t(`buildPage.errors.${error}`) !== `buildPage.errors.${error}`
-        ? t(`buildPage.errors.${error}`)
-        : error)
-    : null;
+  const kicker = patch
+    ? t('buildPage.kicker', { date: dayLabel(generator.day, language), patch: formatShortDate(patch.at, language) })
+    : t('buildPage.kickerNoPatch', { date: dayLabel(generator.day, language) });
 
-  const toggleSlot = (slot) => {
-    updateOptions({
-      slots: { ...options.slots, [slot]: !options.slots[slot] },
-    });
+  const showHistory = () => {
+    setHistoryOpen(true);
+    // Раскрытый список ещё не отрисован: прокручиваем на следующем кадре
+    requestAnimationFrame(() => document.getElementById('build-history')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
   };
+
+  if (heroesLoading) {
+    return (
+      <div className="page state-center">
+        <div className="spinner" />
+        <p>{t('common.loading')}</p>
+      </div>
+    );
+  }
+
+  const errorText = heroesError ?? (error ? t(`buildPage.errors.${error}`) : null);
 
   return (
     <div className="page build-page">
-      <h1 className="page-title">{t('buildPage.title')}</h1>
-      <p className="build-page__intro">{t('buildPage.description')}</p>
-
-      <div className="build-options">
-        <label className="build-options__field">
-          <span>{t('buildPage.heroSelect')}</span>
-          <select
-            className="select"
-            value={options.heroId}
-            onChange={e => updateOptions({ heroId: e.target.value })}
-          >
-            <option value="">{t('buildPage.randomHero')}</option>
-            {activeHeroes.map(hero => (
-              <option key={hero.id} value={hero.id}>{hero.name}</option>
-            ))}
-          </select>
-        </label>
-
-        <div className="build-options__field">
-          <span>{t('buildPage.slots')}</span>
-          <div className="chip-group">
-            {['weapon', 'spirit', 'vitality'].map(slot => (
-              <button
-                key={slot}
-                type="button"
-                className={`chip ${options.slots[slot] ? 'active' : ''}`}
-                onClick={() => toggleSlot(slot)}
-              >
-                {t(SLOT_LABEL_KEYS[slot])}
-              </button>
-            ))}
-          </div>
+      <header className="build-head">
+        <div>
+          <p className="build-kicker"><i aria-hidden="true" />{kicker}</p>
+          <h1 className="page-title">{t('buildPage.title')}</h1>
+          <p className="build-head__text">{t('buildPage.description')}</p>
         </div>
+        {history.length > 0 && (
+          <button type="button" className="build-btn" onClick={showHistory}>
+            <HistoryIcon />
+            {t('buildPage.history')}
+          </button>
+        )}
+      </header>
 
-        <div className="build-options__field">
-          <span>{t('buildPage.mode')}</span>
-          <div className="chip-group">
-            {['balance', 'random'].map(mode => (
-              <button
-                key={mode}
-                type="button"
-                className={`chip ${options.mode === mode ? 'active' : ''}`}
-                onClick={() => updateOptions({ mode })}
-              >
-                {t(MODE_LABEL_KEYS[mode])}
-              </button>
-            ))}
-          </div>
+      <div className="build-layout">
+        <BuildControls
+          draft={draft}
+          onChange={generator.updateDraft}
+          heroes={roster}
+          current={build?.hero ?? generator.hero}
+          onGenerate={generator.generate}
+          notice={generator.notice}
+          busy={generator.pending}
+        />
+
+        <div className="build-stage">
+          {build && (
+            <BuildResult
+              build={build}
+              pinned={generator.pinned}
+              onTogglePin={generator.togglePin}
+              onReroll={generator.reroll}
+              onShare={() => copy(generator.shareUrl)}
+              shareState={shareState}
+              usefulMissing={generator.usefulMissing}
+            />
+          )}
+
+          {!build && errorText && (
+            <div className="build-empty state-error" role="alert">
+              <p>{t('common.error')}: {errorText}</p>
+              {error === 'itemsFailed' && <button type="button" className="build-btn" onClick={generator.retry}>{t('buildPage.retry')}</button>}
+            </div>
+          )}
+
+          {!build && !errorText && (
+            <div className="build-empty" role="status">
+              <div className="spinner" />
+              <p>{t('buildPage.loadingBuild')}</p>
+            </div>
+          )}
         </div>
       </div>
-      <button className="btn btn-primary" onClick={generate} disabled={loading}>
-        {loading ? t('common.loading') : t('buildPage.generate')}
-      </button>
 
-      {errorMessage && (
-        <p className="build-page__error state-error" style={{ marginTop: '1rem' }}>
-          {t('common.error')}: {errorMessage}
-        </p>
-      )}
-
-      {build && (
-        <div className="build-card">
-          <div className="build-card__hero">
-            {build.hero.image_url ? (
-              <img src={build.hero.image_url} alt={build.hero.name} className="build-card__hero-img" />
-            ) : (
-              <div className="build-card__hero-placeholder">{build.hero.name.slice(0, 2)}</div>
-            )}
-            <div>
-              <div className="build-card__hero-name">{build.hero.name}</div>
-              <div className="build-card__hero-role">{build.hero.role || '—'}</div>
-            </div>
-          </div>
-
-          <div className="build-card__items">
-            {build.items.map(item => <ItemCard key={item.id} item={item} compact={true} />)}
-          </div>
-        </div>
-      )}
+      <BuildHistory
+        entries={history}
+        heroes={roster}
+        expanded={historyOpen}
+        onToggle={() => setHistoryOpen((open) => !open)}
+        onPick={generator.restore}
+        onClear={() => { clearHistory(); setHistoryOpen(false); }}
+      />
     </div>
   );
 }

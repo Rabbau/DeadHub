@@ -1,55 +1,12 @@
 import { useState } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
+import { getItemStats } from '../../services/itemService';
 
 const SLOT_KEYS = {
   weapon: 'itemCard.slotWeapon',
   vitality: 'itemCard.slotVitality',
   spirit: 'itemCard.slotSpirit',
 };
-
-function formatPropertyValue(prop) {
-  if (!prop || prop.value === undefined) return null;
-  const num = parseFloat(prop.value);
-  if (isNaN(num) || num === 0) return null;
-
-  const sign = prop.prefix === '{s:sign}' && num > 0 ? '+' : '';
-  const postfix = prop.postfix || '';
-  return {
-    label: prop.label || '',
-    text: `${sign}${prop.value}${postfix}`,
-  };
-}
-
-function getItemStats(item) {
-  const sections = item.tooltip_sections;
-  if (!sections || !Array.isArray(sections)) return [];
-
-  const stats = [];
-  const seen = new Set();
-
-  sections.forEach(section => {
-    (section.section_attributes || []).forEach(attr => {
-      const allKeys = [
-        ...(attr.properties || []),
-        ...(attr.elevated_properties || []),
-      ];
-      allKeys.forEach(key => {
-        if (seen.has(key)) return;
-        seen.add(key);
-        const prop = item.properties?.[key];
-        const formatted = formatPropertyValue(prop);
-        if (formatted) {
-          stats.push({
-            ...formatted,
-            elevated: (attr.elevated_properties || []).includes(key),
-          });
-        }
-      });
-    });
-  });
-
-  return stats;
-}
 
 function ItemCard({ item, compact = false }) {
   const [imgError, setImgError] = useState(false);

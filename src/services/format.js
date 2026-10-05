@@ -51,6 +51,22 @@ export function formatAge(unixSeconds, language, nowMs = Date.now()) {
   return days < 60 ? rtf.format(-days, 'day') : rtf.format(-Math.round(days / 30), 'month');
 }
 
+/**
+ * «12 мин. назад» / «12 min. ago»: до часа считаем в минутах, до суток — в часах, дальше как formatAge («вчера», «3 дня назад»).
+ * В отличие от formatAge принимает миллисекунды: так хранятся метки времени, которые ставит сам сайт.
+ * @param {number} timestampMs
+ * @param {string} language
+ * @param {number} [nowMs]
+ */
+export function formatAgo(timestampMs, language, nowMs = Date.now()) {
+  const seconds = Math.max(0, Math.round((nowMs - timestampMs) / 1000));
+  const rtf = new Intl.RelativeTimeFormat(localeFor(language), { numeric: 'auto', style: 'short' });
+  if (seconds < 60) return rtf.format(0, 'second');
+  if (seconds < 3600) return rtf.format(-Math.floor(seconds / 60), 'minute');
+  if (seconds < 86400) return rtf.format(-Math.floor(seconds / 3600), 'hour');
+  return formatAge(timestampMs / 1000, language, nowMs);
+}
+
 /** «17 сент., 21:32» / «Sep 17, 9:32 PM». */
 export function formatMatchDate(unixSeconds, language) {
   if (!unixSeconds) return '—';

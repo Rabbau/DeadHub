@@ -24,6 +24,22 @@ export function getTranslation(lang, key, params = {}) {
   return value;
 }
 
+// Правила множественного числа создаются один раз на язык: Intl.PluralRules недёшев в создании
+const pluralRules = {};
+
+/**
+ * Строка с числом в нужной форме: «1 предмет», «2 предмета», «5 предметов». По ключу лежит объект с формами
+ * one / few / many / other (в английском few и many совпадают с other — так наборы ключей языков остаются одинаковыми).
+ * @param {string} lang
+ * @param {string} key ключ объекта с формами, без суффикса формы
+ * @param {number} count
+ * @param {Record<string, string|number>} [params] подстановки; {count} уже подставлен
+ */
+export function getPlural(lang, key, count, params = {}) {
+  pluralRules[lang] ??= new Intl.PluralRules(lang === 'russian' ? 'ru' : 'en');
+  return getTranslation(lang, `${key}.${pluralRules[lang].select(count)}`, { count, ...params });
+}
+
 /**
  * Есть ли у ключа перевод. В отличие от getTranslation, ничего не пишет в консоль: нужен там,
  * где отсутствие перевода — обычный случай (например, названия параметров способностей).

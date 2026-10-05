@@ -3,11 +3,13 @@ import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import en from '../src/i18n/locales/en.js'
 import ru from '../src/i18n/locales/ru.js'
-import { hasTranslation } from '../src/i18n/index.js'
+import { getPlural, hasTranslation } from '../src/i18n/index.js'
 import { HEAT_PHASES, LAYERS, LEVELS, PRESETS, SHOP_KINDS, TIMER_KEYS } from '../src/services/mapService.js'
 import { MODES, RANK_PRESETS } from '../src/services/statsFilters.js'
 import { GROUP_ORDER, SEARCH_PAGES } from '../src/services/searchService.js'
 import { HOME_SECTIONS } from '../src/services/homeService.js'
+import { MODES as BUILD_MODES, PHASES as BUILD_PHASES } from '../src/services/buildService.js'
+import { SORTS as ITEM_SORTS } from '../src/services/shopService.js'
 import { MODIFIER_KEYS, UNCOUNTED_KEYS } from '../src/services/calculatorService.js'
 import { CROSSHAIR_PRESETS, SLIDER } from '../src/services/crosshairService.js'
 import { LIVE_REGIONS } from '../src/services/liveService.js'
@@ -60,6 +62,14 @@ describe('locales', () => {
     ;['yellow', 'blue', 'green', 'left', 'center', 'right'].forEach((k) => need.push(`map.lane.${k}`))
     ;[0, 1].forEach((k) => need.push(`map.side.${k}`))
     LEVELS.forEach((k) => need.push(`map.level.${k}`))
+    // Случайный билд: этапы покупки, короткие названия режимов (история) и коды ошибок собираются из данных
+    BUILD_PHASES.forEach((k) => need.push(`buildPage.phases.${k}`))
+    BUILD_MODES.forEach((k) => need.push(`buildPage.modeShort.${k}`))
+    ;['noHeroes', 'noSlots', 'noItems', 'itemsFailed'].forEach((k) => need.push(`buildPage.errors.${k}`))
+    // Страница предметов: сортировки и типы собираются из списков, а слова с числом — из форм one / few / many / other (t.plural)
+    ITEM_SORTS.forEach((k) => need.push(`itemsPage.sorts.${k}`))
+    ;['active', 'passive'].forEach((k) => need.push(`itemsPage.kinds.${k}`))
+    ;['one', 'few', 'many', 'other'].forEach((form) => ['itemsPage.inShop', 'itemsPage.itemsCount', 'buildPage.slotsCount'].forEach((k) => need.push(`${k}.${form}`)))
     TIMER_KEYS.forEach((k) => need.push(`map.timers.rows.${k}`))
     SHOP_KINDS.forEach((k) => need.push(`map.shopKind.${k}`))
     ;['spawn', 'pad'].forEach((k) => need.push(`map.urnKind.${k}`))
@@ -106,6 +116,30 @@ describe('locales', () => {
       'seo.match.title', 'seo.match.description')
 
     expect(need.filter((k) => !inBoth(k))).toEqual([])
+  })
+})
+
+describe('getPlural', () => {
+  it('picks the Russian form for the number', () => {
+    const count = (n) => getPlural('russian', 'itemsPage.itemsCount', n)
+    expect(count(1)).toBe('1 предмет')
+    expect(count(2)).toBe('2 предмета')
+    expect(count(5)).toBe('5 предметов')
+    expect(count(11)).toBe('11 предметов')
+    expect(count(21)).toBe('21 предмет')
+    expect(count(173)).toBe('173 предмета')
+    expect(count(0)).toBe('0 предметов')
+  })
+
+  it('has two forms in English', () => {
+    expect(getPlural('english', 'itemsPage.itemsCount', 1)).toBe('1 item')
+    expect(getPlural('english', 'itemsPage.itemsCount', 2)).toBe('2 items')
+    expect(getPlural('english', 'itemsPage.itemsCount', 0)).toBe('0 items')
+  })
+
+  it('fills the other params too', () => {
+    expect(getPlural('russian', 'buildPage.slotsCount', 1)).toBe('1 слот')
+    expect(getPlural('russian', 'buildPage.slotsCount', 3)).toBe('3 слота')
   })
 })
 
