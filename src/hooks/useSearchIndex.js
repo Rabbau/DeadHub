@@ -3,6 +3,7 @@ import { fetchAllItems, fetchHeroCatalog } from '../api/index.js';
 import { useHeroStore } from '../store/heroStore.js';
 import { useTranslation } from './useTranslation.js';
 import { SEARCH_PAGES, indexEntry, normalizeQuery } from '../services/searchService.js';
+import { isListedHero } from '../services/heroStatus.js';
 import { isAvailableItem } from '../services/itemService.js';
 
 /**
@@ -26,7 +27,7 @@ export function useSearchIndex({ query, extraPages = [] }) {
         setHeroes(
           list
             // Заготовки в разработке и отключённые герои страницы не имеют
-            .filter((hero) => !hero.disabled && !hero.in_development)
+            .filter(isListedHero)
             .map((hero) => indexEntry({
               type: 'hero',
               id: hero.id ?? hero.hero_id,

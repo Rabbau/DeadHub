@@ -4,6 +4,7 @@ import { DEFAULT_FILTERS, toQueryString, toStatsParams } from '../services/stats
 import { computeHeroDeltas, previousWindow } from '../services/deltaService.js';
 import { slimWeeklyStats, trendSince } from '../services/trendService.js';
 import { isReleaseWindow } from '../services/releaseService.js';
+import { heroStatus } from '../services/heroStatus.js';
 import { CURRENT_UPDATE } from '../data/updates.js';
 
 const STATS_TTL_MS = 10 * 60 * 1000; // на стороне API ответы тоже кешируются на 10 минут
@@ -60,19 +61,6 @@ export function slimHero(raw) {
 function slimHeroList(data) {
   const list = Array.isArray(data) ? data : data.data ?? data.heroes ?? [];
   return list.map(slimHero);
-}
-
-/**
- * released — играют все; upcoming — новый герой из голосования (prerelease_only), ещё не вышел;
- * hidden — заготовки в разработке и отключённые герои.
- * Флаги в assets обновляются вместе со сборкой игры и могут отставать от матчей, поэтому
- * герой с реальными матчами считается вышедшим, даже если флаги ещё не переключились.
- */
-function heroStatus(heroData, games) {
-  if (heroData.disabled === true || heroData.in_development === true) return 'hidden';
-  if (games > 0) return 'released';
-  if (heroData.prerelease_only === true) return 'upcoming';
-  return heroData.player_selectable === true ? 'released' : 'hidden';
 }
 
 function capitalize(str) {

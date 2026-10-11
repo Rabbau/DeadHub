@@ -62,7 +62,7 @@ describe('heroPages', () => {
   it('skips disabled, in-development and unselectable heroes, nameless rows and garbage', () => {
     const pages = heroPages([
       hero({ id: 3, disabled: true }),
-      hero({ id: 4, in_development: true }),
+      hero({ id: 4, in_development: true, player_selectable: false }),
       hero({ id: 5, player_selectable: false }),
       hero({ id: 6, name: '' }),
       null,
@@ -70,6 +70,11 @@ describe('heroPages', () => {
     ])
     expect(pages.map((p) => p.path)).toEqual(['/hero/7'])
     expect(heroPages(null)).toEqual([])
+  })
+
+  it('keeps a released hero whose «in development» flag was never cleared', () => {
+    // Буся (id 88): вышла 9 октября 2026, играбельна, а in_development в данных остался true
+    expect(heroPages([hero({ id: 88, name: 'Baba', in_development: true })]).map((p) => p.path)).toEqual(['/hero/88'])
   })
 
   it('accepts the lore as an object and sorts ids numerically', () => {

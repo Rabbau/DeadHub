@@ -10,6 +10,7 @@
  */
 import { CURRENT_UPDATE } from '../src/data/updates.js';
 import { getTranslation } from '../src/i18n/index.js';
+import { isListedHero } from '../src/services/heroStatus.js';
 import { isAvailableItem } from '../src/services/itemService.js';
 import { SITE_URL, formatTitle } from '../src/services/siteMeta.js';
 
@@ -56,14 +57,15 @@ const capitalize = (text) => (text ? text.charAt(0).toUpperCase() + text.slice(1
 const isId = (value) => /^\d{1,12}$/.test(String(value ?? ''));
 
 /**
- * Герои, у которых есть страница на сайте: не отключённые и не «в разработке»; играбельные либо из голосования.
+ * Герои, у которых есть страница на сайте: не отключённые и не заготовки «в разработке» (если героя уже можно выбрать
+ * в игре, флаг «в разработке» не мешает); играбельные либо из голосования.
  * @param {any[]} rawHeroes ответ /v1/assets/heroes
  * @returns {Array<{ path: string, title: string, description: string, heading: string, text: string }>}
  */
 export function heroPages(rawHeroes) {
   return (Array.isArray(rawHeroes) ? rawHeroes : [])
     .filter((hero) => hero && hero.name && isId(hero.id ?? hero.hero_id))
-    .filter((hero) => hero.disabled !== true && hero.in_development !== true)
+    .filter(isListedHero)
     .filter((hero) => hero.player_selectable === true || hero.prerelease_only === true)
     .map((hero) => {
       const id = hero.id ?? hero.hero_id;
